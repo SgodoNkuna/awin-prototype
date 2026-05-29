@@ -12,7 +12,7 @@ function Index() {
       className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-20 text-primary-foreground"
       style={{ background: "var(--gradient-hero)" }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,oklch(0.74_0.135_80/0.15),transparent_50%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-20" />
 
       <div className="relative mx-auto max-w-3xl text-center">
         <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-4 py-1.5 text-xs font-medium tracking-wide text-accent uppercase">
