@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import logoColor from "@/assets/awin-logo-color.png";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -18,12 +19,16 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
-        <Link to="/" className="flex items-center gap-2 font-serif text-2xl font-bold text-primary">
-          <span className="tracking-tight">A·WIN</span>
+      <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-8">
+        <Link to="/" className="flex items-center" aria-label="A-WIN home">
+          <img
+            src={logoColor}
+            alt="A-WIN — African Women Investment Network"
+            className="h-12 w-auto md:h-14"
+          />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
           {NAV.map((item) => (
             <Link
               key={item.to}
@@ -40,7 +45,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           <Button asChild variant="ghost" size="sm">
             <Link to="/login">Member Login</Link>
           </Button>
@@ -55,12 +60,13 @@ export function SiteHeader() {
 
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+            <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-[300px] bg-background">
-            <SheetTitle className="font-serif text-2xl text-primary">A·WIN</SheetTitle>
+            <SheetTitle className="sr-only">A-WIN navigation</SheetTitle>
+            <img src={logoColor} alt="A-WIN" className="h-10 w-auto" />
             <nav className="mt-8 flex flex-col gap-1" aria-label="Mobile">
               {NAV.map((item) => (
                 <Link
