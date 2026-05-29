@@ -1,15 +1,18 @@
 import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
-import logoWhite from "@/assets/awin-logo-white.png";
+import { useLogoTheme } from "@/lib/logo-theme";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
+  const { srcOnDark, filter, variant } = useLogoTheme();
+  // On dark surfaces, only apply the orange tint; other variants display as-is.
+  const footerFilter = variant === "orange" ? filter : undefined;
   return (
     <footer className="mt-24 border-t-4 border-accent bg-primary text-primary-foreground">
       <div className="container mx-auto grid gap-10 px-4 py-16 md:grid-cols-4 md:px-8">
         <div>
           <Link to="/" aria-label="A-WIN home" className="inline-block">
-            <img src={logoWhite} alt="A-WIN" className="h-14 w-auto" />
+            <img src={srcOnDark} alt="A-WIN" className="h-14 w-auto" style={footerFilter ? { filter: footerFilter } : undefined} />
           </Link>
           <p className="mt-4 text-sm text-primary-foreground/85">
             African Women Investment Network — invest to support women in business.

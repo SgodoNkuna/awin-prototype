@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import logoColor from "@/assets/awin-logo-color.png";
+import { useLogoTheme } from "@/lib/logo-theme";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -16,17 +16,32 @@ const NAV = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const { src, filter, cycle, variant } = useLogoTheme();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-8">
-        <Link to="/" className="flex items-center" aria-label="A-WIN home">
-          <img
-            src={logoColor}
-            alt="A-WIN — African Women Investment Network"
-            className="h-12 w-auto md:h-14"
-          />
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center" aria-label="A-WIN home">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                cycle();
+              }}
+              className="group rounded-md p-1 transition-transform hover:scale-105 active:scale-95"
+              aria-label={`Change theme (current: ${variant}). Click to cycle.`}
+              title="Click logo to change theme"
+            >
+              <img
+                src={src}
+                alt="A-WIN — African Women Investment Network"
+                className="h-12 w-auto md:h-14"
+                style={filter ? { filter } : undefined}
+              />
+            </button>
+          </Link>
+        </div>
 
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
           {NAV.map((item) => (
@@ -66,7 +81,7 @@ export function SiteHeader() {
           </SheetTrigger>
           <SheetContent side="right" className="w-[300px] bg-background">
             <SheetTitle className="sr-only">A-WIN navigation</SheetTitle>
-            <img src={logoColor} alt="A-WIN" className="h-10 w-auto" />
+            <img src={src} alt="A-WIN" className="h-10 w-auto" style={filter ? { filter } : undefined} />
             <nav className="mt-8 flex flex-col gap-1" aria-label="Mobile">
               {NAV.map((item) => (
                 <Link
