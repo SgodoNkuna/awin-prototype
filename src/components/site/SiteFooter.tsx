@@ -1,18 +1,18 @@
 import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
+import logoWhite from "@/assets/awin-logo-white.png";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-24 border-t-2 border-accent bg-primary text-primary-foreground">
+    <footer className="mt-24 border-t-4 border-accent bg-primary text-primary-foreground">
       <div className="container mx-auto grid gap-10 px-4 py-16 md:grid-cols-4 md:px-8">
         <div>
-          <Link to="/" className="font-serif text-2xl font-bold text-accent">
-            A·WIN
+          <Link to="/" aria-label="A-WIN home" className="inline-block">
+            <img src={logoWhite} alt="A-WIN" className="h-14 w-auto" />
           </Link>
-          <p className="mt-3 text-sm text-primary-foreground/70">
-            African Women in Investment Network — empowering women to build generational wealth
-            through education, community, and access.
+          <p className="mt-4 text-sm text-primary-foreground/85">
+            African Women Investment Network — invest to support women in business.
           </p>
         </div>
 
