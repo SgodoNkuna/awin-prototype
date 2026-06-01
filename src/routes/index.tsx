@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   ChevronDown,
@@ -161,7 +161,7 @@ function Index() {
             >
               <a href="/membership">
                 Become a Member <ArrowRight className="ml-1 h-4 w-4" />
-              </a>
+              </Link>
             </Button>
             <Button
               asChild
@@ -169,7 +169,7 @@ function Index() {
               variant="outline"
               className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
             >
-              <a href="/about">Learn More</a>
+              <Link to="/about">Learn More</Link>
             </Button>
           </div>
         </div>
@@ -180,7 +180,7 @@ function Index() {
           className="absolute bottom-8 left-1/2 -translate-x-1/2 text-primary-foreground/70 hover:text-accent transition-colors"
         >
           <ChevronDown className="h-7 w-7 animate-bounce" />
-        </a>
+        </Link>
       </section>
 
       {/* MISSION STRIP */}
@@ -222,7 +222,7 @@ function Index() {
               className="mt-6 inline-flex items-center gap-1 font-medium text-primary story-link"
             >
               Read More <ArrowRight className="h-4 w-4" />
-            </a>
+            </Link>
           </div>
 
           <div
@@ -288,7 +288,7 @@ function Index() {
                         : "mt-7 w-full"
                     }
                   >
-                    <a href="/membership">Join Now</a>
+                    <a href="/membership">Join Now</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -312,7 +312,7 @@ function Index() {
               className="hidden text-sm font-medium text-primary story-link sm:inline-flex items-center gap-1"
             >
               All events <ArrowRight className="h-4 w-4" />
-            </a>
+            </Link>
           </div>
 
           <div className="mt-10 -mx-4 overflow-x-auto px-4 pb-4">
@@ -347,7 +347,7 @@ function Index() {
                       className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
                     >
                       View Details <ArrowRight className="h-3.5 w-3.5" />
-                    </a>
+                    </Link>
                   </CardContent>
                 </Card>
               ))}
@@ -397,7 +397,7 @@ function Index() {
                     className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
                   >
                     Read More <ArrowRight className="h-3.5 w-3.5" />
-                  </a>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
@@ -425,7 +425,7 @@ function Index() {
           >
             <a href="/membership">
               Become a Member Today <ArrowRight className="ml-1 h-4 w-4" />
-            </a>
+            </Link>
           </Button>
         </div>
       </section>
