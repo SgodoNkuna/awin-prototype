@@ -161,7 +161,7 @@ function Index() {
             >
               <a href="/membership">
                 Become a Member <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
+              </a>
             </Button>
             <Button
               asChild
@@ -180,7 +180,7 @@ function Index() {
           className="absolute bottom-8 left-1/2 -translate-x-1/2 text-primary-foreground/70 hover:text-accent transition-colors"
         >
           <ChevronDown className="h-7 w-7 animate-bounce" />
-        </Link>
+        </a>
       </section>
 
       {/* MISSION STRIP */}
@@ -288,7 +288,7 @@ function Index() {
                         : "mt-7 w-full"
                     }
                   >
-                    <a href="/membership">Join Now</Link>
+                    <a href="/membership">Join Now</a>
                   </Button>
                 </CardContent>
               </Card>
@@ -425,7 +425,7 @@ function Index() {
           >
             <a href="/membership">
               Become a Member Today <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
+            </a>
           </Button>
         </div>
       </section>
