@@ -217,8 +217,8 @@ function Index() {
               investing. Every event, course and conversation is built around one
               belief: when women invest, communities transform.
             </p>
-            <Link
-              to="/about"
+            <a
+              href="/about"
               className="mt-6 inline-flex items-center gap-1 font-medium text-primary story-link"
             >
               Read More <ArrowRight className="h-4 w-4" />
@@ -307,8 +307,8 @@ function Index() {
               </span>
               <h2 className="mt-3 font-serif">Upcoming Events</h2>
             </div>
-            <Link
-              to="/events"
+            <a
+              href="/events"
               className="hidden text-sm font-medium text-primary story-link sm:inline-flex items-center gap-1"
             >
               All events <ArrowRight className="h-4 w-4" />
@@ -342,8 +342,8 @@ function Index() {
                     <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
                       <MapPin className="h-3.5 w-3.5" /> {e.location}
                     </div>
-                    <Link
-                      to="/events"
+                    <a
+                      href="/events"
                       className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
                     >
                       View Details <ArrowRight className="h-3.5 w-3.5" />
@@ -392,8 +392,8 @@ function Index() {
                   <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
                     {a.excerpt}
                   </p>
-                  <Link
-                    to="/news"
+                  <a
+                    href="/news"
                     className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
                   >
                     Read More <ArrowRight className="h-3.5 w-3.5" />
