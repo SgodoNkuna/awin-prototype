@@ -159,9 +159,9 @@ function Index() {
               size="lg"
               className="bg-accent text-accent-foreground shadow-[var(--shadow-gold-glow)] hover:bg-accent/90"
             >
-              <Link to="/membership">
+              <a href="/membership">
                 Become a Member <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
+              </a>
             </Button>
             <Button
               asChild
@@ -169,7 +169,7 @@ function Index() {
               variant="outline"
               className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
             >
-              <Link to="/about">Learn More</Link>
+              <a href="/about">Learn More</a>
             </Button>
           </div>
         </div>
@@ -222,7 +222,7 @@ function Index() {
               className="mt-6 inline-flex items-center gap-1 font-medium text-primary story-link"
             >
               Read More <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
           </div>
 
           <div
@@ -288,7 +288,7 @@ function Index() {
                         : "mt-7 w-full"
                     }
                   >
-                    <Link to="/membership">Join Now</Link>
+                    <a href="/membership">Join Now</a>
                   </Button>
                 </CardContent>
               </Card>
@@ -312,7 +312,7 @@ function Index() {
               className="hidden text-sm font-medium text-primary story-link sm:inline-flex items-center gap-1"
             >
               All events <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
           </div>
 
           <div className="mt-10 -mx-4 overflow-x-auto px-4 pb-4">
@@ -347,7 +347,7 @@ function Index() {
                       className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
                     >
                       View Details <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
+                    </a>
                   </CardContent>
                 </Card>
               ))}
@@ -397,7 +397,7 @@ function Index() {
                     className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
                   >
                     Read More <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
+                  </a>
                 </CardContent>
               </Card>
             ))}
@@ -423,9 +423,9 @@ function Index() {
             size="lg"
             className="mt-8 bg-foreground text-background hover:bg-foreground/90"
           >
-            <Link to="/membership">
+            <a href="/membership">
               Become a Member Today <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
+            </a>
           </Button>
         </div>
       </section>
