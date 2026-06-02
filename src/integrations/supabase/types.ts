@@ -14,7 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          created_at: string
+          email: string
+          employer: string | null
+          experience: Database["public"]["Enums"]["investment_experience"]
+          full_name: string
+          id: string
+          id_number: string
+          motivation: string
+          occupation: string
+          phone: string
+          referral: string | null
+          status: Database["public"]["Enums"]["application_status"]
+          tier: Database["public"]["Enums"]["membership_tier"]
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          employer?: string | null
+          experience: Database["public"]["Enums"]["investment_experience"]
+          full_name: string
+          id?: string
+          id_number: string
+          motivation: string
+          occupation: string
+          phone: string
+          referral?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          tier: Database["public"]["Enums"]["membership_tier"]
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          employer?: string | null
+          experience?: Database["public"]["Enums"]["investment_experience"]
+          full_name?: string
+          id?: string
+          id_number?: string
+          motivation?: string
+          occupation?: string
+          phone?: string
+          referral?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          tier?: Database["public"]["Enums"]["membership_tier"]
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          subject?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +97,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      application_status: "pending" | "approved" | "rejected"
+      investment_experience: "beginner" | "intermediate" | "advanced"
+      membership_tier: "general" | "active" | "patron"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +226,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      application_status: ["pending", "approved", "rejected"],
+      investment_experience: ["beginner", "intermediate", "advanced"],
+      membership_tier: ["general", "active", "patron"],
+    },
   },
 } as const
