@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { LogoThemeProvider } from "@/lib/logo-theme";
+import { AuthProvider } from "@/lib/use-auth";
 
 function NotFoundComponent() {
   return (
@@ -126,10 +127,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <LogoThemeProvider>
-        <SiteLayout />
-        <Toaster richColors position="top-right" />
-      </LogoThemeProvider>
+      <AuthProvider>
+        <LogoThemeProvider>
+          <SiteLayout />
+          <Toaster richColors position="top-right" />
+        </LogoThemeProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

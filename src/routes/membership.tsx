@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/membership")({
   component: MembershipPage,
@@ -99,6 +100,7 @@ const applicationSchema = z.object({
 });
 
 function MembershipPage() {
+  const { user } = useAuth();
   const [selectedTier, setSelectedTier] = useState<"general" | "active" | "patron">("active");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -131,7 +133,10 @@ function MembershipPage() {
     }
 
     setSubmitting(true);
-    const { error } = await supabase.from("applications").insert(parsed.data);
+    const { error } = await supabase.from("applications").insert({
+      ...parsed.data,
+      user_id: user?.id ?? null,
+    });
     setSubmitting(false);
 
     if (error) {

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Menu } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useLogoTheme } from "@/lib/logo-theme";
+import { useAuth } from "@/lib/use-auth";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -17,6 +18,7 @@ const NAV = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { src, filter, cycle, variant } = useLogoTheme();
+  const { user, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -61,16 +63,29 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/login">Member Login</Link>
-          </Button>
-          <Button
-            asChild
-            size="sm"
-            className="bg-accent text-accent-foreground shadow-[var(--shadow-gold-glow)] hover:bg-accent/90"
-          >
-            <Link to="/membership">Join Now</Link>
-          </Button>
+          {user ? (
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/portal">My Portal</Link>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={signOut} aria-label="Sign out">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/auth">Member Login</Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                className="bg-accent text-accent-foreground shadow-[var(--shadow-gold-glow)] hover:bg-accent/90"
+              >
+                <Link to="/membership">Join Now</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         <Sheet open={open} onOpenChange={setOpen}>
@@ -97,16 +112,32 @@ export function SiteHeader() {
               ))}
             </nav>
             <div className="mt-8 flex flex-col gap-2 border-t border-border pt-6">
-              <Button asChild variant="outline" onClick={() => setOpen(false)}>
-                <Link to="/login">Member Login</Link>
-              </Button>
-              <Button
-                asChild
-                onClick={() => setOpen(false)}
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
-              >
-                <Link to="/membership">Join Now</Link>
-              </Button>
+              {user ? (
+                <>
+                  <Button asChild variant="outline" onClick={() => setOpen(false)}>
+                    <Link to="/portal">My Portal</Link>
+                  </Button>
+                  <Button
+                    onClick={() => { setOpen(false); signOut(); }}
+                    className="bg-accent text-accent-foreground hover:bg-accent/90"
+                  >
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button asChild variant="outline" onClick={() => setOpen(false)}>
+                    <Link to="/auth">Member Login</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    onClick={() => setOpen(false)}
+                    className="bg-accent text-accent-foreground hover:bg-accent/90"
+                  >
+                    <Link to="/membership">Join Now</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </SheetContent>
         </Sheet>
