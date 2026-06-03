@@ -62,7 +62,7 @@ function SettingsPage() {
     setSettings({ ...settings, [key]: value });
 
   const saveSetting = async (key: string) => {
-    const { error } = await supabase.from("site_settings").upsert({ key, value: settings[key] });
+    const { error } = await supabase.from("site_settings").upsert({ key, value: settings[key] as never });
     if (error) return toast.error(error.message);
     toast.success("Saved");
   };

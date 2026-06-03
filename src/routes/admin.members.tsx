@@ -14,11 +14,12 @@ export const Route = createFileRoute("/admin/members")({
   component: MembersPage,
 });
 
+type TierName = "general" | "active" | "patron";
 type Member = {
   id: string;
   email: string | null;
   full_name: string | null;
-  membership_tier: string | null;
+  membership_tier: TierName | null;
   membership_status: string;
   joined_at: string | null;
   suspended: boolean;
@@ -174,7 +175,7 @@ function MembersPage() {
                 <label className="text-xs font-medium">Membership Tier</label>
                 <Select
                   value={editing.membership_tier ?? "none"}
-                  onValueChange={(v) => setEditing({ ...editing, membership_tier: v === "none" ? null : v })}
+                  onValueChange={(v) => setEditing({ ...editing, membership_tier: v === "none" ? null : (v as TierName) })}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>

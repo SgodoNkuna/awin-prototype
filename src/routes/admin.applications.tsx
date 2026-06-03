@@ -53,7 +53,7 @@ function ApplicationsPage() {
       await supabase
         .from("profiles")
         .update({
-          membership_tier: a.tier,
+          membership_tier: a.tier as "general" | "active" | "patron",
           membership_status: "active",
           joined_at: new Date().toISOString(),
         })
