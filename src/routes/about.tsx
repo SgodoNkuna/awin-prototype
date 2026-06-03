@@ -186,24 +186,18 @@ function AboutPage() {
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {team.map((m) => (
               <Card
-                key={m.name}
+                key={m.id}
                 className="border-border/60 text-center shadow-[var(--shadow-elegant)] hover-scale"
               >
                 <CardContent className="p-7">
                   <div
-                    className="mx-auto h-28 w-28 rounded-full"
-                    style={{ background: "var(--gradient-hero)" }}
+                    className="mx-auto h-28 w-28 rounded-full bg-cover bg-center"
+                    style={{ background: m.photo_url ? `url(${m.photo_url}) center/cover` : "var(--gradient-hero)" }}
                     aria-hidden="true"
                   />
-                  <h3 className="mt-5 font-serif text-lg text-foreground">
-                    {m.name}
-                  </h3>
-                  <div className="text-sm font-medium text-accent">
-                    {m.title}
-                  </div>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {m.bio}
-                  </p>
+                  <h3 className="mt-5 font-serif text-lg text-foreground">{m.name}</h3>
+                  <div className="text-sm font-medium text-accent">{m.title}</div>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{m.bio}</p>
                 </CardContent>
               </Card>
             ))}
