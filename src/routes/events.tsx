@@ -1,89 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calendar, MapPin, ChevronRight, CalendarX } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, CalendarX, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/events")({
   head: () => ({
     meta: [
       { title: "Events | A-WIN" },
-      {
-        name: "description",
-        content:
-          "Browse upcoming and past A-WIN events: masterclasses, summits, meetups and member-only workshops.",
-      },
+      { name: "description", content: "Browse upcoming and past A-WIN events." },
       { property: "og:title", content: "A-WIN Events" },
-      {
-        property: "og:description",
-        content:
-          "Masterclasses, summits and meetups for women investors across Africa.",
-      },
+      { property: "og:description", content: "Masterclasses, summits and meetups for women investors across Africa." },
     ],
   }),
   component: EventsPage,
 });
 
-type EventItem = {
+type EventRow = {
   id: string;
   title: string;
   description: string;
-  date: string; // ISO
+  event_date: string;
+  event_time: string | null;
   location: string;
+  image_url: string | null;
+  event_type: string;
+  max_attendees: number | null;
+  registration_deadline: string | null;
 };
-
-// Placeholder data — wire to Supabase 'events' table later.
-const PLACEHOLDER_EVENTS: EventItem[] = [
-  {
-    id: "1",
-    title: "Investment 101 Masterclass",
-    description:
-      "Foundations for first-time investors: budgeting, brokers and building your first portfolio.",
-    date: "2026-06-12T18:00:00Z",
-    location: "Johannesburg",
-  },
-  {
-    id: "2",
-    title: "Women in Wealth Summit",
-    description:
-      "Our flagship two-day summit with keynotes, panels and member meetups.",
-    date: "2026-06-24T09:00:00Z",
-    location: "Cape Town",
-  },
-  {
-    id: "3",
-    title: "Property Portfolio Workshop",
-    description:
-      "Hands-on session on financing, vetting and managing your first property investment.",
-    date: "2026-07-08T17:30:00Z",
-    location: "Durban",
-  },
-  {
-    id: "4",
-    title: "Stock Market Bootcamp",
-    description:
-      "A four-week online bootcamp covering equities, ETFs and reading the market.",
-    date: "2026-07-22T18:00:00Z",
-    location: "Online",
-  },
-  {
-    id: "5",
-    title: "Q1 Member Meetup",
-    description: "Quarterly community gathering for members across all tiers.",
-    date: "2026-03-15T18:00:00Z",
-    location: "Sandton",
-  },
-  {
-    id: "6",
-    title: "Crypto Demystified",
-    description:
-      "A clear-eyed conversation on digital assets, risk and where they fit in a portfolio.",
-    date: "2026-02-20T18:00:00Z",
-    location: "Online",
-  },
-];
 
 type Filter = "all" | "upcoming" | "past";
 const FILTERS: { id: Filter; label: string }[] = [
@@ -93,13 +45,8 @@ const FILTERS: { id: Filter; label: string }[] = [
 ];
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-ZA", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return new Date(iso).toLocaleDateString("en-ZA", { day: "2-digit", month: "short", year: "numeric" });
 }
-
 function dateBadge(iso: string) {
   const d = new Date(iso);
   return {
@@ -109,47 +56,74 @@ function dateBadge(iso: string) {
 }
 
 function EventsPage() {
+  const { user } = useAuth();
+  const [events, setEvents] = useState<EventRow[] | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
-  const now = Date.now();
+  const [registering, setRegistering] = useState<EventRow | null>(null);
+  const [reg, setReg] = useState({ full_name: "", email: "", phone: "" });
+  const [submitting, setSubmitting] = useState(false);
 
-  const events = PLACEHOLDER_EVENTS.filter((e) => {
-    if (filter === "upcoming") return new Date(e.date).getTime() >= now;
-    if (filter === "past") return new Date(e.date).getTime() < now;
+  useEffect(() => {
+    supabase
+      .from("events")
+      .select("id, title, description, event_date, event_time, location, image_url, event_type, max_attendees, registration_deadline")
+      .eq("published", true)
+      .order("event_date", { ascending: true })
+      .then(({ data }) => setEvents((data as EventRow[]) ?? []));
+  }, []);
+
+  useEffect(() => {
+    if (registering && user) {
+      setReg((r) => ({ ...r, email: user.email ?? r.email }));
+    }
+  }, [registering, user]);
+
+  const now = Date.now();
+  const filtered = (events ?? []).filter((e) => {
+    const ts = new Date(e.event_date).getTime();
+    if (filter === "upcoming") return ts >= now;
+    if (filter === "past") return ts < now;
     return true;
-  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  });
+
+  const submitRegistration = async () => {
+    if (!registering) return;
+    if (!reg.full_name || !reg.email) return toast.error("Name and email are required.");
+    setSubmitting(true);
+    const { error } = await supabase.from("event_registrations").insert({
+      event_id: registering.id,
+      user_id: user?.id ?? null,
+      full_name: reg.full_name,
+      email: reg.email,
+      phone: reg.phone || null,
+    });
+    setSubmitting(false);
+    if (error) return toast.error(error.message);
+    toast.success("You're registered! We'll email confirmation soon.");
+    setRegistering(null);
+    setReg({ full_name: "", email: "", phone: "" });
+  };
 
   return (
     <>
-      {/* HERO */}
-      <section
-        className="relative overflow-hidden px-4 py-24 text-primary-foreground"
-        style={{ background: "var(--gradient-hero)" }}
-      >
+      <section className="relative overflow-hidden px-4 py-24 text-primary-foreground" style={{ background: "var(--gradient-hero)" }}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,var(--accent),transparent_55%)] opacity-25" />
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative mx-auto max-w-5xl animate-fade-in">
-          <nav
-            aria-label="Breadcrumb"
-            className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70"
-          >
-            <Link to="/" className="hover:text-accent transition-colors">
-              Home
-            </Link>
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
+            <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
             <span className="text-accent">Events</span>
           </nav>
           <h1 className="mt-5 font-serif">Events</h1>
           <p className="mt-5 max-w-2xl text-primary-foreground/85 md:text-lg">
-            Masterclasses, summits and member meetups designed to move you
-            forward as an investor.
+            Masterclasses, summits and member meetups designed to move you forward as an investor.
           </p>
         </div>
       </section>
 
-      {/* CONTENT */}
       <section className="py-16">
         <div className="mx-auto max-w-6xl px-4">
-          {/* Filter tabs */}
           <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
             {FILTERS.map((f) => (
               <button
@@ -158,9 +132,7 @@ function EventsPage() {
                 onClick={() => setFilter(f.id)}
                 className={cn(
                   "rounded-full px-5 py-2 text-sm font-medium transition-colors",
-                  filter === f.id
-                    ? "bg-primary text-primary-foreground shadow-[var(--shadow-elegant)]"
-                    : "text-muted-foreground hover:bg-secondary",
+                  filter === f.id ? "bg-primary text-primary-foreground shadow-[var(--shadow-elegant)]" : "text-muted-foreground hover:bg-secondary",
                 )}
               >
                 {f.label}
@@ -168,70 +140,42 @@ function EventsPage() {
             ))}
           </div>
 
-          {events.length === 0 ? (
+          {events === null ? (
+            <div className="mt-16 flex justify-center"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>
+          ) : filtered.length === 0 ? (
             <div className="mt-16 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-16 text-center">
               <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-accent/15 text-accent">
                 <CalendarX className="h-7 w-7" />
               </div>
-              <h3 className="mt-5 font-serif text-foreground">
-                No events scheduled — check back soon
-              </h3>
-              <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                New events are added regularly. Follow us or join the community
-                to be the first to hear.
-              </p>
+              <h3 className="mt-5 font-serif text-foreground">No events scheduled — check back soon</h3>
+              <p className="mt-2 max-w-sm text-sm text-muted-foreground">New events are added regularly.</p>
             </div>
           ) : (
             <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {events.map((e) => {
-                const db = dateBadge(e.date);
-                const isPast = new Date(e.date).getTime() < now;
+              {filtered.map((e) => {
+                const db = dateBadge(e.event_date);
+                const isPast = new Date(e.event_date).getTime() < now;
                 return (
-                  <Card
-                    key={e.id}
-                    className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale"
-                  >
-                    <div
-                      className="relative h-44 w-full"
-                      style={{ background: "var(--gradient-hero)" }}
-                    >
+                  <Card key={e.id} className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale">
+                    <div className="relative h-44 w-full bg-cover bg-center" style={{ background: e.image_url ? `url(${e.image_url}) center/cover` : "var(--gradient-hero)" }}>
                       <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
-                        <div className="font-serif text-xl leading-none">
-                          {db.d}
-                        </div>
-                        <div className="text-[10px] font-semibold tracking-widest">
-                          {db.m}
-                        </div>
+                        <div className="font-serif text-xl leading-none">{db.d}</div>
+                        <div className="text-[10px] font-semibold tracking-widest">{db.m}</div>
                       </div>
-                      {isPast && (
-                        <Badge className="absolute right-4 top-4 bg-background/80 text-foreground">
-                          Past
-                        </Badge>
-                      )}
+                      {isPast && <Badge className="absolute right-4 top-4 bg-background/80 text-foreground">Past</Badge>}
                     </div>
                     <CardContent className="p-6">
-                      <h3 className="font-serif text-lg text-foreground">
-                        {e.title}
-                      </h3>
+                      <h3 className="font-serif text-lg text-foreground">{e.title}</h3>
                       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        <span className="inline-flex items-center gap-1">
-                          <Calendar className="h-3.5 w-3.5" /> {formatDate(e.date)}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5" /> {e.location}
-                        </span>
+                        <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {formatDate(e.event_date)}{e.event_time && ` · ${e.event_time}`}</span>
+                        <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {e.location}</span>
                       </div>
-                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">
-                        {e.description}
-                      </p>
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">{e.description}</p>
                       <Button
-                        className={cn(
-                          "mt-5 w-full",
-                          !isPast &&
-                            "bg-accent text-accent-foreground hover:bg-accent/90",
-                        )}
+                        className={cn("mt-5 w-full", !isPast && "bg-accent text-accent-foreground hover:bg-accent/90")}
                         variant={isPast ? "outline" : "default"}
                         disabled={isPast}
+                        onClick={() => setRegistering(e)}
                       >
                         {isPast ? "Event Ended" : "Register"}
                       </Button>
@@ -243,6 +187,32 @@ function EventsPage() {
           )}
         </div>
       </section>
+
+      <Dialog open={!!registering} onOpenChange={(o) => !o && setRegistering(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Register for {registering?.title}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="grid gap-1.5">
+              <Label className="text-xs">Full name</Label>
+              <Input value={reg.full_name} onChange={(e) => setReg({ ...reg, full_name: e.target.value })} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label className="text-xs">Email</Label>
+              <Input type="email" value={reg.email} onChange={(e) => setReg({ ...reg, email: e.target.value })} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label className="text-xs">Phone (optional)</Label>
+              <Input value={reg.phone} onChange={(e) => setReg({ ...reg, phone: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRegistering(null)}>Cancel</Button>
+            <Button onClick={submitRegistration} disabled={submitting}>
+              {submitting && <Loader2 className="size-4 mr-2 animate-spin" />}Confirm Registration
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

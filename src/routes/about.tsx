@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Heart, Users, BookOpen, Sparkles, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/about")({
