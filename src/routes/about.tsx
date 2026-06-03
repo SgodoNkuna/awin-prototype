@@ -65,6 +65,18 @@ const partners = [
 ];
 
 function AboutPage() {
+  const [team, setTeam] = useState<TeamMember[]>(FALLBACK_TEAM);
+  useEffect(() => {
+    supabase
+      .from("team_members")
+      .select("id, name, title, bio, photo_url")
+      .eq("published", true)
+      .order("order_index")
+      .then(({ data }) => {
+        if (data && data.length > 0) setTeam(data as TeamMember[]);
+      });
+  }, []);
+
   return (
     <>
       {/* HERO */}
