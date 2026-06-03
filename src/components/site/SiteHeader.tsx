@@ -18,7 +18,7 @@ const NAV = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { src, filter, cycle, variant } = useLogoTheme();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -65,6 +65,11 @@ export function SiteHeader() {
         <div className="hidden items-center gap-3 lg:flex">
           {user ? (
             <>
+              {isAdmin && (
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/admin">Admin</Link>
+                </Button>
+              )}
               <Button asChild variant="ghost" size="sm">
                 <Link to="/portal">My Portal</Link>
               </Button>
