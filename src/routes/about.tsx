@@ -47,37 +47,12 @@ const values = [
   },
 ];
 
-const team = [
-  {
-    name: "Thandiwe Mokoena",
-    title: "Founder & Chairperson",
-    bio: "Two decades in asset management. Passionate about closing the gender wealth gap across Africa.",
-  },
-  {
-    name: "Lerato Khumalo",
-    title: "Chief Executive Officer",
-    bio: "Former fintech operator turned community builder, leading A-WIN's day-to-day vision.",
-  },
-  {
-    name: "Naledi Dlamini",
-    title: "Head of Education",
-    bio: "Curriculum designer behind A-WIN's masterclasses, bootcamps and member learning paths.",
-  },
-  {
-    name: "Aisha Bello",
-    title: "Head of Partnerships",
-    bio: "Builds bridges with banks, brokers and corporate allies who share our mission.",
-  },
-  {
-    name: "Zanele Ngwenya",
-    title: "Community Director",
-    bio: "Hosts our chapters, retreats and member experiences across South Africa and beyond.",
-  },
-  {
-    name: "Refilwe Sithole",
-    title: "Investment Council Lead",
-    bio: "Chairs A-WIN's deal-flow circle and members-only advisory roundtables.",
-  },
+type TeamMember = { id: string; name: string; title: string; bio: string | null; photo_url: string | null };
+
+const FALLBACK_TEAM: TeamMember[] = [
+  { id: "f1", name: "Thandiwe Mokoena", title: "Founder & Chairperson", bio: "Two decades in asset management. Passionate about closing the gender wealth gap across Africa.", photo_url: null },
+  { id: "f2", name: "Lerato Khumalo", title: "Chief Executive Officer", bio: "Former fintech operator turned community builder, leading A-WIN's day-to-day vision.", photo_url: null },
+  { id: "f3", name: "Naledi Dlamini", title: "Head of Education", bio: "Curriculum designer behind A-WIN's masterclasses, bootcamps and member learning paths.", photo_url: null },
 ];
 
 const partners = [
