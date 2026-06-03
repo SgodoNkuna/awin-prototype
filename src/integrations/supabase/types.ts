@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       applications: {
         Row: {
+          admin_notes: string | null
           created_at: string
           email: string
           employer: string | null
@@ -32,6 +33,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           email: string
           employer?: string | null
@@ -48,6 +50,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           email?: string
           employer?: string | null
@@ -70,6 +73,8 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          is_archived: boolean
+          is_read: boolean
           message: string
           name: string
           subject: string
@@ -78,6 +83,8 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          is_archived?: boolean
+          is_read?: boolean
           message: string
           name: string
           subject: string
@@ -86,9 +93,211 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          is_archived?: boolean
+          is_read?: boolean
           message?: string
           name?: string
           subject?: string
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          created_at: string
+          file_path: string
+          folder: string
+          id: string
+          mime_type: string | null
+          name: string
+          size_bytes: number | null
+          uploaded_by: string | null
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          folder?: string
+          id?: string
+          mime_type?: string | null
+          name: string
+          size_bytes?: number | null
+          uploaded_by?: string | null
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          folder?: string
+          id?: string
+          mime_type?: string | null
+          name?: string
+          size_bytes?: number | null
+          uploaded_by?: string | null
+          visibility?: string
+        }
+        Relationships: []
+      }
+      event_registrations: {
+        Row: {
+          created_at: string
+          email: string
+          event_id: string
+          full_name: string
+          id: string
+          phone: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          event_id: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          event_id?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          description: string
+          event_date: string
+          event_time: string | null
+          event_type: string
+          id: string
+          image_url: string | null
+          location: string
+          max_attendees: number | null
+          published: boolean
+          registration_deadline: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          event_date: string
+          event_time?: string | null
+          event_type?: string
+          id?: string
+          image_url?: string | null
+          location: string
+          max_attendees?: number | null
+          published?: boolean
+          registration_deadline?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          event_date?: string
+          event_time?: string | null
+          event_type?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          max_attendees?: number | null
+          published?: boolean
+          registration_deadline?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      membership_tiers: {
+        Row: {
+          active: boolean
+          benefits: Json
+          featured: boolean
+          id: string
+          name: string
+          price_zar: number
+          tier: Database["public"]["Enums"]["membership_tier"]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          benefits?: Json
+          featured?: boolean
+          id?: string
+          name: string
+          price_zar?: number
+          tier: Database["public"]["Enums"]["membership_tier"]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          benefits?: Json
+          featured?: boolean
+          id?: string
+          name?: string
+          price_zar?: number
+          tier?: Database["public"]["Enums"]["membership_tier"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      news_articles: {
+        Row: {
+          author_name: string | null
+          category: string
+          content: string
+          cover_image: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          published: boolean
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_name?: string | null
+          category?: string
+          content?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string | null
+          category?: string
+          content?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -98,6 +307,10 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          joined_at: string | null
+          membership_status: string
+          membership_tier: Database["public"]["Enums"]["membership_tier"] | null
+          suspended: boolean
           updated_at: string
         }
         Insert: {
@@ -105,6 +318,12 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          joined_at?: string | null
+          membership_status?: string
+          membership_tier?:
+            | Database["public"]["Enums"]["membership_tier"]
+            | null
+          suspended?: boolean
           updated_at?: string
         }
         Update: {
@@ -112,6 +331,66 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          joined_at?: string | null
+          membership_status?: string
+          membership_tier?:
+            | Database["public"]["Enums"]["membership_tier"]
+            | null
+          suspended?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          bio: string | null
+          created_at: string
+          id: string
+          name: string
+          order_index: number
+          photo_url: string | null
+          published: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          order_index?: number
+          photo_url?: string | null
+          published?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          order_index?: number
+          photo_url?: string | null
+          published?: boolean
+          title?: string
           updated_at?: string
         }
         Relationships: []

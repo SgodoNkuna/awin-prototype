@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Heart, Users, BookOpen, Sparkles, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/about")({
@@ -45,37 +47,12 @@ const values = [
   },
 ];
 
-const team = [
-  {
-    name: "Thandiwe Mokoena",
-    title: "Founder & Chairperson",
-    bio: "Two decades in asset management. Passionate about closing the gender wealth gap across Africa.",
-  },
-  {
-    name: "Lerato Khumalo",
-    title: "Chief Executive Officer",
-    bio: "Former fintech operator turned community builder, leading A-WIN's day-to-day vision.",
-  },
-  {
-    name: "Naledi Dlamini",
-    title: "Head of Education",
-    bio: "Curriculum designer behind A-WIN's masterclasses, bootcamps and member learning paths.",
-  },
-  {
-    name: "Aisha Bello",
-    title: "Head of Partnerships",
-    bio: "Builds bridges with banks, brokers and corporate allies who share our mission.",
-  },
-  {
-    name: "Zanele Ngwenya",
-    title: "Community Director",
-    bio: "Hosts our chapters, retreats and member experiences across South Africa and beyond.",
-  },
-  {
-    name: "Refilwe Sithole",
-    title: "Investment Council Lead",
-    bio: "Chairs A-WIN's deal-flow circle and members-only advisory roundtables.",
-  },
+type TeamMember = { id: string; name: string; title: string; bio: string | null; photo_url: string | null };
+
+const FALLBACK_TEAM: TeamMember[] = [
+  { id: "f1", name: "Thandiwe Mokoena", title: "Founder & Chairperson", bio: "Two decades in asset management. Passionate about closing the gender wealth gap across Africa.", photo_url: null },
+  { id: "f2", name: "Lerato Khumalo", title: "Chief Executive Officer", bio: "Former fintech operator turned community builder, leading A-WIN's day-to-day vision.", photo_url: null },
+  { id: "f3", name: "Naledi Dlamini", title: "Head of Education", bio: "Curriculum designer behind A-WIN's masterclasses, bootcamps and member learning paths.", photo_url: null },
 ];
 
 const partners = [
@@ -88,6 +65,18 @@ const partners = [
 ];
 
 function AboutPage() {
+  const [team, setTeam] = useState<TeamMember[]>(FALLBACK_TEAM);
+  useEffect(() => {
+    supabase
+      .from("team_members")
+      .select("id, name, title, bio, photo_url")
+      .eq("published", true)
+      .order("order_index")
+      .then(({ data }) => {
+        if (data && data.length > 0) setTeam(data as TeamMember[]);
+      });
+  }, []);
+
   return (
     <>
       {/* HERO */}
@@ -197,24 +186,18 @@ function AboutPage() {
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {team.map((m) => (
               <Card
-                key={m.name}
+                key={m.id}
                 className="border-border/60 text-center shadow-[var(--shadow-elegant)] hover-scale"
               >
                 <CardContent className="p-7">
                   <div
-                    className="mx-auto h-28 w-28 rounded-full"
-                    style={{ background: "var(--gradient-hero)" }}
+                    className="mx-auto h-28 w-28 rounded-full bg-cover bg-center"
+                    style={{ background: m.photo_url ? `url(${m.photo_url}) center/cover` : "var(--gradient-hero)" }}
                     aria-hidden="true"
                   />
-                  <h3 className="mt-5 font-serif text-lg text-foreground">
-                    {m.name}
-                  </h3>
-                  <div className="text-sm font-medium text-accent">
-                    {m.title}
-                  </div>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {m.bio}
-                  </p>
+                  <h3 className="mt-5 font-serif text-lg text-foreground">{m.name}</h3>
+                  <div className="text-sm font-medium text-accent">{m.title}</div>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{m.bio}</p>
                 </CardContent>
               </Card>
             ))}
