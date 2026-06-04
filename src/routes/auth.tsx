@@ -83,11 +83,20 @@ function AuthPage() {
 
   return (
     <div className="container mx-auto flex min-h-[80vh] items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md border-border bg-card text-card-foreground shadow-[var(--shadow-elegant)]">
         <CardHeader>
-          <CardTitle className="font-serif text-2xl text-center">Member Portal</CardTitle>
+          <CardTitle className="font-serif text-2xl text-center text-foreground">Member Portal</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Dummy test credentials banner */}
+          <div className="mb-5 rounded-lg border border-accent/40 bg-accent/10 p-3 text-sm text-foreground">
+            <p className="font-semibold text-foreground mb-1">Test logins (dev only)</p>
+            <ul className="space-y-0.5 text-foreground/90">
+              <li><span className="font-medium">Admin:</span> admin@awin.test / Test@Admin1</li>
+              <li><span className="font-medium">Member:</span> member@awin.test / Test@Member1</li>
+            </ul>
+          </div>
+
           <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -96,15 +105,19 @@ function AuthPage() {
 
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4 mt-4">
-                <div>
-                  <Label htmlFor="si-email">Email</Label>
-                  <Input id="si-email" name="email" type="email" required maxLength={255} />
+                <div className="space-y-1.5">
+                  <Label htmlFor="si-email" className="text-foreground">Email</Label>
+                  <Input id="si-email" name="email" type="email" required maxLength={255}
+                    defaultValue="admin@awin.test"
+                    className="bg-background text-foreground placeholder:text-muted-foreground" />
                 </div>
-                <div>
-                  <Label htmlFor="si-password">Password</Label>
-                  <Input id="si-password" name="password" type="password" required maxLength={72} />
+                <div className="space-y-1.5">
+                  <Label htmlFor="si-password" className="text-foreground">Password</Label>
+                  <Input id="si-password" name="password" type="password" required maxLength={72}
+                    defaultValue="Test@Admin1"
+                    className="bg-background text-foreground placeholder:text-muted-foreground" />
                 </div>
-                <Button type="submit" className="w-full" disabled={busy}>
+                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={busy}>
                   {busy && <Loader2 className="size-4 animate-spin mr-2" />}
                   Sign In
                 </Button>
@@ -113,19 +126,22 @@ function AuthPage() {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4 mt-4">
-                <div>
-                  <Label htmlFor="su-name">Full Name</Label>
-                  <Input id="su-name" name="full_name" required maxLength={120} />
+                <div className="space-y-1.5">
+                  <Label htmlFor="su-name" className="text-foreground">Full Name</Label>
+                  <Input id="su-name" name="full_name" required maxLength={120}
+                    className="bg-background text-foreground placeholder:text-muted-foreground" />
                 </div>
-                <div>
-                  <Label htmlFor="su-email">Email</Label>
-                  <Input id="su-email" name="email" type="email" required maxLength={255} />
+                <div className="space-y-1.5">
+                  <Label htmlFor="su-email" className="text-foreground">Email</Label>
+                  <Input id="su-email" name="email" type="email" required maxLength={255}
+                    className="bg-background text-foreground placeholder:text-muted-foreground" />
                 </div>
-                <div>
-                  <Label htmlFor="su-password">Password</Label>
-                  <Input id="su-password" name="password" type="password" required minLength={6} maxLength={72} />
+                <div className="space-y-1.5">
+                  <Label htmlFor="su-password" className="text-foreground">Password</Label>
+                  <Input id="su-password" name="password" type="password" required minLength={6} maxLength={72}
+                    className="bg-background text-foreground placeholder:text-muted-foreground" />
                 </div>
-                <Button type="submit" className="w-full" disabled={busy}>
+                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={busy}>
                   {busy && <Loader2 className="size-4 animate-spin mr-2" />}
                   Create Account
                 </Button>
@@ -141,3 +157,4 @@ function AuthPage() {
     </div>
   );
 }
+
