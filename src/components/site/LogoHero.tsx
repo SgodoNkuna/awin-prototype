@@ -181,14 +181,7 @@ export function LogoHero() {
           className="mt-10 flex flex-wrap items-center justify-center gap-4"
         >
           <Link to="/membership">
-            <GlassButton
-              size="lg"
-              className="!text-white"
-              style={{
-                background:
-                  "linear-gradient(135deg, oklch(0.78 0.16 65) 0%, oklch(0.62 0.19 45) 100%)",
-              }}
-            >
+            <GlassButton size="lg" className="!text-white border border-accent/60 shadow-[var(--shadow-gold-glow)]">
               Become a Member
               <ArrowRight className="ml-1 h-4 w-4" />
             </GlassButton>
