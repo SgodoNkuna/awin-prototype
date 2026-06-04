@@ -1,15 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  ChevronDown,
   Calendar,
   MapPin,
   Check,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { LogoHero } from "@/components/site/LogoHero";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -130,58 +130,9 @@ const articles = [
 function Index() {
   return (
     <>
-      {/* HERO */}
-      <section
-        className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4 py-24 text-primary-foreground"
-        style={{ background: "var(--gradient-hero)" }}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-25" />
-        <div className="absolute inset-0 bg-black/30" />
+      {/* HERO with animated A-WIN logos */}
+      <LogoHero />
 
-        <div className="relative mx-auto max-w-4xl text-center animate-fade-in">
-          <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-accent">
-            <Sparkles className="h-3.5 w-3.5" />
-            African Women in Investment Network
-          </span>
-
-          <h1 className="mt-6 font-serif text-primary-foreground">
-            Empowering Women Through Investment
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-2xl text-base text-primary-foreground/85 md:text-lg">
-            A-WIN is a community of women building wealth, knowledge, and legacy
-            together.
-          </p>
-
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Button
-              asChild
-              size="lg"
-              className="bg-accent text-accent-foreground shadow-[var(--shadow-gold-glow)] hover:bg-accent/90"
-            >
-              <a href="/membership">
-                Become a Member <ArrowRight className="ml-1 h-4 w-4" />
-              </a>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-            >
-              <Link to="/about">Learn More</Link>
-            </Button>
-          </div>
-        </div>
-
-        <a
-          href="#mission"
-          aria-label="Scroll down"
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-primary-foreground/70 hover:text-accent transition-colors"
-        >
-          <ChevronDown className="h-7 w-7 animate-bounce" />
-        </a>
-      </section>
 
       {/* MISSION STRIP */}
       <section id="mission" className="border-b border-border bg-card py-14">

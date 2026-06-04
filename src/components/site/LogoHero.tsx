@@ -1,0 +1,191 @@
+import { motion, useInView } from "framer-motion";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { useMemo, useRef } from "react";
+import { Link } from "@tanstack/react-router";
+import { useLogoTheme } from "@/lib/logo-theme";
+import { GlassButton } from "@/components/ui/glass-button";
+
+/** Words pull up from the bottom with stagger */
+function WordsPullUp({
+  text,
+  className = "",
+  delay = 0,
+}: {
+  text: string;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const isInView = useInView(ref, { once: true });
+  const words = text.split(" ");
+
+  return (
+    <h1 ref={ref} className={className} aria-label={text}>
+      {words.map((word, i) => (
+        <span key={i} className="inline-block overflow-hidden pb-1">
+          <motion.span
+            className="inline-block"
+            initial={{ y: "100%", opacity: 0 }}
+            animate={isInView ? { y: 0, opacity: 1 } : {}}
+            transition={{
+              duration: 0.7,
+              delay: delay + i * 0.08,
+              ease: [0.215, 0.61, 0.355, 1],
+            }}
+          >
+            {word}&nbsp;
+          </motion.span>
+        </span>
+      ))}
+    </h1>
+  );
+}
+
+/** A single floating logo that drifts across the hero */
+function FloatingLogo({
+  src,
+  filter,
+  index,
+  total,
+}: {
+  src: string;
+  filter?: string;
+  index: number;
+  total: number;
+}) {
+  // Stable deterministic random per index
+  const { startX, startY, scale, duration, rotateRange } = useMemo(() => {
+    const seed = (index + 1) * 9301 + 49297;
+    const r = (n: number) => ((Math.sin(seed * (n + 1)) + 1) / 2);
+    return {
+      startX: r(1) * 100,
+      startY: r(2) * 100,
+      scale: 0.35 + r(3) * 0.9,
+      duration: 18 + r(4) * 14,
+      rotateRange: -20 + r(5) * 40,
+    };
+  }, [index]);
+
+  return (
+    <motion.img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      className="pointer-events-none absolute will-change-transform select-none"
+      draggable={false}
+      style={{
+        left: `${startX}%`,
+        top: `${startY}%`,
+        width: `${110 * scale}px`,
+        height: "auto",
+        filter: filter ?? "none",
+        opacity: 0.18 + (index / total) * 0.18,
+      }}
+      animate={{
+        x: [0, 40, -30, 20, 0],
+        y: [0, -50, 30, -20, 0],
+        rotate: [0, rotateRange, -rotateRange / 2, rotateRange / 3, 0],
+        scale: [1, 1.08, 0.95, 1.04, 1],
+      }}
+      transition={{
+        duration,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: index * 0.4,
+      }}
+    />
+  );
+}
+
+export function LogoHero() {
+  const { src, filter } = useLogoTheme();
+  const logoCount = 14;
+
+  return (
+    <section className="relative isolate flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-4 py-24 text-primary-foreground">
+      {/* Brand gradient backdrop */}
+      <div
+        className="absolute inset-0 -z-30"
+        style={{ background: "var(--gradient-hero)" }}
+      />
+      {/* Warm radial wash */}
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-30" />
+
+      {/* Animated floating logos */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        {Array.from({ length: logoCount }).map((_, i) => (
+          <FloatingLogo
+            key={i}
+            src={src}
+            filter={filter}
+            index={i}
+            total={logoCount}
+          />
+        ))}
+      </div>
+
+      {/* Hero feature logo, slow pulse */}
+      <motion.img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 -z-10 w-[min(70vw,560px)] -translate-x-1/2 -translate-y-1/2 select-none"
+        style={{ filter, opacity: 0.08 }}
+        animate={{ scale: [1, 1.06, 1], rotate: [0, 3, 0] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        draggable={false}
+      />
+
+      {/* Vignette for legibility */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
+
+      {/* Content */}
+      <div className="relative mx-auto max-w-4xl text-center">
+        <motion.span
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/15 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-accent backdrop-blur-md"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          African Women in Investment Network
+        </motion.span>
+
+        <WordsPullUp
+          text="Empowering Women Through Investment"
+          delay={0.2}
+          className="mt-6 font-serif text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] text-primary-foreground drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
+        />
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.9 }}
+          className="mx-auto mt-6 max-w-2xl text-base md:text-lg text-primary-foreground/90"
+        >
+          A-WIN is a community of women building wealth, knowledge and legacy
+          together — through investment, education and a powerful peer network.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.1 }}
+          className="mt-10 flex flex-wrap items-center justify-center gap-4"
+        >
+          <Link to="/membership">
+            <GlassButton size="lg" className="text-primary-foreground">
+              Become a Member
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </GlassButton>
+          </Link>
+          <Link to="/about">
+            <GlassButton size="lg" className="text-primary-foreground">
+              Learn More
+            </GlassButton>
+          </Link>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
