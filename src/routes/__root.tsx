@@ -91,6 +91,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "A-WIN" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "A-WIN — African Women in Investment Network" },
+      { name: "description", content: "Design Journey builds a dynamic website with a customizable design system, user authentication, and membership management." },
+      { property: "og:description", content: "Design Journey builds a dynamic website with a customizable design system, user authentication, and membership management." },
+      { name: "twitter:description", content: "Design Journey builds a dynamic website with a customizable design system, user authentication, and membership management." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b240bc42-4d15-4515-bb80-40b029e64254/id-preview-3d7a288f--b9ae37ad-29dc-491c-af3f-ec92450ccff6.lovable.app-1780534163681.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b240bc42-4d15-4515-bb80-40b029e64254/id-preview-3d7a288f--b9ae37ad-29dc-491c-af3f-ec92450ccff6.lovable.app-1780534163681.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
