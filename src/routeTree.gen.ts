@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WhyJoinRouteImport } from './routes/why-join'
+import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as MembershipRouteImport } from './routes/membership'
+import { Route as HowToJoinRouteImport } from './routes/how-to-join'
+import { Route as FaqsRouteImport } from './routes/faqs'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CommitteeRouteImport } from './routes/committee'
+import { Route as BenefitsRouteImport } from './routes/benefits'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
@@ -28,6 +34,16 @@ import { Route as AdminEventsRouteImport } from './routes/admin.events'
 import { Route as AdminDocumentsRouteImport } from './routes/admin.documents'
 import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
 
+const WhyJoinRoute = WhyJoinRouteImport.update({
+  id: '/why-join',
+  path: '/why-join',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
@@ -43,6 +59,16 @@ const MembershipRoute = MembershipRouteImport.update({
   path: '/membership',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HowToJoinRoute = HowToJoinRouteImport.update({
+  id: '/how-to-join',
+  path: '/how-to-join',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqsRoute = FaqsRouteImport.update({
+  id: '/faqs',
+  path: '/faqs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsRoute = EventsRouteImport.update({
   id: '/events',
   path: '/events',
@@ -51,6 +77,16 @@ const EventsRoute = EventsRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommitteeRoute = CommitteeRouteImport.update({
+  id: '/committee',
+  path: '/committee',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BenefitsRoute = BenefitsRouteImport.update({
+  id: '/benefits',
+  path: '/benefits',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -124,11 +160,17 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/benefits': typeof BenefitsRoute
+  '/committee': typeof CommitteeRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
+  '/faqs': typeof FaqsRoute
+  '/how-to-join': typeof HowToJoinRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRouteWithChildren
   '/portal': typeof PortalRoute
+  '/resources': typeof ResourcesRoute
+  '/why-join': typeof WhyJoinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
@@ -143,11 +185,17 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/benefits': typeof BenefitsRoute
+  '/committee': typeof CommitteeRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
+  '/faqs': typeof FaqsRoute
+  '/how-to-join': typeof HowToJoinRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRouteWithChildren
   '/portal': typeof PortalRoute
+  '/resources': typeof ResourcesRoute
+  '/why-join': typeof WhyJoinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
@@ -164,11 +212,17 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/benefits': typeof BenefitsRoute
+  '/committee': typeof CommitteeRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
+  '/faqs': typeof FaqsRoute
+  '/how-to-join': typeof HowToJoinRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRouteWithChildren
   '/portal': typeof PortalRoute
+  '/resources': typeof ResourcesRoute
+  '/why-join': typeof WhyJoinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
@@ -186,11 +240,17 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/auth'
+    | '/benefits'
+    | '/committee'
     | '/contact'
     | '/events'
+    | '/faqs'
+    | '/how-to-join'
     | '/membership'
     | '/news'
     | '/portal'
+    | '/resources'
+    | '/why-join'
     | '/admin/applications'
     | '/admin/documents'
     | '/admin/events'
@@ -205,11 +265,17 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/benefits'
+    | '/committee'
     | '/contact'
     | '/events'
+    | '/faqs'
+    | '/how-to-join'
     | '/membership'
     | '/news'
     | '/portal'
+    | '/resources'
+    | '/why-join'
     | '/admin/applications'
     | '/admin/documents'
     | '/admin/events'
@@ -225,11 +291,17 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/auth'
+    | '/benefits'
+    | '/committee'
     | '/contact'
     | '/events'
+    | '/faqs'
+    | '/how-to-join'
     | '/membership'
     | '/news'
     | '/portal'
+    | '/resources'
+    | '/why-join'
     | '/admin/applications'
     | '/admin/documents'
     | '/admin/events'
@@ -246,15 +318,35 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BenefitsRoute: typeof BenefitsRoute
+  CommitteeRoute: typeof CommitteeRoute
   ContactRoute: typeof ContactRoute
   EventsRoute: typeof EventsRoute
+  FaqsRoute: typeof FaqsRoute
+  HowToJoinRoute: typeof HowToJoinRoute
   MembershipRoute: typeof MembershipRoute
   NewsRoute: typeof NewsRouteWithChildren
   PortalRoute: typeof PortalRoute
+  ResourcesRoute: typeof ResourcesRoute
+  WhyJoinRoute: typeof WhyJoinRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/why-join': {
+      id: '/why-join'
+      path: '/why-join'
+      fullPath: '/why-join'
+      preLoaderRoute: typeof WhyJoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portal': {
       id: '/portal'
       path: '/portal'
@@ -276,6 +368,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MembershipRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/how-to-join': {
+      id: '/how-to-join'
+      path: '/how-to-join'
+      fullPath: '/how-to-join'
+      preLoaderRoute: typeof HowToJoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faqs': {
+      id: '/faqs'
+      path: '/faqs'
+      fullPath: '/faqs'
+      preLoaderRoute: typeof FaqsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events': {
       id: '/events'
       path: '/events'
@@ -288,6 +394,20 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/committee': {
+      id: '/committee'
+      path: '/committee'
+      fullPath: '/committee'
+      preLoaderRoute: typeof CommitteeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/benefits': {
+      id: '/benefits'
+      path: '/benefits'
+      fullPath: '/benefits'
+      preLoaderRoute: typeof BenefitsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -423,11 +543,17 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  BenefitsRoute: BenefitsRoute,
+  CommitteeRoute: CommitteeRoute,
   ContactRoute: ContactRoute,
   EventsRoute: EventsRoute,
+  FaqsRoute: FaqsRoute,
+  HowToJoinRoute: HowToJoinRoute,
   MembershipRoute: MembershipRoute,
   NewsRoute: NewsRouteWithChildren,
   PortalRoute: PortalRoute,
+  ResourcesRoute: ResourcesRoute,
+  WhyJoinRoute: WhyJoinRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

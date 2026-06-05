@@ -22,9 +22,13 @@ export function SiteFooter() {
         <div>
           <h4 className="font-serif text-base text-accent">Quick Links</h4>
           <ul className="mt-4 space-y-2 text-sm">
-            <li><Link to="/about" className="text-primary-foreground/80 hover:text-accent">About</Link></li>
-            <li><Link to="/events" className="text-primary-foreground/80 hover:text-accent">Events</Link></li>
-            <li><Link to="/news" className="text-primary-foreground/80 hover:text-accent">News</Link></li>
+            <li><Link to="/about" className="text-primary-foreground/80 hover:text-accent">About A-Win</Link></li>
+            <li><Link to="/committee" className="text-primary-foreground/80 hover:text-accent">Committee</Link></li>
+            <li><Link to="/why-join" className="text-primary-foreground/80 hover:text-accent">Why Join?</Link></li>
+            <li><Link to="/benefits" className="text-primary-foreground/80 hover:text-accent">Benefits</Link></li>
+            <li><Link to="/how-to-join" className="text-primary-foreground/80 hover:text-accent">How to Join</Link></li>
+            <li><Link to="/faqs" className="text-primary-foreground/80 hover:text-accent">FAQs</Link></li>
+            <li><Link to="/resources" className="text-primary-foreground/80 hover:text-accent">Resources</Link></li>
             <li><Link to="/contact" className="text-primary-foreground/80 hover:text-accent">Contact</Link></li>
           </ul>
         </div>
