@@ -49,20 +49,25 @@ const values = [
 
 type TeamMember = { id: string; name: string; title: string; bio: string | null; photo_url: string | null };
 
+const PLACEHOLDER_BIO =
+  "Committee member profile coming soon. A-WIN's leadership team bios will be published here.";
+
 const FALLBACK_TEAM: TeamMember[] = [
-  { id: "f1", name: "Thandiwe Mokoena", title: "Founder & Chairperson", bio: "Two decades in asset management. Passionate about closing the gender wealth gap across Africa.", photo_url: null },
-  { id: "f2", name: "Lerato Khumalo", title: "Chief Executive Officer", bio: "Former fintech operator turned community builder, leading A-WIN's day-to-day vision.", photo_url: null },
-  { id: "f3", name: "Naledi Dlamini", title: "Head of Education", bio: "Curriculum designer behind A-WIN's masterclasses, bootcamps and member learning paths.", photo_url: null },
+  { id: "f1", name: "[Name TBC]", title: "[Role TBC]", bio: PLACEHOLDER_BIO, photo_url: null },
+  { id: "f2", name: "[Name TBC]", title: "[Role TBC]", bio: PLACEHOLDER_BIO, photo_url: null },
+  { id: "f3", name: "[Name TBC]", title: "[Role TBC]", bio: PLACEHOLDER_BIO, photo_url: null },
 ];
 
-const partners = [
-  "Sasfin",
-  "Old Mutual",
-  "Allan Gray",
-  "Investec",
-  "Nedbank",
-  "Discovery",
-];
+function initialsFor(name: string) {
+  const clean = name.replace(/\[|\]/g, "").trim();
+  if (!clean || clean.toLowerCase().includes("tbc")) return "?";
+  return clean
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 
 function AboutPage() {
   const [team, setTeam] = useState<TeamMember[]>(FALLBACK_TEAM);
