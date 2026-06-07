@@ -80,7 +80,7 @@ function FloatingLogo({
         width: `${110 * scale}px`,
         height: "auto",
         filter: filter ?? "none",
-        opacity: 0.18 + (index / total) * 0.18,
+        opacity: 0.4 + (index / total) * 0.4,
       }}
       animate={{
         x: [0, 40, -30, 20, 0],
