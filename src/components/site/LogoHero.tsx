@@ -1,9 +1,10 @@
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { useLogoTheme } from "@/lib/logo-theme";
 import { GlassButton } from "@/components/ui/glass-button";
+
 
 /** Words pull up from the bottom with stagger */
 function WordsPullUp({
