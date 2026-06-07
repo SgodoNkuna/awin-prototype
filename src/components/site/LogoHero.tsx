@@ -121,8 +121,11 @@ export function LogoHero() {
       {/* Warm radial wash */}
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-30" />
 
-      {/* Animated floating logos */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
+      {/* Animated floating logos with parallax */}
+      <motion.div
+        style={{ y: bgY }}
+        className="absolute inset-0 -z-10 overflow-hidden"
+      >
         {Array.from({ length: logoCount }).map((_, i) => (
           <FloatingLogo
             key={i}
@@ -132,7 +135,8 @@ export function LogoHero() {
             total={logoCount}
           />
         ))}
-      </div>
+      </motion.div>
+
 
       {/* Hero feature logo, slow pulse */}
       <motion.img
