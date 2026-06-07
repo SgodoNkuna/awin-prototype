@@ -144,7 +144,7 @@ export function LogoHero() {
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute left-1/2 top-1/2 -z-10 w-[min(70vw,560px)] -translate-x-1/2 -translate-y-1/2 select-none"
-        style={{ filter, opacity: 0.08 }}
+        style={{ filter, opacity: 0.22 }}
         animate={{ scale: [1, 1.06, 1], rotate: [0, 3, 0] }}
         transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         draggable={false}
@@ -154,7 +154,11 @@ export function LogoHero() {
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
 
       {/* Content */}
-      <div className="relative mx-auto max-w-4xl text-center">
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="relative mx-auto max-w-4xl text-center"
+      >
+
         <motion.span
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
