@@ -101,9 +101,18 @@ function FloatingLogo({
 export function LogoHero() {
   const { src, filter } = useLogoTheme();
   const logoCount = 14;
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollY } = useScroll();
+  const contentY = useTransform(scrollY, [0, 500], [0, 120]);
+  const contentOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const bgY = useTransform(scrollY, [0, 800], [0, -200]);
 
   return (
-    <section className="relative isolate flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-4 py-24 text-primary-foreground">
+    <section
+      ref={sectionRef}
+      className="relative isolate flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-4 py-24 text-primary-foreground"
+    >
+
       {/* Brand gradient backdrop */}
       <div
         className="absolute inset-0 -z-30"
