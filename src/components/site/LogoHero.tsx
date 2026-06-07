@@ -203,7 +203,7 @@ export function LogoHero() {
             </GlassButton>
           </Link>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }
