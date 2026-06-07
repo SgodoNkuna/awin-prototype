@@ -1,9 +1,10 @@
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { useLogoTheme } from "@/lib/logo-theme";
 import { GlassButton } from "@/components/ui/glass-button";
+
 
 /** Words pull up from the bottom with stagger */
 function WordsPullUp({
@@ -79,7 +80,7 @@ function FloatingLogo({
         width: `${110 * scale}px`,
         height: "auto",
         filter: filter ?? "none",
-        opacity: 0.18 + (index / total) * 0.18,
+        opacity: 0.4 + (index / total) * 0.4,
       }}
       animate={{
         x: [0, 40, -30, 20, 0],
@@ -100,9 +101,18 @@ function FloatingLogo({
 export function LogoHero() {
   const { src, filter } = useLogoTheme();
   const logoCount = 14;
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollY } = useScroll();
+  const contentY = useTransform(scrollY, [0, 500], [0, 120]);
+  const contentOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const bgY = useTransform(scrollY, [0, 800], [0, -200]);
 
   return (
-    <section className="relative isolate flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-4 py-24 text-primary-foreground">
+    <section
+      ref={sectionRef}
+      className="relative isolate flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-4 py-24 text-primary-foreground"
+    >
+
       {/* Brand gradient backdrop */}
       <div
         className="absolute inset-0 -z-30"
@@ -111,8 +121,11 @@ export function LogoHero() {
       {/* Warm radial wash */}
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-30" />
 
-      {/* Animated floating logos */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
+      {/* Animated floating logos with parallax */}
+      <motion.div
+        style={{ y: bgY }}
+        className="absolute inset-0 -z-10 overflow-hidden"
+      >
         {Array.from({ length: logoCount }).map((_, i) => (
           <FloatingLogo
             key={i}
@@ -122,7 +135,8 @@ export function LogoHero() {
             total={logoCount}
           />
         ))}
-      </div>
+      </motion.div>
+
 
       {/* Hero feature logo, slow pulse */}
       <motion.img
@@ -130,7 +144,7 @@ export function LogoHero() {
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute left-1/2 top-1/2 -z-10 w-[min(70vw,560px)] -translate-x-1/2 -translate-y-1/2 select-none"
-        style={{ filter, opacity: 0.08 }}
+        style={{ filter, opacity: 0.22 }}
         animate={{ scale: [1, 1.06, 1], rotate: [0, 3, 0] }}
         transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         draggable={false}
@@ -140,7 +154,11 @@ export function LogoHero() {
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
 
       {/* Content */}
-      <div className="relative mx-auto max-w-4xl text-center">
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="relative mx-auto max-w-4xl text-center"
+      >
+
         <motion.span
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -185,7 +203,7 @@ export function LogoHero() {
             </GlassButton>
           </Link>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }

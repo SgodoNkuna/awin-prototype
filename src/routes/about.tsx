@@ -49,20 +49,25 @@ const values = [
 
 type TeamMember = { id: string; name: string; title: string; bio: string | null; photo_url: string | null };
 
+const PLACEHOLDER_BIO =
+  "Committee member profile coming soon. A-WIN's leadership team bios will be published here.";
+
 const FALLBACK_TEAM: TeamMember[] = [
-  { id: "f1", name: "Thandiwe Mokoena", title: "Founder & Chairperson", bio: "Two decades in asset management. Passionate about closing the gender wealth gap across Africa.", photo_url: null },
-  { id: "f2", name: "Lerato Khumalo", title: "Chief Executive Officer", bio: "Former fintech operator turned community builder, leading A-WIN's day-to-day vision.", photo_url: null },
-  { id: "f3", name: "Naledi Dlamini", title: "Head of Education", bio: "Curriculum designer behind A-WIN's masterclasses, bootcamps and member learning paths.", photo_url: null },
+  { id: "f1", name: "[Name TBC]", title: "[Role TBC]", bio: PLACEHOLDER_BIO, photo_url: null },
+  { id: "f2", name: "[Name TBC]", title: "[Role TBC]", bio: PLACEHOLDER_BIO, photo_url: null },
+  { id: "f3", name: "[Name TBC]", title: "[Role TBC]", bio: PLACEHOLDER_BIO, photo_url: null },
 ];
 
-const partners = [
-  "Sasfin",
-  "Old Mutual",
-  "Allan Gray",
-  "Investec",
-  "Nedbank",
-  "Discovery",
-];
+function initialsFor(name: string) {
+  const clean = name.replace(/\[|\]/g, "").trim();
+  if (!clean || clean.toLowerCase().includes("tbc")) return "?";
+  return clean
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 
 function AboutPage() {
   const [team, setTeam] = useState<TeamMember[]>(FALLBACK_TEAM);
@@ -179,53 +184,61 @@ function AboutPage() {
             </span>
             <h2 className="mt-3 font-serif">Leadership</h2>
             <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-              The women behind A-WIN's strategy, education and community.
+              Meet Our Committee — Full profiles and photos coming soon.
             </p>
           </div>
 
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {team.map((m) => (
-              <Card
-                key={m.id}
-                className="border-border/60 text-center shadow-[var(--shadow-elegant)] hover-scale"
-              >
-                <CardContent className="p-7">
-                  <div
-                    className="mx-auto h-28 w-28 rounded-full bg-cover bg-center"
-                    style={{ background: m.photo_url ? `url(${m.photo_url}) center/cover` : "var(--gradient-hero)" }}
-                    aria-hidden="true"
-                  />
-                  <h3 className="mt-5 font-serif text-lg text-foreground">{m.name}</h3>
-                  <div className="text-sm font-medium text-accent">{m.title}</div>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{m.bio}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {team.map((m) => {
+              const isPlaceholder = !m.photo_url && m.name.includes("[");
+              return (
+                <Card
+                  key={m.id}
+                  className="border-border/60 text-center shadow-[var(--shadow-elegant)] hover-scale"
+                >
+                  <CardContent className="p-7">
+                    {isPlaceholder ? (
+                      <div
+                        className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-muted text-2xl font-serif text-muted-foreground"
+                        aria-hidden="true"
+                      >
+                        {initialsFor(m.name)}
+                      </div>
+                    ) : (
+                      <div
+                        className="mx-auto h-28 w-28 rounded-full bg-cover bg-center"
+                        style={{
+                          background: m.photo_url
+                            ? `url(${m.photo_url}) center/cover`
+                            : "var(--gradient-hero)",
+                        }}
+                        aria-hidden="true"
+                      />
+                    )}
+                    <h3 className="mt-5 font-serif text-lg text-foreground">{m.name}</h3>
+                    <div className="text-sm font-medium text-accent">{m.title}</div>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{m.bio}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* PARTNERS */}
-      <section className="border-t border-border bg-card py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-accent">
-              Our Partners
-            </span>
-            <h2 className="mt-3 font-serif">In Good Company</h2>
-          </div>
-          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {partners.map((p) => (
-              <div
-                key={p}
-                className="flex h-20 items-center justify-center rounded-xl border border-border/60 bg-background text-sm font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-accent"
-              >
-                {p}
-              </div>
-            ))}
-          </div>
+      <section className="border-t border-border bg-card py-20">
+        <div className="mx-auto max-w-3xl px-4 text-center">
+          <span className="text-xs font-semibold uppercase tracking-widest text-accent">
+            Our Partners
+          </span>
+          <h2 className="mt-3 font-serif">Our Partners</h2>
+          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+            A-WIN's partnerships will be announced here.
+          </p>
         </div>
       </section>
+
     </>
   );
 }
