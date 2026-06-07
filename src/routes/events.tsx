@@ -140,16 +140,43 @@ function EventsPage() {
             ))}
           </div>
 
+          <h2 className="mt-10 font-serif text-2xl text-foreground">Upcoming Events</h2>
+
           {events === null ? (
-            <div className="mt-16 flex justify-center"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>
+            <div className="mt-10 flex justify-center"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>
           ) : filtered.length === 0 ? (
-            <div className="mt-16 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-16 text-center">
-              <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-accent/15 text-accent">
-                <CalendarX className="h-7 w-7" />
+            <>
+              <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {[0, 1, 2].map((i) => (
+                  <Card key={i} className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)]">
+                    <div className="relative h-44 w-full bg-muted">
+                      <div className="absolute left-4 top-4 rounded-lg bg-accent/90 px-3 py-1.5 text-center text-accent-foreground shadow-md">
+                        <div className="font-serif text-xl leading-none">TBC</div>
+                        <div className="text-[10px] font-semibold tracking-widest">DATE</div>
+                      </div>
+                    </div>
+                    <CardContent className="p-6">
+                      <h3 className="font-serif text-lg text-foreground">Event details coming soon</h3>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> [Date TBC]</span>
+                        <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> [Location TBC]</span>
+                      </div>
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        Full event details will be announced soon.
+                      </p>
+                      <Button asChild className="mt-5 w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                        <Link to="/contact">Register Interest</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-              <h3 className="mt-5 font-serif text-foreground">No events scheduled — check back soon</h3>
-              <p className="mt-2 max-w-sm text-sm text-muted-foreground">New events are added regularly.</p>
-            </div>
+              <p className="mx-auto mt-10 max-w-2xl text-center text-sm leading-relaxed text-muted-foreground">
+                A-WIN hosts regular investment workshops, networking events, and
+                annual summits. Events are announced to members first. Join us
+                to be the first to know.
+              </p>
+            </>
           ) : (
             <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filtered.map((e) => {
@@ -187,6 +214,7 @@ function EventsPage() {
           )}
         </div>
       </section>
+
 
       <Dialog open={!!registering} onOpenChange={(o) => !o && setRegistering(null)}>
         <DialogContent>
