@@ -286,3 +286,8 @@
   --shadow-elegant: 0 10px 30px -10px oklch(0 0 0 / 0.55);
   --shadow-gold-glow: 0 0 0 1px oklch(0.97 0.005 85 / 0.35), 0 10px 30px -10px oklch(0.97 0.005 85 / 0.25);
 }
+
+/* A-WIN green accordion chevron */
+.awin-accordion [data-slot="accordion-trigger"] svg {
+  color: #4CAF25;
+}
