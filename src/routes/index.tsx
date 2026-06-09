@@ -143,7 +143,7 @@ function Index() {
               className="border-border/60 text-center shadow-[var(--shadow-elegant)]"
             >
               <CardContent className="p-8">
-                <div className="font-serif text-4xl text-primary">{s.value}</div>
+                <div className="font-serif text-2xl md:text-3xl text-primary">{s.value}</div>
                 <div className="mt-2 text-sm uppercase tracking-wider text-muted-foreground">
                   {s.label}
                 </div>
@@ -151,6 +151,9 @@ function Index() {
             </Card>
           ))}
         </div>
+        <p className="mx-auto mt-6 max-w-xl px-4 text-center text-xs italic text-muted-foreground">
+          Stats to be confirmed by A-WIN.
+        </p>
       </section>
 
       {/* ABOUT PREVIEW */}
