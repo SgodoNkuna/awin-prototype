@@ -297,7 +297,7 @@ function Index() {
                       <MapPin className="h-3.5 w-3.5" /> {e.location}
                     </div>
                     <Link
-                      to="/events"
+                      to="/contact"
                       className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
                     >
                       View Details <ArrowRight className="h-3.5 w-3.5" />
