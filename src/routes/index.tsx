@@ -377,9 +377,9 @@ function Index() {
             size="lg"
             className="mt-8 bg-foreground text-background hover:bg-foreground/90"
           >
-            <a href="/membership">
-              Become a Member Today <ArrowRight className="ml-1 h-4 w-4" />
-            </a>
+            <Link to="/how-to-join">
+              Discover How to Join <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
           </Button>
         </div>
       </section>
