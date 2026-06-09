@@ -32,9 +32,9 @@ export const Route = createFileRoute("/")({
 });
 
 const stats = [
-  { label: "Active Members", value: "1,200+" },
-  { label: "Years Running", value: "8" },
-  { label: "Investment Events", value: "150+" },
+  { label: "Members", value: "Growing Community" },
+  { label: "Events", value: "Regular Events" },
+  { label: "Founded", value: "Est. 2024" },
 ];
 
 const tiers = [
