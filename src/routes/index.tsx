@@ -242,7 +242,7 @@ function Index() {
                         : "mt-7 w-full"
                     }
                   >
-                    <a href="/membership">Join Now</a>
+                    <Link to="/how-to-join">Join Now</Link>
                   </Button>
                 </CardContent>
               </Card>
