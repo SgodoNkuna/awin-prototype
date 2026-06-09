@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WhyJoinRouteImport } from './routes/why-join'
+import { Route as ThemeLabRouteImport } from './routes/theme-lab'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as NewsRouteImport } from './routes/news'
@@ -37,6 +38,11 @@ import { Route as AdminApplicationsRouteImport } from './routes/admin.applicatio
 const WhyJoinRoute = WhyJoinRouteImport.update({
   id: '/why-join',
   path: '/why-join',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThemeLabRoute = ThemeLabRouteImport.update({
+  id: '/theme-lab',
+  path: '/theme-lab',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResourcesRoute = ResourcesRouteImport.update({
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/news': typeof NewsRouteWithChildren
   '/portal': typeof PortalRoute
   '/resources': typeof ResourcesRoute
+  '/theme-lab': typeof ThemeLabRoute
   '/why-join': typeof WhyJoinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/documents': typeof AdminDocumentsRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/news': typeof NewsRouteWithChildren
   '/portal': typeof PortalRoute
   '/resources': typeof ResourcesRoute
+  '/theme-lab': typeof ThemeLabRoute
   '/why-join': typeof WhyJoinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/documents': typeof AdminDocumentsRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/news': typeof NewsRouteWithChildren
   '/portal': typeof PortalRoute
   '/resources': typeof ResourcesRoute
+  '/theme-lab': typeof ThemeLabRoute
   '/why-join': typeof WhyJoinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/documents': typeof AdminDocumentsRoute
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/resources'
+    | '/theme-lab'
     | '/why-join'
     | '/admin/applications'
     | '/admin/documents'
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/resources'
+    | '/theme-lab'
     | '/why-join'
     | '/admin/applications'
     | '/admin/documents'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/resources'
+    | '/theme-lab'
     | '/why-join'
     | '/admin/applications'
     | '/admin/documents'
@@ -328,6 +340,7 @@ export interface RootRouteChildren {
   NewsRoute: typeof NewsRouteWithChildren
   PortalRoute: typeof PortalRoute
   ResourcesRoute: typeof ResourcesRoute
+  ThemeLabRoute: typeof ThemeLabRoute
   WhyJoinRoute: typeof WhyJoinRoute
 }
 
@@ -338,6 +351,13 @@ declare module '@tanstack/react-router' {
       path: '/why-join'
       fullPath: '/why-join'
       preLoaderRoute: typeof WhyJoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/theme-lab': {
+      id: '/theme-lab'
+      path: '/theme-lab'
+      fullPath: '/theme-lab'
+      preLoaderRoute: typeof ThemeLabRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/resources': {
@@ -553,6 +573,7 @@ const rootRouteChildren: RootRouteChildren = {
   NewsRoute: NewsRouteWithChildren,
   PortalRoute: PortalRoute,
   ResourcesRoute: ResourcesRoute,
+  ThemeLabRoute: ThemeLabRoute,
   WhyJoinRoute: WhyJoinRoute,
 }
 export const routeTree = rootRouteImport

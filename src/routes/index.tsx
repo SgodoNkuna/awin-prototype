@@ -32,9 +32,9 @@ export const Route = createFileRoute("/")({
 });
 
 const stats = [
-  { label: "Active Members", value: "1,200+" },
-  { label: "Years Running", value: "8" },
-  { label: "Investment Events", value: "150+" },
+  { label: "Members", value: "Growing Community" },
+  { label: "Events", value: "Regular Events" },
+  { label: "Founded", value: "Est. 2024" },
 ];
 
 const tiers = [
@@ -143,7 +143,7 @@ function Index() {
               className="border-border/60 text-center shadow-[var(--shadow-elegant)]"
             >
               <CardContent className="p-8">
-                <div className="font-serif text-4xl text-primary">{s.value}</div>
+                <div className="font-serif text-2xl md:text-3xl text-primary">{s.value}</div>
                 <div className="mt-2 text-sm uppercase tracking-wider text-muted-foreground">
                   {s.label}
                 </div>
@@ -151,6 +151,9 @@ function Index() {
             </Card>
           ))}
         </div>
+        <p className="mx-auto mt-6 max-w-xl px-4 text-center text-xs italic text-muted-foreground">
+          Stats to be confirmed by A-WIN.
+        </p>
       </section>
 
       {/* ABOUT PREVIEW */}
@@ -239,7 +242,7 @@ function Index() {
                         : "mt-7 w-full"
                     }
                   >
-                    <a href="/membership">Join Now</a>
+                    <Link to="/how-to-join">Join Now</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -259,7 +262,7 @@ function Index() {
               <h2 className="mt-3 font-serif">Upcoming Events</h2>
             </div>
             <Link
-              to="/events"
+              to="/resources"
               className="hidden text-sm font-medium text-primary story-link sm:inline-flex items-center gap-1"
             >
               All events <ArrowRight className="h-4 w-4" />
@@ -294,7 +297,7 @@ function Index() {
                       <MapPin className="h-3.5 w-3.5" /> {e.location}
                     </div>
                     <Link
-                      to="/events"
+                      to="/contact"
                       className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
                     >
                       View Details <ArrowRight className="h-3.5 w-3.5" />
@@ -374,9 +377,9 @@ function Index() {
             size="lg"
             className="mt-8 bg-foreground text-background hover:bg-foreground/90"
           >
-            <a href="/membership">
-              Become a Member Today <ArrowRight className="ml-1 h-4 w-4" />
-            </a>
+            <Link to="/how-to-join">
+              Discover How to Join <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
           </Button>
         </div>
       </section>
