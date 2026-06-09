@@ -262,7 +262,7 @@ function Index() {
               <h2 className="mt-3 font-serif">Upcoming Events</h2>
             </div>
             <Link
-              to="/events"
+              to="/resources"
               className="hidden text-sm font-medium text-primary story-link sm:inline-flex items-center gap-1"
             >
               All events <ArrowRight className="h-4 w-4" />
