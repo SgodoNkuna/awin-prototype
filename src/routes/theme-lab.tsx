@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, RotateCcw } from "lucide-react";
+import { ArrowRight, RotateCcw, Smartphone, Tablet, Monitor, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/theme-lab")({
   head: () => ({
@@ -34,8 +35,17 @@ const PRESETS: { name: string; primary: string; accent: string }[] = [
   { name: "Teal + Magenta", primary: "#0D9488", accent: "#DB2777" },
 ];
 
+const DEVICES = [
+  { id: "mobile", label: "Mobile", icon: Smartphone, width: 390 },
+  { id: "tablet", label: "Tablet", icon: Tablet, width: 768 },
+  { id: "desktop", label: "Desktop", icon: Monitor, width: 1280 },
+] as const;
+type DeviceId = (typeof DEVICES)[number]["id"];
+
+const STORAGE_KEY = "awin.theme-lab";
+const DEFAULTS = { primary: "#4CAF25", accent: "#E89B3F" };
+
 function hexToOklchString(hex: string): string {
-  // simple sRGB → OKLCH approximation
   const h = hex.replace("#", "");
   const r = parseInt(h.slice(0, 2), 16) / 255;
   const g = parseInt(h.slice(2, 4), 16) / 255;
@@ -54,9 +64,42 @@ function hexToOklchString(hex: string): string {
   return `oklch(${L.toFixed(3)} ${C.toFixed(3)} ${H.toFixed(1)})`;
 }
 
+function readInitialColors(): { primary: string; accent: string } {
+  if (typeof window === "undefined") return DEFAULTS;
+  // URL params win over localStorage
+  const params = new URLSearchParams(window.location.search);
+  const fromUrl = {
+    primary: params.get("primary"),
+    accent: params.get("accent"),
+  };
+  const isHex = (v: string | null) => !!v && /^#?[0-9a-fA-F]{6}$/.test(v);
+  const norm = (v: string) => (v.startsWith("#") ? v : `#${v}`);
+  if (isHex(fromUrl.primary) || isHex(fromUrl.accent)) {
+    return {
+      primary: isHex(fromUrl.primary) ? norm(fromUrl.primary!) : DEFAULTS.primary,
+      accent: isHex(fromUrl.accent) ? norm(fromUrl.accent!) : DEFAULTS.accent,
+    };
+  }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<typeof DEFAULTS>;
+      return {
+        primary: isHex(parsed.primary ?? null) ? parsed.primary! : DEFAULTS.primary,
+        accent: isHex(parsed.accent ?? null) ? parsed.accent! : DEFAULTS.accent,
+      };
+    }
+  } catch {
+    /* ignore */
+  }
+  return DEFAULTS;
+}
+
 function ThemeLab() {
-  const [primary, setPrimary] = useState("#4CAF25");
-  const [accent, setAccent] = useState("#E89B3F");
+  const initial = typeof window !== "undefined" ? readInitialColors() : DEFAULTS;
+  const [primary, setPrimary] = useState(initial.primary);
+  const [accent, setAccent] = useState(initial.accent);
+  const [device, setDevice] = useState<DeviceId>("desktop");
   const [originals, setOriginals] = useState<Partial<Record<VarName, string>>>({});
 
   // Capture originals once
@@ -67,12 +110,11 @@ function ThemeLab() {
     for (const v of VARS) snap[v] = cs.getPropertyValue(v).trim();
     setOriginals(snap);
     return () => {
-      // restore on unmount
       for (const v of VARS) root.style.removeProperty(v);
     };
   }, []);
 
-  // Apply colors live
+  // Apply colors live + persist
   useEffect(() => {
     const root = document.documentElement;
     const p = hexToOklchString(primary);
@@ -81,26 +123,46 @@ function ThemeLab() {
     root.style.setProperty("--primary-deep", p);
     root.style.setProperty("--accent", a);
     root.style.setProperty("--ring", a);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ primary, accent }));
+    } catch {
+      /* ignore */
+    }
   }, [primary, accent]);
 
   const reset = () => {
-    setPrimary("#4CAF25");
-    setAccent("#E89B3F");
+    setPrimary(DEFAULTS.primary);
+    setAccent(DEFAULTS.accent);
     const root = document.documentElement;
     for (const v of VARS) root.style.removeProperty(v);
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
   };
+
+  const copyShareUrl = async () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("primary", primary.replace("#", ""));
+    url.searchParams.set("accent", accent.replace("#", ""));
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      toast.success("Share link copied to clipboard");
+    } catch {
+      toast.error("Could not copy link");
+    }
+  };
+
+  const previewWidth = DEVICES.find((d) => d.id === device)!.width;
 
   return (
     <section className="py-12 md:py-16">
-      <div className="mx-auto max-w-5xl px-4">
+      <div className="mx-auto max-w-6xl px-4">
         <div className="mb-8 text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-accent">
             Internal
           </span>
           <h1 className="mt-3 font-serif">Theme Color Lab</h1>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Live-test how headings, buttons and links respond to different A-WIN
-            green and accent colors. Changes are preview-only — reload to revert.
+            Live-test colors and responsive breakpoints. Selections are saved
+            locally and can be shared via the link button.
           </p>
         </div>
 
@@ -145,9 +207,14 @@ function ThemeLab() {
 
             <div className="flex flex-col gap-2 text-sm font-medium">
               Actions
-              <Button variant="outline" onClick={reset}>
-                <RotateCcw className="mr-1 h-4 w-4" /> Reset to defaults
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={reset} className="flex-1">
+                  <RotateCcw className="mr-1 h-4 w-4" /> Reset
+                </Button>
+                <Button variant="outline" onClick={copyShareUrl} className="flex-1">
+                  <Share2 className="mr-1 h-4 w-4" /> Share
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -168,6 +235,53 @@ function ThemeLab() {
               {p.name}
             </button>
           ))}
+        </div>
+
+        {/* DEVICE TOGGLE */}
+        <div className="mt-10">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="font-serif text-foreground">Responsive preview</h3>
+            <div className="inline-flex rounded-md border border-border bg-card p-1">
+              {DEVICES.map((d) => {
+                const Icon = d.icon;
+                const active = d.id === device;
+                return (
+                  <button
+                    key={d.id}
+                    onClick={() => setDevice(d.id)}
+                    className={
+                      "flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors " +
+                      (active
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground/70 hover:bg-secondary")
+                    }
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {d.label}
+                    <span className="ml-1 text-[10px] opacity-70">{d.width}px</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-muted/30 p-3">
+            <div
+              className="mx-auto overflow-hidden rounded-md border border-border bg-background shadow-sm transition-all"
+              style={{ width: `${previewWidth}px`, maxWidth: "100%" }}
+            >
+              <iframe
+                key={device}
+                title="How to Join preview"
+                src="/how-to-join"
+                className="block h-[720px] w-full border-0"
+              />
+            </div>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Live preview of <code>/how-to-join</code> at {previewWidth}px — verify the 5-step
+              layout, spacing and headings scale correctly.
+            </p>
+          </div>
         </div>
 
         {/* PREVIEW: TYPOGRAPHY */}
@@ -208,32 +322,6 @@ function ThemeLab() {
                 <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                   <Link to="/how-to-join">CTA — How to Join <ArrowRight className="ml-1 h-4 w-4" /></Link>
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* PREVIEW: HERO STRIP */}
-          <Card className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)]">
-            <CardContent className="p-0">
-              <div
-                className="relative px-6 py-14 text-primary-foreground"
-                style={{ background: "var(--gradient-hero)" }}
-              >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-25" />
-                <div className="relative text-center">
-                  <h2 className="font-serif text-primary-foreground">How to Become an A-Winner</h2>
-                  <p className="mx-auto mt-3 max-w-xl text-primary-foreground/85">
-                    Hero preview — heading uses primary-foreground over the
-                    --gradient-hero token.
-                  </p>
-                  <Button
-                    asChild
-                    size="lg"
-                    className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90"
-                  >
-                    <Link to="/how-to-join">Open How to Join</Link>
-                  </Button>
-                </div>
               </div>
             </CardContent>
           </Card>
