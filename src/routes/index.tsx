@@ -153,6 +153,12 @@ const articles = [
 ];
 
 function Index() {
+  const liveStats = useHomepageStats();
+  const statCards = [
+    { label: "Members", value: liveStats.members },
+    { label: "Events", value: liveStats.events },
+    { label: "Founded", value: liveStats.years },
+  ];
   return (
     <>
       {/* HERO with animated A-WIN logos */}
@@ -162,7 +168,7 @@ function Index() {
       {/* MISSION STRIP */}
       <section id="mission" className="border-b border-border bg-card py-14">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 sm:grid-cols-3">
-          {stats.map((s) => (
+          {statCards.map((s) => (
             <Card
               key={s.label}
               className="border-border/60 text-center shadow-[var(--shadow-elegant)]"
