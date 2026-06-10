@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Calendar,
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LogoHero } from "@/components/site/LogoHero";
+import { supabase } from "@/integrations/supabase/client";
 
 
 export const Route = createFileRoute("/")({
@@ -31,11 +33,34 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const stats = [
-  { label: "Members", value: "Growing Community" },
-  { label: "Events", value: "Regular Events" },
-  { label: "Founded", value: "Est. 2024" },
-];
+const DEFAULT_STATS = {
+  members: "Growing Community",
+  events: "Regular Events",
+  years: "Est. 2024",
+};
+
+function useHomepageStats() {
+  const [stats, setStats] = useState(DEFAULT_STATS);
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "stats")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data?.value) return;
+        const v = data.value as Partial<typeof DEFAULT_STATS>;
+        setStats({
+          members: v.members || DEFAULT_STATS.members,
+          events: v.events || DEFAULT_STATS.events,
+          years: v.years || DEFAULT_STATS.years,
+        });
+      });
+    return () => { cancelled = true; };
+  }, []);
+  return stats;
+}
 
 const tiers = [
   {
@@ -128,6 +153,12 @@ const articles = [
 ];
 
 function Index() {
+  const liveStats = useHomepageStats();
+  const statCards = [
+    { label: "Members", value: liveStats.members },
+    { label: "Events", value: liveStats.events },
+    { label: "Founded", value: liveStats.years },
+  ];
   return (
     <>
       {/* HERO with animated A-WIN logos */}
@@ -137,7 +168,7 @@ function Index() {
       {/* MISSION STRIP */}
       <section id="mission" className="border-b border-border bg-card py-14">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 sm:grid-cols-3">
-          {stats.map((s) => (
+          {statCards.map((s) => (
             <Card
               key={s.label}
               className="border-border/60 text-center shadow-[var(--shadow-elegant)]"
