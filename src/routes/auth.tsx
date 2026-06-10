@@ -88,12 +88,12 @@ function AuthPage() {
           <CardTitle className="font-serif text-2xl text-center text-foreground">Member Portal</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Dummy test credentials banner */}
+          {/* Demo credentials banner */}
           <div className="mb-5 rounded-lg border border-accent/40 bg-accent/10 p-3 text-sm text-foreground">
-            <p className="font-semibold text-foreground mb-1">Test logins (dev only)</p>
+            <p className="font-semibold text-foreground mb-1">Demo logins (for testing)</p>
             <ul className="space-y-0.5 text-foreground/90">
-              <li><span className="font-medium">Admin:</span> admin@awin.test / Test@Admin1</li>
-              <li><span className="font-medium">Member:</span> member@awin.test / Test@Member1</li>
+              <li><span className="font-medium">Admin:</span> admin@awin.demo / AwinDemo!2026</li>
+              <li><span className="font-medium">Member:</span> member@awin.demo / AwinDemo!2026</li>
             </ul>
           </div>
 
@@ -108,13 +108,13 @@ function AuthPage() {
                 <div className="space-y-1.5">
                   <Label htmlFor="si-email" className="text-foreground">Email</Label>
                   <Input id="si-email" name="email" type="email" required maxLength={255}
-                    defaultValue="admin@awin.test"
+                    defaultValue="member@awin.demo"
                     className="bg-background text-foreground placeholder:text-muted-foreground" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="si-password" className="text-foreground">Password</Label>
                   <Input id="si-password" name="password" type="password" required maxLength={72}
-                    defaultValue="Test@Admin1"
+                    defaultValue="AwinDemo!2026"
                     className="bg-background text-foreground placeholder:text-muted-foreground" />
                 </div>
                 <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={busy}>
