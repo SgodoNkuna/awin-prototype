@@ -105,7 +105,7 @@ function PortalPage() {
       const [{ data: prof }, { data: appsData }, { data: ev }, { data: regs }, { data: dc }, { data: nw }] =
         await Promise.all([
           supabase.from("profiles").select("id,email,full_name,membership_tier,membership_status,joined_at").eq("id", user.id).maybeSingle(),
-          supabase.from("applications").select("id,full_name,email,tier,status,created_at").or(`user_id.eq.${user.id},email.eq.${user.email}`).order("created_at", { ascending: false }),
+          supabase.from("applications").select("id,full_name,email,tier,status,created_at,submitted_at,reviewed_at,decided_at,status_updated_at,admin_notes").or(`user_id.eq.${user.id},email.eq.${user.email}`).order("created_at", { ascending: false }),
           supabase.from("events").select("id,title,description,event_date,event_time,location,event_type").eq("published", true).gte("event_date", new Date().toISOString().slice(0, 10)).order("event_date").limit(5),
           supabase.from("event_registrations").select("event_id").eq("user_id", user.id),
           supabase.from("documents").select("id,name,folder,file_path,visibility").order("created_at", { ascending: false }).limit(10),
