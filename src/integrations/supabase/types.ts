@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           admin_notes: string | null
           created_at: string
+          decided_at: string | null
           email: string
           employer: string | null
           experience: Database["public"]["Enums"]["investment_experience"]
@@ -28,13 +29,18 @@ export type Database = {
           occupation: string
           phone: string
           referral: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["application_status"]
+          status_updated_at: string
+          submitted_at: string
           tier: Database["public"]["Enums"]["membership_tier"]
           user_id: string | null
         }
         Insert: {
           admin_notes?: string | null
           created_at?: string
+          decided_at?: string | null
           email: string
           employer?: string | null
           experience: Database["public"]["Enums"]["investment_experience"]
@@ -45,13 +51,18 @@ export type Database = {
           occupation: string
           phone: string
           referral?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["application_status"]
+          status_updated_at?: string
+          submitted_at?: string
           tier: Database["public"]["Enums"]["membership_tier"]
           user_id?: string | null
         }
         Update: {
           admin_notes?: string | null
           created_at?: string
+          decided_at?: string | null
           email?: string
           employer?: string | null
           experience?: Database["public"]["Enums"]["investment_experience"]
@@ -62,7 +73,11 @@ export type Database = {
           occupation?: string
           phone?: string
           referral?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["application_status"]
+          status_updated_at?: string
+          submitted_at?: string
           tier?: Database["public"]["Enums"]["membership_tier"]
           user_id?: string | null
         }
@@ -431,7 +446,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "member"
-      application_status: "pending" | "approved" | "rejected"
+      application_status: "pending" | "under_review" | "approved" | "rejected"
       investment_experience: "beginner" | "intermediate" | "advanced"
       membership_tier: "general" | "active" | "patron"
     }
@@ -562,7 +577,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "member"],
-      application_status: ["pending", "approved", "rejected"],
+      application_status: ["pending", "under_review", "approved", "rejected"],
       investment_experience: ["beginner", "intermediate", "advanced"],
       membership_tier: ["general", "active", "patron"],
     },
