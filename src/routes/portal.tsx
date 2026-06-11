@@ -204,7 +204,11 @@ function PortalPage() {
         </CardHeader>
         <CardContent>
           {apps === null ? (
-            <Loader2 className="size-5 animate-spin" />
+            <div className="space-y-3">
+              <Skeleton className="h-12 w-2/3" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-20 w-full" />
+            </div>
           ) : latest ? (
             <StatusCard app={latest} profile={profile} />
           ) : (
@@ -257,10 +261,11 @@ function PortalPage() {
                       <Button
                         size="sm"
                         variant={registered ? "outline" : "default"}
-                        disabled={registered}
+                        disabled={registered || registeringId === ev.id}
                         onClick={() => registerForEvent(ev.id)}
                       >
-                        {registered ? (<><CheckCircle2 className="size-4 mr-1" />Registered</>) : "Register"}
+                        {registered ? (<><CheckCircle2 className="size-4 mr-1" />Registered</>) :
+                          registeringId === ev.id ? (<><Loader2 className="size-4 mr-1 animate-spin" />Registering…</>) : "Register"}
                       </Button>
                     </div>
                   );
@@ -292,8 +297,9 @@ function PortalPage() {
                         </p>
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => downloadDoc(d)}>
-                      <Download className="size-4 mr-1" /> Open
+                    <Button size="sm" variant="outline" disabled={downloadingId === d.id} onClick={() => downloadDoc(d)}>
+                      {downloadingId === d.id ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Download className="size-4 mr-1" />}
+                      Open
                     </Button>
                   </div>
                 ))
