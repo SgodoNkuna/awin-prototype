@@ -136,28 +136,47 @@ function PortalPage() {
   const saveName = async () => {
     if (!fullName.trim()) return toast.error("Name can't be empty");
     setSavingName(true);
+    const tId = toast.loading("Saving your profile…");
     const { error } = await supabase.from("profiles").update({ full_name: fullName.trim() }).eq("id", user.id);
     setSavingName(false);
-    if (error) return toast.error(error.message);
-    toast.success("Profile updated");
+    if (error) {
+      toast.error(error.message, { id: tId });
+      return;
+    }
+    toast.success("Profile updated", { id: tId });
     setProfile((p) => (p ? { ...p, full_name: fullName.trim() } : p));
   };
 
+  const [registeringId, setRegisteringId] = useState<string | null>(null);
   const registerForEvent = async (eventId: string) => {
+    setRegisteringId(eventId);
+    const tId = toast.loading("Registering you for the event…");
     const { error } = await supabase.from("event_registrations").insert({
       event_id: eventId,
       user_id: user.id,
       full_name: profile?.full_name || user.email || "",
       email: user.email || "",
     });
-    if (error) return toast.error(error.message);
+    setRegisteringId(null);
+    if (error) {
+      toast.error(error.message, { id: tId });
+      return;
+    }
     setRegisteredIds((s) => new Set(s).add(eventId));
-    toast.success("You're registered. See you there!");
+    toast.success("You're registered. See you there!", { id: tId });
   };
 
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const downloadDoc = async (doc: DocRow) => {
+    setDownloadingId(doc.id);
+    const tId = toast.loading(`Preparing ${doc.name}…`);
     const { data, error } = await supabase.storage.from("documents").createSignedUrl(doc.file_path, 60);
-    if (error || !data) return toast.error("File not available yet");
+    setDownloadingId(null);
+    if (error || !data) {
+      toast.error("File not available yet", { id: tId });
+      return;
+    }
+    toast.success("Opening document", { id: tId });
     window.open(data.signedUrl, "_blank");
   };
 
