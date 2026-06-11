@@ -13,6 +13,8 @@ import {
   MapPin,
   Download,
   ExternalLink,
+  Eye,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/portal")({
@@ -36,6 +39,11 @@ type Application = {
   tier: string;
   status: string;
   created_at: string;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  decided_at: string | null;
+  status_updated_at: string | null;
+  admin_notes: string | null;
 };
 
 type Profile = {
