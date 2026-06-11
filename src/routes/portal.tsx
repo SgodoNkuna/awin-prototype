@@ -423,7 +423,8 @@ function QuickLink({ to, label, desc }: { to: string; label: string; desc: strin
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string; Icon: typeof Clock }> = {
-    pending: { label: "Pending Review", cls: "bg-muted text-muted-foreground", Icon: Clock },
+    pending: { label: "Submitted", cls: "bg-muted text-muted-foreground", Icon: Send },
+    under_review: { label: "Under Review", cls: "bg-amber-500/15 text-amber-700 dark:text-amber-400", Icon: Eye },
     approved: { label: "Approved", cls: "bg-green-500/15 text-green-700 dark:text-green-400", Icon: CheckCircle2 },
     rejected: { label: "Rejected", cls: "bg-destructive/15 text-destructive", Icon: XCircle },
     active: { label: "Active", cls: "bg-green-500/15 text-green-700 dark:text-green-400", Icon: CheckCircle2 },
@@ -436,12 +437,46 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function StatusTimeline({ app }: { app: Application }) {
+  const fmt = (d: string | null) => (d ? new Date(d).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : null);
+  const steps = [
+    { key: "submitted", label: "Submitted", at: fmt(app.submitted_at ?? app.created_at), Icon: Send, done: true },
+    { key: "under_review", label: "Under Review", at: fmt(app.reviewed_at), Icon: Eye, done: !!app.reviewed_at || ["under_review", "approved", "rejected"].includes(app.status) },
+    {
+      key: "decision",
+      label: app.status === "rejected" ? "Rejected" : "Accepted",
+      at: fmt(app.decided_at),
+      Icon: app.status === "rejected" ? XCircle : CheckCircle2,
+      done: ["approved", "rejected"].includes(app.status),
+    },
+  ];
+  return (
+    <ol className="relative space-y-4 border-l pl-5">
+      {steps.map((s) => (
+        <li key={s.key} className="relative">
+          <span
+            className={`absolute -left-[26px] flex size-5 items-center justify-center rounded-full ring-2 ring-background ${
+              s.done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+            }`}
+          >
+            <s.Icon className="size-3" />
+          </span>
+          <div className="flex flex-wrap items-baseline gap-x-3">
+            <p className={`text-sm font-medium ${s.done ? "text-foreground" : "text-muted-foreground"}`}>{s.label}</p>
+            <p className="text-xs text-muted-foreground">{s.at ?? "Pending"}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 function StatusCard({ app, profile }: { app: Application; profile: Profile | null }) {
   const tierLabel = (profile?.membership_tier || app.tier || "general");
   const display = tierLabel.charAt(0).toUpperCase() + tierLabel.slice(1) + " Member";
   const status = profile?.membership_status === "active" ? "active" : app.status;
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="size-12 rounded-full bg-accent/20 text-accent flex items-center justify-center">
@@ -452,21 +487,35 @@ function StatusCard({ app, profile }: { app: Application; profile: Profile | nul
             <p className="text-sm text-muted-foreground">
               {profile?.joined_at
                 ? `Joined ${new Date(profile.joined_at).toLocaleDateString()}`
-                : `Applied ${new Date(app.created_at).toLocaleDateString()}`}
+                : `Applied ${new Date(app.submitted_at ?? app.created_at).toLocaleDateString()}`}
             </p>
           </div>
         </div>
         <StatusBadge status={status} />
       </div>
 
+      <StatusTimeline app={app} />
+
+      {app.admin_notes && (
+        <div className="rounded-md border bg-muted/40 p-4 text-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Note from the committee</p>
+          <p className="whitespace-pre-wrap">{app.admin_notes}</p>
+        </div>
+      )}
+
       {status === "pending" && (
         <div className="rounded-md bg-muted/50 p-4 text-sm">
-          Your application is under review. We'll be in touch within 5 business days.
+          Your application has been submitted. The committee will begin reviewing it shortly.
+        </div>
+      )}
+      {status === "under_review" && (
+        <div className="rounded-md bg-amber-500/10 p-4 text-sm">
+          Your application is currently being reviewed. We aim to respond within 5 business days.
         </div>
       )}
       {status === "approved" && (
         <div className="rounded-md bg-green-500/10 p-4 text-sm">
-          🎉 Welcome to A-WIN! Your membership is active. Enjoy all your member benefits.
+          🎉 Welcome to A-WIN! Your membership has been approved.
         </div>
       )}
       {status === "active" && (
