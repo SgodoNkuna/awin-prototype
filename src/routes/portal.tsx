@@ -307,20 +307,25 @@ function PortalPage() {
                 <p className="text-muted-foreground text-sm">No documents available yet.</p>
               ) : (
                 docs.map((d) => (
-                  <div key={d.id} className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <FileText className="size-5 text-primary shrink-0" />
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{d.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {d.folder ?? "General"} · <span className="capitalize">{d.visibility}</span>
-                        </p>
+                  <div key={d.id} className="rounded-lg border bg-card p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <FileText className="size-5 text-primary shrink-0" />
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{d.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {d.folder ?? "General"} · <span className="capitalize">{d.visibility}</span>
+                          </p>
+                        </div>
                       </div>
+                      <Button size="sm" variant="outline" disabled={downloadingId === d.id} onClick={() => downloadDoc(d)}>
+                        {downloadingId === d.id ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Download className="size-4 mr-1" />}
+                        {downloadErrors[d.id] ? "Retry" : "Open"}
+                      </Button>
                     </div>
-                    <Button size="sm" variant="outline" disabled={downloadingId === d.id} onClick={() => downloadDoc(d)}>
-                      {downloadingId === d.id ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Download className="size-4 mr-1" />}
-                      Open
-                    </Button>
+                    {downloadErrors[d.id] && (
+                      <p className="text-xs text-destructive mt-2">{downloadErrors[d.id]}</p>
+                    )}
                   </div>
                 ))
               )}
