@@ -139,22 +139,28 @@ function PortalPage() {
   const greetingName = (profile?.full_name || user.email || "").split(" ")[0] || "there";
 
   const saveName = async () => {
-    if (!fullName.trim()) return toast.error("Name can't be empty");
+    const trimmed = fullName.trim();
+    if (!trimmed) {
+      setProfileError("Name can't be empty");
+      return toast.error("Name can't be empty");
+    }
+    setProfileError(null);
     setSavingName(true);
     const tId = toast.loading("Saving your profile…");
-    const { error } = await supabase.from("profiles").update({ full_name: fullName.trim() }).eq("id", user.id);
+    const { error } = await supabase.from("profiles").update({ full_name: trimmed }).eq("id", user.id);
     setSavingName(false);
     if (error) {
-      toast.error(error.message, { id: tId });
+      setProfileError(error.message);
+      toast.error(error.message, { id: tId, action: { label: "Retry", onClick: () => saveName() } });
       return;
     }
     toast.success("Profile updated", { id: tId });
-    setProfile((p) => (p ? { ...p, full_name: fullName.trim() } : p));
+    setProfile((p) => (p ? { ...p, full_name: trimmed } : p));
   };
 
-  const [registeringId, setRegisteringId] = useState<string | null>(null);
   const registerForEvent = async (eventId: string) => {
     setRegisteringId(eventId);
+    setRegisterErrors((e) => { const n = { ...e }; delete n[eventId]; return n; });
     const tId = toast.loading("Registering you for the event…");
     const { error } = await supabase.from("event_registrations").insert({
       event_id: eventId,
@@ -164,21 +170,24 @@ function PortalPage() {
     });
     setRegisteringId(null);
     if (error) {
-      toast.error(error.message, { id: tId });
+      setRegisterErrors((e) => ({ ...e, [eventId]: error.message }));
+      toast.error(error.message, { id: tId, action: { label: "Retry", onClick: () => registerForEvent(eventId) } });
       return;
     }
     setRegisteredIds((s) => new Set(s).add(eventId));
     toast.success("You're registered. See you there!", { id: tId });
   };
 
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const downloadDoc = async (doc: DocRow) => {
     setDownloadingId(doc.id);
+    setDownloadErrors((e) => { const n = { ...e }; delete n[doc.id]; return n; });
     const tId = toast.loading(`Preparing ${doc.name}…`);
     const { data, error } = await supabase.storage.from("documents").createSignedUrl(doc.file_path, 60);
     setDownloadingId(null);
     if (error || !data) {
-      toast.error("File not available yet", { id: tId });
+      const msg = error?.message ?? "File not available yet";
+      setDownloadErrors((e) => ({ ...e, [doc.id]: msg }));
+      toast.error(msg, { id: tId, action: { label: "Retry", onClick: () => downloadDoc(doc) } });
       return;
     }
     toast.success("Opening document", { id: tId });
