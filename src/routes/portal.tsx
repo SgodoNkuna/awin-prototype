@@ -94,6 +94,11 @@ function PortalPage() {
   const [news, setNews] = useState<NewsRow[]>([]);
   const [savingName, setSavingName] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [registeringId, setRegisteringId] = useState<string | null>(null);
+  const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadErrors, setDownloadErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
@@ -134,22 +139,28 @@ function PortalPage() {
   const greetingName = (profile?.full_name || user.email || "").split(" ")[0] || "there";
 
   const saveName = async () => {
-    if (!fullName.trim()) return toast.error("Name can't be empty");
+    const trimmed = fullName.trim();
+    if (!trimmed) {
+      setProfileError("Name can't be empty");
+      return toast.error("Name can't be empty");
+    }
+    setProfileError(null);
     setSavingName(true);
     const tId = toast.loading("Saving your profile…");
-    const { error } = await supabase.from("profiles").update({ full_name: fullName.trim() }).eq("id", user.id);
+    const { error } = await supabase.from("profiles").update({ full_name: trimmed }).eq("id", user.id);
     setSavingName(false);
     if (error) {
-      toast.error(error.message, { id: tId });
+      setProfileError(error.message);
+      toast.error(error.message, { id: tId, action: { label: "Retry", onClick: () => saveName() } });
       return;
     }
     toast.success("Profile updated", { id: tId });
-    setProfile((p) => (p ? { ...p, full_name: fullName.trim() } : p));
+    setProfile((p) => (p ? { ...p, full_name: trimmed } : p));
   };
 
-  const [registeringId, setRegisteringId] = useState<string | null>(null);
   const registerForEvent = async (eventId: string) => {
     setRegisteringId(eventId);
+    setRegisterErrors((e) => { const n = { ...e }; delete n[eventId]; return n; });
     const tId = toast.loading("Registering you for the event…");
     const { error } = await supabase.from("event_registrations").insert({
       event_id: eventId,
@@ -159,21 +170,24 @@ function PortalPage() {
     });
     setRegisteringId(null);
     if (error) {
-      toast.error(error.message, { id: tId });
+      setRegisterErrors((e) => ({ ...e, [eventId]: error.message }));
+      toast.error(error.message, { id: tId, action: { label: "Retry", onClick: () => registerForEvent(eventId) } });
       return;
     }
     setRegisteredIds((s) => new Set(s).add(eventId));
     toast.success("You're registered. See you there!", { id: tId });
   };
 
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const downloadDoc = async (doc: DocRow) => {
     setDownloadingId(doc.id);
+    setDownloadErrors((e) => { const n = { ...e }; delete n[doc.id]; return n; });
     const tId = toast.loading(`Preparing ${doc.name}…`);
     const { data, error } = await supabase.storage.from("documents").createSignedUrl(doc.file_path, 60);
     setDownloadingId(null);
     if (error || !data) {
-      toast.error("File not available yet", { id: tId });
+      const msg = error?.message ?? "File not available yet";
+      setDownloadErrors((e) => ({ ...e, [doc.id]: msg }));
+      toast.error(msg, { id: tId, action: { label: "Retry", onClick: () => downloadDoc(doc) } });
       return;
     }
     toast.success("Opening document", { id: tId });
@@ -258,15 +272,21 @@ function PortalPage() {
                           {ev.location && <span className="inline-flex items-center gap-1"><MapPin className="size-3" />{ev.location}</span>}
                         </div>
                       </div>
-                      <Button
-                        size="sm"
-                        variant={registered ? "outline" : "default"}
-                        disabled={registered || registeringId === ev.id}
-                        onClick={() => registerForEvent(ev.id)}
-                      >
-                        {registered ? (<><CheckCircle2 className="size-4 mr-1" />Registered</>) :
-                          registeringId === ev.id ? (<><Loader2 className="size-4 mr-1 animate-spin" />Registering…</>) : "Register"}
-                      </Button>
+                      <div className="flex flex-col items-end gap-1">
+                        <Button
+                          size="sm"
+                          variant={registered ? "outline" : "default"}
+                          disabled={registered || registeringId === ev.id}
+                          onClick={() => registerForEvent(ev.id)}
+                        >
+                          {registered ? (<><CheckCircle2 className="size-4 mr-1" />Registered</>) :
+                            registeringId === ev.id ? (<><Loader2 className="size-4 mr-1 animate-spin" />Registering…</>) :
+                            registerErrors[ev.id] ? "Retry" : "Register"}
+                        </Button>
+                        {registerErrors[ev.id] && (
+                          <p className="text-xs text-destructive max-w-[200px] text-right">{registerErrors[ev.id]}</p>
+                        )}
+                      </div>
                     </div>
                   );
                 })
@@ -287,20 +307,25 @@ function PortalPage() {
                 <p className="text-muted-foreground text-sm">No documents available yet.</p>
               ) : (
                 docs.map((d) => (
-                  <div key={d.id} className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <FileText className="size-5 text-primary shrink-0" />
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{d.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {d.folder ?? "General"} · <span className="capitalize">{d.visibility}</span>
-                        </p>
+                  <div key={d.id} className="rounded-lg border bg-card p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <FileText className="size-5 text-primary shrink-0" />
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{d.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {d.folder ?? "General"} · <span className="capitalize">{d.visibility}</span>
+                          </p>
+                        </div>
                       </div>
+                      <Button size="sm" variant="outline" disabled={downloadingId === d.id} onClick={() => downloadDoc(d)}>
+                        {downloadingId === d.id ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Download className="size-4 mr-1" />}
+                        {downloadErrors[d.id] ? "Retry" : "Open"}
+                      </Button>
                     </div>
-                    <Button size="sm" variant="outline" disabled={downloadingId === d.id} onClick={() => downloadDoc(d)}>
-                      {downloadingId === d.id ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Download className="size-4 mr-1" />}
-                      Open
-                    </Button>
+                    {downloadErrors[d.id] && (
+                      <p className="text-xs text-destructive mt-2">{downloadErrors[d.id]}</p>
+                    )}
                   </div>
                 ))
               )}
@@ -372,9 +397,12 @@ function PortalPage() {
                   <p className="font-medium capitalize">{profile?.membership_status ?? "—"}</p>
                 </div>
               </div>
+              {profileError && (
+                <p className="text-xs text-destructive">{profileError}</p>
+              )}
               <Button onClick={saveName} disabled={savingName}>
                 {savingName && <Loader2 className="size-4 animate-spin mr-2" />}
-                Save Changes
+                {profileError ? "Retry Save" : "Save Changes"}
               </Button>
             </CardContent>
           </Card>

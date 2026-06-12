@@ -38,7 +38,7 @@ export function SiteFooter() {
           <ul className="mt-4 space-y-2 text-sm">
             <li><Link to="/membership" className="text-primary-foreground/80 hover:text-accent">Become a Member</Link></li>
             <li><Link to="/membership" className="text-primary-foreground/80 hover:text-accent">Tiers & Benefits</Link></li>
-            <li><Link to="/login" className="text-primary-foreground/80 hover:text-accent">Member Login</Link></li>
+            <li><Link to="/auth" className="text-primary-foreground/80 hover:text-accent">Member Login</Link></li>
           </ul>
         </div>
 
