@@ -110,7 +110,7 @@ export function LogoHero() {
   return (
     <section
       ref={sectionRef}
-      className="relative isolate flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-4 py-24 text-primary-foreground"
+      className="relative isolate flex min-h-[calc(100vh-6rem)] items-center justify-center overflow-hidden px-4 py-20 text-primary-foreground md:min-h-[calc(100vh-7rem)] md:py-24"
     >
 
       {/* Brand gradient backdrop */}

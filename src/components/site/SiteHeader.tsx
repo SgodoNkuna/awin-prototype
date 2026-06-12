@@ -25,7 +25,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-8">
+      <div className="container mx-auto flex h-24 items-center justify-between px-4 md:h-28 md:px-8">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center" aria-label="A-WIN home">
             <button
@@ -41,7 +41,7 @@ export function SiteHeader() {
               <img
                 src={src}
                 alt="A-WIN — African Women Investment Network"
-                className="h-12 w-auto md:h-14"
+                className="h-16 w-auto md:h-20"
                 style={filter ? { filter } : undefined}
               />
             </button>
