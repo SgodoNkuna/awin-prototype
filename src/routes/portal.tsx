@@ -397,9 +397,12 @@ function PortalPage() {
                   <p className="font-medium capitalize">{profile?.membership_status ?? "—"}</p>
                 </div>
               </div>
+              {profileError && (
+                <p className="text-xs text-destructive">{profileError}</p>
+              )}
               <Button onClick={saveName} disabled={savingName}>
                 {savingName && <Loader2 className="size-4 animate-spin mr-2" />}
-                Save Changes
+                {profileError ? "Retry Save" : "Save Changes"}
               </Button>
             </CardContent>
           </Card>
