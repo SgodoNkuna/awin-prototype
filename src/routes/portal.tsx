@@ -94,6 +94,11 @@ function PortalPage() {
   const [news, setNews] = useState<NewsRow[]>([]);
   const [savingName, setSavingName] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [registeringId, setRegisteringId] = useState<string | null>(null);
+  const [registerErrors, setRegisterErrors] = useState<Record<string, string>>({});
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadErrors, setDownloadErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
