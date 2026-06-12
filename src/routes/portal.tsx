@@ -272,15 +272,21 @@ function PortalPage() {
                           {ev.location && <span className="inline-flex items-center gap-1"><MapPin className="size-3" />{ev.location}</span>}
                         </div>
                       </div>
-                      <Button
-                        size="sm"
-                        variant={registered ? "outline" : "default"}
-                        disabled={registered || registeringId === ev.id}
-                        onClick={() => registerForEvent(ev.id)}
-                      >
-                        {registered ? (<><CheckCircle2 className="size-4 mr-1" />Registered</>) :
-                          registeringId === ev.id ? (<><Loader2 className="size-4 mr-1 animate-spin" />Registering…</>) : "Register"}
-                      </Button>
+                      <div className="flex flex-col items-end gap-1">
+                        <Button
+                          size="sm"
+                          variant={registered ? "outline" : "default"}
+                          disabled={registered || registeringId === ev.id}
+                          onClick={() => registerForEvent(ev.id)}
+                        >
+                          {registered ? (<><CheckCircle2 className="size-4 mr-1" />Registered</>) :
+                            registeringId === ev.id ? (<><Loader2 className="size-4 mr-1 animate-spin" />Registering…</>) :
+                            registerErrors[ev.id] ? "Retry" : "Register"}
+                        </Button>
+                        {registerErrors[ev.id] && (
+                          <p className="text-xs text-destructive max-w-[200px] text-right">{registerErrors[ev.id]}</p>
+                        )}
+                      </div>
                     </div>
                   );
                 })
