@@ -25,7 +25,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="container mx-auto flex h-24 items-center justify-between px-4 md:h-28 md:px-8">
+      <div className="container mx-auto flex h-28 items-center justify-between px-4 md:h-32 md:px-8">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center" aria-label="A-WIN home">
             <button
@@ -34,14 +34,18 @@ export function SiteHeader() {
                 e.preventDefault();
                 cycle();
               }}
-              className="group rounded-md p-1 transition-transform hover:scale-105 active:scale-95"
+              className="group relative rounded-full p-1 transition-all duration-500 ease-out hover:scale-110 active:scale-95"
               aria-label={`Change theme (current: ${variant}). Click to cycle.`}
               title="Click logo to change theme"
             >
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle,var(--accent)_0%,transparent_70%)] opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-60"
+              />
               <img
                 src={src}
                 alt="A-WIN — African Women Investment Network"
-                className="h-16 w-auto md:h-20"
+                className="relative h-20 w-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.15)] transition-all duration-500 ease-out group-hover:drop-shadow-[0_4px_20px_var(--accent)] md:h-24"
                 style={filter ? { filter } : undefined}
               />
             </button>

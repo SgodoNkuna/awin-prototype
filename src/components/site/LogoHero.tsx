@@ -110,7 +110,7 @@ export function LogoHero() {
   return (
     <section
       ref={sectionRef}
-      className="relative isolate flex min-h-[calc(100vh-6rem)] items-center justify-center overflow-hidden px-4 py-20 text-primary-foreground md:min-h-[calc(100vh-7rem)] md:py-24"
+      className="relative isolate flex min-h-[calc(100vh-7rem)] items-center justify-center overflow-hidden px-4 py-20 text-primary-foreground md:min-h-[calc(100vh-8rem)] md:py-24"
     >
 
       {/* Brand gradient backdrop */}
@@ -118,8 +118,8 @@ export function LogoHero() {
         className="absolute inset-0 -z-30"
         style={{ background: "var(--gradient-hero)" }}
       />
-      {/* Warm radial wash */}
-      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-30" />
+      {/* Warm radial wash — subtler so it doesn't clash with non-warm themes */}
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-20" />
 
       {/* Animated floating logos with parallax */}
       <motion.div
