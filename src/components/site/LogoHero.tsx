@@ -118,8 +118,8 @@ export function LogoHero() {
         className="absolute inset-0 -z-30"
         style={{ background: "var(--gradient-hero)" }}
       />
-      {/* Warm radial wash */}
-      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-30" />
+      {/* Warm radial wash — subtler so it doesn't clash with non-warm themes */}
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-20" />
 
       {/* Animated floating logos with parallax */}
       <motion.div
