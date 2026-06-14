@@ -1,18 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 import { useLogoTheme } from "@/lib/logo-theme";
+import logoColor from "@/assets/awin-logo-color.png";
+import logoWhite from "@/assets/awin-logo-white.png";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
-  const { srcOnDark, variant } = useLogoTheme();
-  // Footer bg is var(--primary). Choose a logo asset that contrasts:
-  //   - white theme  → primary is near-white → use the color logo
-  //   - orange/black → primary is dark/saturated → use the white logo
-  //   - color (green) → use the white logo for contrast
-  const footerLogo =
-    variant === "white"
-      ? srcOnDark.replace(/awin-logo-white\.[a-z]+/, "awin-logo-color.png")
-      : srcOnDark;
+  const { variant } = useLogoTheme();
+  // Footer bg is var(--primary). Pick a logo with strong contrast on each theme:
+  //   white  → bg is near-white → use the color logo
+  //   others → bg is dark/saturated → use the white logo
+  const footerLogo = variant === "white" ? logoColor : logoWhite;
   return (
     <footer className="mt-24 border-t-4 border-accent bg-primary text-primary-foreground">
       <div className="container mx-auto grid gap-10 px-4 py-16 md:grid-cols-4 md:px-8">
