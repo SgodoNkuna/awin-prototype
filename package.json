@@ -9,7 +9,11 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:smoke": "vitest run tests/smoke-routes.test.ts tests/portfolio-rls-policy.test.ts",
+    "test:regression": "vitest run tests/admin-access.test.tsx tests/admin-portfolio-crud.test.tsx tests/portfolio-quickview.test.tsx"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
