@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as MembershipRouteImport } from './routes/membership'
 import { Route as EventsRouteImport } from './routes/events'
@@ -26,6 +27,11 @@ import { Route as AdminEventsRouteImport } from './routes/admin.events'
 import { Route as AdminDocumentsRouteImport } from './routes/admin.documents'
 import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
 
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRoute
   '/membership': typeof MembershipRoute
   '/portal': typeof PortalRoute
+  '/portfolio': typeof PortfolioRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRoute
   '/membership': typeof MembershipRoute
   '/portal': typeof PortalRoute
+  '/portfolio': typeof PortfolioRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/events': typeof EventsRoute
   '/membership': typeof MembershipRoute
   '/portal': typeof PortalRoute
+  '/portfolio': typeof PortfolioRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
@@ -172,6 +181,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/membership'
     | '/portal'
+    | '/portfolio'
     | '/admin/applications'
     | '/admin/documents'
     | '/admin/events'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/membership'
     | '/portal'
+    | '/portfolio'
     | '/admin/applications'
     | '/admin/documents'
     | '/admin/events'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/membership'
     | '/portal'
+    | '/portfolio'
     | '/admin/applications'
     | '/admin/documents'
     | '/admin/events'
@@ -226,10 +238,18 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRoute
   MembershipRoute: typeof MembershipRoute
   PortalRoute: typeof PortalRoute
+  PortfolioRoute: typeof PortfolioRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portal': {
       id: '/portal'
       path: '/portal'
@@ -378,6 +398,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRoute,
   MembershipRoute: MembershipRoute,
   PortalRoute: PortalRoute,
+  PortfolioRoute: PortfolioRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
