@@ -88,7 +88,7 @@ describe("Admin Portfolio CRUD (regression)", () => {
     await user.click(within(dialog).getByRole("button", { name: /^Save$/i }));
 
     await waitFor(() => {
-      expect(sb.from).toHaveBeenCalledWith("portfolio_items");
+      expect(sbRef.current!.from).toHaveBeenCalledWith("portfolio_items");
     });
     expect(toastError).not.toHaveBeenCalledWith("Title is required.");
   });
