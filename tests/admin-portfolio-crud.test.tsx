@@ -36,13 +36,13 @@ beforeEach(() => {
 
 describe("Admin Portfolio CRUD (regression)", () => {
   it("renders empty state when no items exist", async () => {
-    sb = makeSupabaseMock({ data: [] });
+    sbRef.current = makeSupabaseMock({ data: [] });
     render(<PortfolioAdminPage />);
     expect(await screen.findByText(/No portfolio items yet/i)).toBeInTheDocument();
   });
 
   it("lists existing items with status badge and counts", async () => {
-    sb = makeSupabaseMock({
+    sbRef.current = makeSupabaseMock({
       data: [
         {
           id: "1",
@@ -65,7 +65,7 @@ describe("Admin Portfolio CRUD (regression)", () => {
   });
 
   it("validates required title before inserting", async () => {
-    sb = makeSupabaseMock({ data: [] });
+    sbRef.current = makeSupabaseMock({ data: [] });
     const user = userEvent.setup();
     render(<PortfolioAdminPage />);
 
@@ -77,7 +77,7 @@ describe("Admin Portfolio CRUD (regression)", () => {
   });
 
   it("inserts a new portfolio_items row when the form is valid", async () => {
-    sb = makeSupabaseMock({ data: [] });
+    sbRef.current = makeSupabaseMock({ data: [] });
     const user = userEvent.setup();
     render(<PortfolioAdminPage />);
 
