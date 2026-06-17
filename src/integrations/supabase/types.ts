@@ -316,6 +316,59 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_items: {
+        Row: {
+          body: string | null
+          cover_image: string | null
+          created_at: string
+          id: string
+          member_id: string | null
+          slug: string
+          social_links: Json
+          sort_order: number
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          cover_image?: string | null
+          created_at?: string
+          id?: string
+          member_id?: string | null
+          slug: string
+          social_links?: Json
+          sort_order?: number
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          cover_image?: string | null
+          created_at?: string
+          id?: string
+          member_id?: string | null
+          slug?: string
+          social_links?: Json
+          sort_order?: number
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_items_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
