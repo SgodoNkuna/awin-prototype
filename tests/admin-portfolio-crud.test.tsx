@@ -7,16 +7,19 @@ vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => () => ({}),
 }));
 
-const toastError = vi.fn();
-const toastSuccess = vi.fn();
+const { toastError, toastSuccess, sbRef } = vi.hoisted(() => ({
+  toastError: vi.fn(),
+  toastSuccess: vi.fn(),
+  sbRef: { current: null as ReturnType<typeof import("./helpers/supabase-mock").makeSupabaseMock> | null },
+}));
+
 vi.mock("sonner", () => ({
   toast: { error: toastError, success: toastSuccess },
 }));
 
-let sb = makeSupabaseMock({ data: [] });
 vi.mock("@/integrations/supabase/client", () => ({
   get supabase() {
-    return sb;
+    return sbRef.current!;
   },
 }));
 
@@ -28,6 +31,7 @@ import { PortfolioAdminPage } from "@/routes/admin.portfolio";
 beforeEach(() => {
   toastError.mockClear();
   toastSuccess.mockClear();
+  sbRef.current = makeSupabaseMock({ data: [] });
 });
 
 describe("Admin Portfolio CRUD (regression)", () => {
