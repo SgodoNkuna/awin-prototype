@@ -345,21 +345,19 @@ function PortalPage() {
                 <p className="text-muted-foreground text-sm">No news posts yet.</p>
               ) : (
                 news.map((n) => (
-                  <Link
+                  <div
                     key={n.id}
-                    to="/news/$slug"
-                    params={{ slug: n.slug }}
-                    className="group rounded-lg border bg-card p-4 hover:border-primary/40 transition-colors"
+                    className="group rounded-lg border bg-card p-4 transition-colors hover:border-primary/40"
                   >
                     {n.category && <Badge variant="secondary" className="mb-2">{n.category}</Badge>}
-                    <p className="font-semibold text-foreground group-hover:text-primary">{n.title}</p>
+                    <p className="font-semibold text-foreground">{n.title}</p>
                     {n.excerpt && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{n.excerpt}</p>}
                     {n.published_at && (
                       <p className="text-xs text-muted-foreground mt-2">
                         {new Date(n.published_at).toLocaleDateString()}
                       </p>
                     )}
-                  </Link>
+                  </div>
                 ))
               )}
             </CardContent>
@@ -429,8 +427,8 @@ function PortalPage() {
 
       {/* Quick links */}
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        <QuickLink to="/resources" label="Resources" desc="Welcome letter & guides" />
-        <QuickLink to="/faqs" label="FAQs" desc="Common questions answered" />
+        <QuickLink to="/portfolio" label="Portfolio" desc="Showcase your business" />
+        <QuickLink to="/events" label="Events" desc="Upcoming meetups & masterclasses" />
         <QuickLink to="/contact" label="Contact A-WIN" desc="Reach the committee" />
       </div>
     </div>
