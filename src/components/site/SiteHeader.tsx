@@ -8,13 +8,10 @@ import { useAuth } from "@/lib/use-auth";
 
 const NAV = [
   { to: "/", label: "Home" },
-  { to: "/about", label: "About A-Win" },
-  { to: "/committee", label: "Committee" },
-  { to: "/why-join", label: "Why Join?" },
-  { to: "/benefits", label: "Benefits" },
-  { to: "/how-to-join", label: "How to Join" },
-  { to: "/faqs", label: "FAQs" },
-  { to: "/resources", label: "Resources" },
+  { to: "/about", label: "About" },
+  { to: "/membership", label: "Membership" },
+  { to: "/events", label: "Events" },
+  { to: "/portfolio", label: "Portfolio" },
   { to: "/contact", label: "Contact" },
 ] as const;
 

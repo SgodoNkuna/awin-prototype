@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,13 +89,47 @@ function AuthPage() {
           <CardTitle className="font-serif text-2xl text-center text-foreground">Member Portal</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Demo credentials banner */}
+          {/* Helpful onboarding note */}
           <div className="mb-5 rounded-lg border border-accent/40 bg-accent/10 p-3 text-sm text-foreground">
-            <p className="font-semibold text-foreground mb-1">Demo logins (for testing)</p>
-            <ul className="space-y-0.5 text-foreground/90">
-              <li><span className="font-medium">Admin:</span> admin@awin.demo / AwinDemo!2026</li>
-              <li><span className="font-medium">Member:</span> member@awin.demo / AwinDemo!2026</li>
-            </ul>
+            <p className="font-semibold mb-1">New here?</p>
+            <p className="text-foreground/90">
+              Continue with Google for instant access, or create an email account on the
+              Sign Up tab.
+            </p>
+          </div>
+
+          {/* Google sign-in */}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full mb-4"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              const result = await lovable.auth.signInWithOAuth("google", {
+                redirect_uri: `${window.location.origin}/portal`,
+              });
+              if (result.error) {
+                setBusy(false);
+                toast.error(result.error.message || "Google sign-in failed");
+              }
+              // On redirect or success, the page either navigates away or auth state updates.
+            }}
+          >
+            <svg className="size-4 mr-2" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A10.99 10.99 0 0 0 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09A6.6 6.6 0 0 1 5.47 12c0-.73.13-1.43.36-2.09V7.07H2.18A11 11 0 0 0 1 12c0 1.77.42 3.44 1.18 4.93l3.66-2.84z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/>
+            </svg>
+            Continue with Google
+          </Button>
+
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+            </div>
           </div>
 
           <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
@@ -103,18 +138,19 @@ function AuthPage() {
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
+
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4 mt-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="si-email" className="text-foreground">Email</Label>
                   <Input id="si-email" name="email" type="email" required maxLength={255}
-                    defaultValue="member@awin.demo"
+                    placeholder="you@example.com"
                     className="bg-background text-foreground placeholder:text-muted-foreground" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="si-password" className="text-foreground">Password</Label>
                   <Input id="si-password" name="password" type="password" required maxLength={72}
-                    defaultValue="AwinDemo!2026"
+                    placeholder="••••••••"
                     className="bg-background text-foreground placeholder:text-muted-foreground" />
                 </div>
                 <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={busy}>
