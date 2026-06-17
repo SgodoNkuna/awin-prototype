@@ -55,7 +55,7 @@ const empty = (): Partial<Item> => ({
   sort_order: 0,
 });
 
-function PortfolioAdminPage() {
+export function PortfolioAdminPage() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [editing, setEditing] = useState<Partial<Item> | null>(null);
 
