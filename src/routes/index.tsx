@@ -273,7 +273,7 @@ function Index() {
                         : "mt-7 w-full"
                     }
                   >
-                    <Link to="/how-to-join">Join Now</Link>
+                    <Link to="/membership">Join Now</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -293,7 +293,7 @@ function Index() {
               <h2 className="mt-3 font-serif">Upcoming Events</h2>
             </div>
             <Link
-              to="/resources"
+              to="/events"
               className="hidden text-sm font-medium text-primary story-link sm:inline-flex items-center gap-1"
             >
               All events <ArrowRight className="h-4 w-4" />
@@ -378,7 +378,7 @@ function Index() {
                     {a.excerpt}
                   </p>
                   <Link
-                    to="/news"
+                    to="/portfolio"
                     className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
                   >
                     Read More <ArrowRight className="h-3.5 w-3.5" />
@@ -408,7 +408,7 @@ function Index() {
             size="lg"
             className="mt-8 bg-foreground text-background hover:bg-foreground/90"
           >
-            <Link to="/how-to-join">
+            <Link to="/membership">
               Discover How to Join <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
