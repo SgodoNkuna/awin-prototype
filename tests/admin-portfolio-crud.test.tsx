@@ -3,20 +3,16 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { makeSupabaseMock } from "./helpers/supabase-mock";
 
-// Router mocks — PortfolioAdminPage uses createFileRoute internally; only Route export uses it.
-// Component itself doesn't import router primitives. But createFileRoute throws unless mocked.
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => () => ({}),
 }));
 
-// sonner toast mock
 const toastError = vi.fn();
 const toastSuccess = vi.fn();
 vi.mock("sonner", () => ({
   toast: { error: toastError, success: toastSuccess },
 }));
 
-// Supabase mock — instance is rebuilt per test
 let sb = makeSupabaseMock({ data: [] });
 vi.mock("@/integrations/supabase/client", () => ({
   get supabase() {
@@ -24,22 +20,10 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-import PortfolioAdminModule from "@/routes/admin.portfolio";
-// the route file exports Route + uses component; we need the component:
-// import the named component via dynamic require to keep the module intact.
-const PortfolioAdminPage = (PortfolioAdminModule as unknown as { Route: { options: { component: React.FC } } }).Route?.options?.component
-  ?? // fallback for createFileRoute mock shape:
-  undefined;
+// Stub confirm() for delete tests
+vi.stubGlobal("confirm", () => true);
 
-// Because createFileRoute is mocked to return () => ({}), the component is
-// not exposed via Route. Re-import the component function from the source by
-// re-evaluating the source via a tiny shim — instead, just import the JSX
-// directly by re-exporting the function.
-
-// Simpler approach: import the page module's source and pull the function by
-// regex via dynamic import is messy. Instead: define the component test by
-// hand-importing from a sibling test bridge.
-import { PortfolioAdminPage as Page } from "./bridges/admin-portfolio-bridge";
+import { PortfolioAdminPage } from "@/routes/admin.portfolio";
 
 beforeEach(() => {
   toastError.mockClear();
@@ -49,11 +33,11 @@ beforeEach(() => {
 describe("Admin Portfolio CRUD (regression)", () => {
   it("renders empty state when no items exist", async () => {
     sb = makeSupabaseMock({ data: [] });
-    render(<Page />);
+    render(<PortfolioAdminPage />);
     expect(await screen.findByText(/No portfolio items yet/i)).toBeInTheDocument();
   });
 
-  it("lists existing items with their status badge", async () => {
+  it("lists existing items with status badge and counts", async () => {
     sb = makeSupabaseMock({
       data: [
         {
@@ -70,31 +54,38 @@ describe("Admin Portfolio CRUD (regression)", () => {
         },
       ],
     });
-    render(<Page />);
+    render(<PortfolioAdminPage />);
     expect(await screen.findByText("Thabo Capital")).toBeInTheDocument();
     expect(screen.getByText(/published/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 items/i)).toBeInTheDocument();
   });
 
-  it("opens the create dialog, validates required title, then inserts on save", async () => {
+  it("validates required title before inserting", async () => {
     sb = makeSupabaseMock({ data: [] });
     const user = userEvent.setup();
-    render(<Page />);
+    render(<PortfolioAdminPage />);
 
     await user.click(await screen.findByRole("button", { name: /Add Member/i }));
     const dialog = await screen.findByRole("dialog");
-    // Save with empty title -> validation toast
     await user.click(within(dialog).getByRole("button", { name: /^Save$/i }));
     expect(toastError).toHaveBeenCalledWith("Title is required.");
+    expect(toastSuccess).not.toHaveBeenCalled();
+  });
 
-    // Fill title and save
-    const titleInput = within(dialog)
-      .getAllByRole("textbox")
-      .find((el) => (el as HTMLInputElement).value === "") as HTMLInputElement;
+  it("inserts a new portfolio_items row when the form is valid", async () => {
+    sb = makeSupabaseMock({ data: [] });
+    const user = userEvent.setup();
+    render(<PortfolioAdminPage />);
+
+    await user.click(await screen.findByRole("button", { name: /Add Member/i }));
+    const dialog = await screen.findByRole("dialog");
+    const titleInput = within(dialog).getAllByRole("textbox")[0] as HTMLInputElement;
     await user.type(titleInput, "New Member");
     await user.click(within(dialog).getByRole("button", { name: /^Save$/i }));
 
     await waitFor(() => {
       expect(sb.from).toHaveBeenCalledWith("portfolio_items");
     });
+    expect(toastError).not.toHaveBeenCalledWith("Title is required.");
   });
 });
