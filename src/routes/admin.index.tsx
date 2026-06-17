@@ -104,7 +104,7 @@ function OverviewPage() {
               <Link to="/admin/events"><span className="flex items-center gap-2"><Plus className="size-4" /> Add Event</span><ArrowRight className="size-4" /></Link>
             </Button>
             <Button asChild className="w-full justify-between" variant="outline">
-              <Link to="/admin/news"><span className="flex items-center gap-2"><FileText className="size-4" /> Write Article</span><ArrowRight className="size-4" /></Link>
+              <Link to="/admin/portfolio"><span className="flex items-center gap-2"><FileText className="size-4" /> Add Portfolio Item</span><ArrowRight className="size-4" /></Link>
             </Button>
             <Button asChild className="w-full justify-between" variant="outline">
               <Link to="/admin/applications"><span className="flex items-center gap-2"><ClipboardList className="size-4" /> View Applications</span><ArrowRight className="size-4" /></Link>

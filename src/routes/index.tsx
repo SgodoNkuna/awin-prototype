@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowRight,
-  Calendar,
   MapPin,
   Check,
 } from "lucide-react";
@@ -10,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LogoHero } from "@/components/site/LogoHero";
+import { PortfolioCarousel } from "@/components/site/PortfolioCarousel";
 import { supabase } from "@/integrations/supabase/client";
 
 
@@ -128,29 +128,8 @@ const events = [
   },
 ];
 
-const articles = [
-  {
-    category: "Investing",
-    title: "5 Habits of Women Who Build Lasting Wealth",
-    date: "May 28, 2026",
-    excerpt:
-      "From budgeting rituals to long-term thinking — the small daily moves that compound over decades.",
-  },
-  {
-    category: "Community",
-    title: "Inside Our Cape Town Member Meetup",
-    date: "May 18, 2026",
-    excerpt:
-      "Highlights from a night of honest conversation about money, mentorship, and momentum.",
-  },
-  {
-    category: "Education",
-    title: "ETFs Explained for First-Time Investors",
-    date: "May 02, 2026",
-    excerpt:
-      "A plain-language breakdown of how ETFs work and why they belong in a starter portfolio.",
-  },
-];
+// Articles removed — Portfolio carousel replaces News section
+
 
 function Index() {
   const liveStats = useHomepageStats();
@@ -341,54 +320,9 @@ function Index() {
         </div>
       </section>
 
-      {/* NEWS PREVIEW */}
-      <section className="bg-secondary/50 py-20">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-accent">
-              From the Blog
-            </span>
-            <h2 className="mt-3 font-serif">Latest News & Insights</h2>
-          </div>
+      {/* PORTFOLIO CAROUSEL */}
+      <PortfolioCarousel />
 
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {articles.map((a) => (
-              <Card
-                key={a.title}
-                className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale"
-              >
-                <div
-                  className="h-44 w-full"
-                  style={{ background: "var(--gradient-gold)" }}
-                  aria-hidden="true"
-                />
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <Badge variant="secondary" className="bg-accent/15 text-accent">
-                      {a.category}
-                    </Badge>
-                    <span className="inline-flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> {a.date}
-                    </span>
-                  </div>
-                  <h3 className="mt-3 font-serif text-lg text-foreground">
-                    {a.title}
-                  </h3>
-                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                    {a.excerpt}
-                  </p>
-                  <Link
-                    to="/portfolio"
-                    className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
-                  >
-                    Read More <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA BANNER */}
       <section
