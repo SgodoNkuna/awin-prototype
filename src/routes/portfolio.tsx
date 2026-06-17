@@ -51,7 +51,7 @@ type Item = {
   sort_order: number;
 };
 
-function PortfolioPage() {
+export function PortfolioPage() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<Item | null>(null);
