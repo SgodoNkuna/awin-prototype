@@ -60,8 +60,8 @@ describe("Home carousel — accessibility regression", () => {
   it("gives prev/next controls accessible names", async () => {
     render(<PortfolioCarousel />);
     await screen.findByText("Thabo Capital");
-    expect(screen.getByRole("button", { name: /previous slide/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /next slide/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /previous member/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /next member/i })).toBeInTheDocument();
   });
 
   it("gives each card-link an accessible name (no icon-only-link)", async () => {
