@@ -5,7 +5,7 @@ import {
   Users,
   ClipboardList,
   Calendar,
-  Newspaper,
+  Briefcase,
   Mail,
   FolderOpen,
   Settings,
@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
-  to: "/admin" | "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/news" | "/admin/messages" | "/admin/documents" | "/admin/settings";
+  to: "/admin" | "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/portfolio" | "/admin/messages" | "/admin/documents" | "/admin/settings";
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
@@ -27,7 +27,7 @@ const NAV: NavItem[] = [
   { to: "/admin/members", label: "Members", icon: Users },
   { to: "/admin/applications", label: "Applications", icon: ClipboardList },
   { to: "/admin/events", label: "Events", icon: Calendar },
-  { to: "/admin/news", label: "News", icon: Newspaper },
+  { to: "/admin/portfolio", label: "Portfolio", icon: Briefcase },
   { to: "/admin/messages", label: "Messages", icon: Mail },
   { to: "/admin/documents", label: "Documents", icon: FolderOpen },
   { to: "/admin/settings", label: "Settings", icon: Settings },
