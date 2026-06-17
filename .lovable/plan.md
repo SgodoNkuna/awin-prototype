@@ -30,10 +30,18 @@ Full rebuild per signed agreement. Staying on Lovable (Supabase + Cloudflare Wor
 3. Home page Embla carousel: 100-item ready, keyboard nav (arrows/Home/End), aria-roledescription, focus management.
 4. Inline modal quick-view (Radix Dialog) with member details + social links.
 
-### Sprint 3 — Payments + Contact map
-1. `enable_stripe_payments`, create products for membership tiers via `batch_create_product`.
-2. Wire membership page → Stripe checkout → webhook → activate membership in `profiles`.
-3. Contact page: Google Maps connector, marker on A-WIN HQ, accessible fallback address.
+### Sprint 3 — Payments + Contact map (PARTIAL — payments BLOCKED)
+1. ❌ **Lovable built-in Stripe is unavailable for South Africa.** Two paths left:
+   a) BYOK Stripe — you provide your own Stripe secret key, I wire checkout + webhook.
+   b) Keep current "apply → committee review → payment shared securely" flow.
+2. ✅ Contact page: Google Maps embed (no API key) showing Sandton HQ with "Get directions" deep link.
+3. ✅ Test infrastructure: Vitest + Testing Library + jsdom. 5 suites / 37 tests passing.
+   - `tests/admin-access.test.tsx` — admin route gating (4 tests)
+   - `tests/admin-portfolio-crud.test.tsx` — admin CRUD UI (4 tests)
+   - `tests/portfolio-quickview.test.tsx` — public quick-view modal + search (3 tests)
+   - `tests/portfolio-rls-policy.test.ts` — RLS policy guard (7 tests)
+   - `tests/smoke-routes.test.ts` — every route loads + 6-page rule + banned-route check (19 tests)
+   - Scripts: `bun test`, `bun test:smoke`, `bun test:regression`
 
 ### Sprint 4 — Design tokens + component library + admin polish
 1. Audit & consolidate design tokens in `src/styles.css` (already partially done).
