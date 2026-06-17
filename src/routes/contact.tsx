@@ -160,14 +160,31 @@ function ContactPage() {
               </Card>
             ))}
 
-            {/* Map placeholder */}
+            {/* Map */}
             <Card className="overflow-hidden">
-              <div className="aspect-video bg-muted flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <MapPin className="size-10 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Map embed coming soon</p>
-                </div>
+              <div className="aspect-video bg-muted">
+                <iframe
+                  title="A-WIN office location on map"
+                  src="https://www.google.com/maps?q=Sandton%2C%20Johannesburg%2C%20South%20Africa&output=embed"
+                  className="h-full w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
               </div>
+              <CardContent className="pt-4 flex items-center justify-between gap-2">
+                <span className="text-xs text-muted-foreground">
+                  Sandton, Johannesburg, South Africa
+                </span>
+                <a
+                  href="https://www.google.com/maps/dir/?api=1&destination=Sandton%2C+Johannesburg%2C+South+Africa"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium text-primary story-link"
+                >
+                  Get directions
+                </a>
+              </CardContent>
             </Card>
           </div>
         </div>
