@@ -10,8 +10,9 @@
  *  - focus ring class is applied (visible focus state across all themes —
  *    `ring-ring` is a design token, so contrast follows whichever theme is active)
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { makeSupabaseMock } from "./helpers/supabase-mock";
 
 vi.mock("@tanstack/react-router", () => ({
@@ -78,5 +79,89 @@ describe("Home carousel — accessibility regression", () => {
     });
     expect(link.className).toMatch(/focus-visible:ring/);
     expect(link.className).toMatch(/ring-ring/);
+    expect(link.className).toMatch(/focus-visible:ring-offset/);
   });
+
+  it("exposes a polite, atomic aria-live region for the current slide", async () => {
+    render(<PortfolioCarousel />);
+    await screen.findByText("Thabo Capital");
+    const live = document.querySelector('[aria-live="polite"]') as HTMLElement | null;
+    expect(live).not.toBeNull();
+    expect(live!.getAttribute("aria-atomic")).toBe("true");
+    expect(live!.className).toMatch(/sr-only/);
+    expect(live!.textContent).toMatch(/Showing Thabo Capital, 1 of 3/);
+  });
+
+  it("keeps card links in the natural tab order (no tabindex traps)", async () => {
+    render(<PortfolioCarousel />);
+    const link = await screen.findByRole("link", {
+      name: /view thabo capital in member portfolio/i,
+    });
+    // No tabindex override means the anchor stays in document order at tabindex=0
+    expect(link.getAttribute("tabindex")).toBeNull();
+    // Confirm the carousel root is keyboard-reachable as a labelled region
+    const region = screen.getByRole("region", { name: /member portfolio/i });
+    expect(region).toBeInTheDocument();
+  });
+
+  it("supports keyboard activation on cards (Enter triggers the link)", async () => {
+    const user = userEvent.setup();
+    render(<PortfolioCarousel />);
+    const link = (await screen.findByRole("link", {
+      name: /view thabo capital in member portfolio/i,
+    })) as HTMLAnchorElement;
+    const clicked = vi.fn((e: Event) => e.preventDefault());
+    link.addEventListener("click", clicked);
+    link.focus();
+    expect(document.activeElement).toBe(link);
+    await user.keyboard("{Enter}");
+    expect(clicked).toHaveBeenCalled();
+  });
+
+  it("prev/next buttons are keyboard reachable and have visible focus styles", async () => {
+    render(<PortfolioCarousel />);
+    await screen.findByText("Thabo Capital");
+    const prev = screen.getByRole("button", { name: /previous member/i });
+    const next = screen.getByRole("button", { name: /next member/i });
+    for (const btn of [prev, next]) {
+      expect(btn.getAttribute("tabindex")).not.toBe("-1");
+      // shadcn Button applies focus-visible:ring via base class — assert it survives our overrides
+      expect(btn.className).toMatch(/focus-visible:/);
+    }
+    // Buttons are display:none below sm in jsdom; focus assertion would be misleading.
+    expect(prev).toBeInTheDocument();
+    expect(next).toBeInTheDocument();
+  });
+
+  // Theme matrix — re-render under each [data-theme] and assert tokens still apply.
+  // `ring-ring`, `text-foreground`, `bg-secondary/50` are design tokens that re-bind
+  // per theme via CSS variables, so the markup assertion is theme-agnostic; this
+  // guards against a future refactor hard-coding a theme-specific color.
+  describe.each(["green", "orange", "black", "white"] as const)(
+    "under data-theme=%s",
+    (theme) => {
+      beforeEach(() => {
+        document.documentElement.setAttribute("data-theme", theme);
+      });
+      afterEach(() => {
+        document.documentElement.removeAttribute("data-theme");
+      });
+
+      it("renders region, slides, and token-based focus ring", async () => {
+        render(<PortfolioCarousel />);
+        expect(
+          await screen.findByRole("region", { name: /member portfolio/i }),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByLabelText("Thabo Capital, slide 1 of 3"),
+        ).toBeInTheDocument();
+        const link = screen.getByRole("link", {
+          name: /view thabo capital in member portfolio/i,
+        });
+        // Tokens — must not be hard-coded color utilities like text-white / bg-black
+        expect(link.className).toMatch(/ring-ring/);
+        expect(link.className).not.toMatch(/\b(text|bg|ring)-(white|black|gray|slate|zinc)-\d/);
+      });
+    },
+  );
 });
