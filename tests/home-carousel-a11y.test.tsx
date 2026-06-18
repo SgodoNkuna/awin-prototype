@@ -75,7 +75,7 @@ describe("Home carousel — accessibility regression", () => {
   it("applies focus-visible ring on cards (themed via ring-ring token)", async () => {
     render(<PortfolioCarousel />);
     const link = await screen.findByRole("link", {
-      name: /view thabo carousel in member portfolio/i.source ? /view thabo capital in member portfolio/i : /view thabo capital in member portfolio/i,
+      name: /view thabo capital in member portfolio/i,
     });
     expect(link.className).toMatch(/focus-visible:ring/);
     expect(link.className).toMatch(/ring-ring/);
