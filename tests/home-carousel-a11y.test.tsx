@@ -10,8 +10,9 @@
  *  - focus ring class is applied (visible focus state across all themes —
  *    `ring-ring` is a design token, so contrast follows whichever theme is active)
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { makeSupabaseMock } from "./helpers/supabase-mock";
 
 vi.mock("@tanstack/react-router", () => ({
