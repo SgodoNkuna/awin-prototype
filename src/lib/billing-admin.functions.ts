@@ -109,7 +109,13 @@ export const overrideMembership = createServerFn({ method: "POST" })
       .eq("id", data.user_id)
       .maybeSingle();
 
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      membership_status?: string;
+      suspended?: boolean;
+      membership_tier?: "general" | "active" | "patron";
+      membership_expires_at?: string;
+      joined_at?: string;
+    } = {};
     if (data.action === "activate") {
       patch.membership_status = "active";
       patch.suspended = false;
@@ -135,7 +141,7 @@ export const overrideMembership = createServerFn({ method: "POST" })
       target_type: "profile",
       target_id: data.user_id,
       reason: data.reason,
-      details: { before: prev, patch },
+      details: { before: prev, patch } as unknown as Record<string, unknown>,
     });
 
     return { ok: true };

@@ -26,6 +26,7 @@ import { Route as AdminMembersRouteImport } from './routes/admin.members'
 import { Route as AdminEventsRouteImport } from './routes/admin.events'
 import { Route as AdminDocumentsRouteImport } from './routes/admin.documents'
 import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
+import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast.itn'
 
 const PortfolioRoute = PortfolioRouteImport.update({
   id: '/portfolio',
@@ -112,6 +113,11 @@ const AdminApplicationsRoute = AdminApplicationsRouteImport.update({
   path: '/applications',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
+  id: '/api/public/payfast/itn',
+  path: '/api/public/payfast/itn',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/admin/portfolio': typeof AdminPortfolioRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/admin/portfolio': typeof AdminPortfolioRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/admin/portfolio': typeof AdminPortfolioRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -190,6 +199,7 @@ export interface FileRouteTypes {
     | '/admin/portfolio'
     | '/admin/settings'
     | '/admin/'
+    | '/api/public/payfast/itn'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/admin/portfolio'
     | '/admin/settings'
     | '/admin'
+    | '/api/public/payfast/itn'
   id:
     | '__root__'
     | '/'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/admin/portfolio'
     | '/admin/settings'
     | '/admin/'
+    | '/api/public/payfast/itn'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -239,6 +251,7 @@ export interface RootRouteChildren {
   MembershipRoute: typeof MembershipRoute
   PortalRoute: typeof PortalRoute
   PortfolioRoute: typeof PortfolioRoute
+  ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -362,6 +375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminApplicationsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/public/payfast/itn': {
+      id: '/api/public/payfast/itn'
+      path: '/api/public/payfast/itn'
+      fullPath: '/api/public/payfast/itn'
+      preLoaderRoute: typeof ApiPublicPayfastItnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -399,17 +419,8 @@ const rootRouteChildren: RootRouteChildren = {
   MembershipRoute: MembershipRoute,
   PortalRoute: PortalRoute,
   PortfolioRoute: PortfolioRoute,
+  ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
