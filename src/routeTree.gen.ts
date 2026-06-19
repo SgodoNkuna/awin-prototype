@@ -25,6 +25,7 @@ import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
 import { Route as AdminEventsRouteImport } from './routes/admin.events'
 import { Route as AdminDocumentsRouteImport } from './routes/admin.documents'
+import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast.itn'
 
@@ -108,6 +109,11 @@ const AdminDocumentsRoute = AdminDocumentsRouteImport.update({
   path: '/documents',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBillingRoute = AdminBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminApplicationsRoute = AdminApplicationsRouteImport.update({
   id: '/applications',
   path: '/applications',
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/billing': typeof AdminBillingRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/members': typeof AdminMembersRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/billing': typeof AdminBillingRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/members': typeof AdminMembersRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/billing': typeof AdminBillingRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/members': typeof AdminMembersRoute
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/portfolio'
     | '/admin/applications'
+    | '/admin/billing'
     | '/admin/documents'
     | '/admin/events'
     | '/admin/members'
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/portfolio'
     | '/admin/applications'
+    | '/admin/billing'
     | '/admin/documents'
     | '/admin/events'
     | '/admin/members'
@@ -231,6 +242,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/portfolio'
     | '/admin/applications'
+    | '/admin/billing'
     | '/admin/documents'
     | '/admin/events'
     | '/admin/members'
@@ -368,6 +380,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDocumentsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/billing': {
+      id: '/admin/billing'
+      path: '/billing'
+      fullPath: '/admin/billing'
+      preLoaderRoute: typeof AdminBillingRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/applications': {
       id: '/admin/applications'
       path: '/applications'
@@ -387,6 +406,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminApplicationsRoute: typeof AdminApplicationsRoute
+  AdminBillingRoute: typeof AdminBillingRoute
   AdminDocumentsRoute: typeof AdminDocumentsRoute
   AdminEventsRoute: typeof AdminEventsRoute
   AdminMembersRoute: typeof AdminMembersRoute
@@ -398,6 +418,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminApplicationsRoute: AdminApplicationsRoute,
+  AdminBillingRoute: AdminBillingRoute,
   AdminDocumentsRoute: AdminDocumentsRoute,
   AdminEventsRoute: AdminEventsRoute,
   AdminMembersRoute: AdminMembersRoute,
