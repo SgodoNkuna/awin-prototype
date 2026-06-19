@@ -141,7 +141,7 @@ export const overrideMembership = createServerFn({ method: "POST" })
       target_type: "profile",
       target_id: data.user_id,
       reason: data.reason,
-      details: { before: prev, patch } as unknown as Record<string, unknown>,
+      details: JSON.parse(JSON.stringify({ before: prev, patch })),
     });
 
     return { ok: true };
