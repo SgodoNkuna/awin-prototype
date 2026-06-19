@@ -77,7 +77,7 @@ export async function processItnPayload(
         .update({
           membership_status: "active",
           suspended: false,
-          membership_tier: payment.tier,
+          membership_tier: payment.tier as "general" | "active" | "patron",
           membership_expires_at: expiresAt,
           last_payment_at: paidAt,
           joined_at: paidAt,
