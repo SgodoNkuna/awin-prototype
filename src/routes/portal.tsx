@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Eye,
   Send,
+  CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BillingTab } from "@/components/portal/BillingTab";
 
 export const Route = createFileRoute("/portal")({
   component: PortalPage,
@@ -237,12 +239,18 @@ function PortalPage() {
       </Card>
 
       <Tabs defaultValue="events" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="events"><Calendar className="size-4 mr-1.5" />Events</TabsTrigger>
           <TabsTrigger value="documents"><FileText className="size-4 mr-1.5" />Documents</TabsTrigger>
+          <TabsTrigger value="billing"><CreditCard className="size-4 mr-1.5" />Billing</TabsTrigger>
           <TabsTrigger value="news"><Newspaper className="size-4 mr-1.5" />News</TabsTrigger>
           <TabsTrigger value="profile"><UserIcon className="size-4 mr-1.5" />Profile</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="billing" className="mt-4">
+          <BillingTab preferredTier={latest?.tier ?? profile?.membership_tier ?? null} />
+        </TabsContent>
+
 
         {/* EVENTS */}
         <TabsContent value="events" className="mt-4">

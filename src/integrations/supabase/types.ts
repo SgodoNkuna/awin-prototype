@@ -83,6 +83,42 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          reason: string | null
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          reason?: string | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          reason?: string | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -316,6 +352,130 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_webhook_events: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          last_retry_at: string | null
+          m_payment_id: string | null
+          payload: Json
+          payment_id: string | null
+          pf_payment_id: string | null
+          processed: boolean
+          provider: string
+          retry_count: number
+          signature_valid: boolean
+          source_ip: string | null
+          source_valid: boolean
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          last_retry_at?: string | null
+          m_payment_id?: string | null
+          payload: Json
+          payment_id?: string | null
+          pf_payment_id?: string | null
+          processed?: boolean
+          provider?: string
+          retry_count?: number
+          signature_valid?: boolean
+          source_ip?: string | null
+          source_valid?: boolean
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          last_retry_at?: string | null
+          m_payment_id?: string | null
+          payload?: Json
+          payment_id?: string | null
+          pf_payment_id?: string | null
+          processed?: boolean
+          provider?: string
+          retry_count?: number
+          signature_valid?: boolean
+          source_ip?: string | null
+          source_valid?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_webhook_events_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount_cents: number
+          application_id: string | null
+          created_at: string
+          currency: string
+          email: string | null
+          full_name: string | null
+          id: string
+          m_payment_id: string
+          paid_at: string | null
+          pf_payment_id: string | null
+          provider: string
+          raw_payload: Json | null
+          status: string
+          tier: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          application_id?: string | null
+          created_at?: string
+          currency?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          m_payment_id: string
+          paid_at?: string | null
+          pf_payment_id?: string | null
+          provider?: string
+          raw_payload?: Json | null
+          status?: string
+          tier: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          application_id?: string | null
+          created_at?: string
+          currency?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          m_payment_id?: string
+          paid_at?: string | null
+          pf_payment_id?: string | null
+          provider?: string
+          raw_payload?: Json | null
+          status?: string
+          tier?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_items: {
         Row: {
           body: string | null
@@ -376,6 +536,8 @@ export type Database = {
           full_name: string | null
           id: string
           joined_at: string | null
+          last_payment_at: string | null
+          membership_expires_at: string | null
           membership_status: string
           membership_tier: Database["public"]["Enums"]["membership_tier"] | null
           suspended: boolean
@@ -387,6 +549,8 @@ export type Database = {
           full_name?: string | null
           id: string
           joined_at?: string | null
+          last_payment_at?: string | null
+          membership_expires_at?: string | null
           membership_status?: string
           membership_tier?:
             | Database["public"]["Enums"]["membership_tier"]
@@ -400,6 +564,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           joined_at?: string | null
+          last_payment_at?: string | null
+          membership_expires_at?: string | null
           membership_status?: string
           membership_tier?:
             | Database["public"]["Enums"]["membership_tier"]
