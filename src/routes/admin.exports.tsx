@@ -488,12 +488,12 @@ function ExportsPage() {
         }
       }
 
-      const readyJob = {
+      const readyJob: ExportJobState = {
         ...newJob,
         done,
         errors,
         progress: errors.length === totalJobs ? 100 : 97,
-        status: errors.length === totalJobs ? "failed" : ("ready" as const),
+        status: errors.length === totalJobs ? "failed" : "ready",
         statusText:
           errors.length === totalJobs
             ? "Every capture failed. Adjust selections and try again."
