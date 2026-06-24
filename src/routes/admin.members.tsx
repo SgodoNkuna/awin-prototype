@@ -228,6 +228,55 @@ function MembersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!promoting} onOpenChange={(o) => !o && setPromoting(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Manage Admin Role</DialogTitle></DialogHeader>
+          {promoting && (
+            <div className="space-y-3">
+              <p className="text-sm">
+                <span className="font-medium">{promoting.full_name || promoting.email}</span>
+                <br />
+                <span className="text-xs text-muted-foreground">{promoting.email}</span>
+              </p>
+              <div className="grid gap-2">
+                <label className="text-xs font-medium">Reason (audit log, min 5 chars)</label>
+                <Textarea value={promoteReason} onChange={(e) => setPromoteReason(e.target.value)} rows={3} placeholder="e.g. New committee chair — onboarded 2026-06-24" />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setPromoting(null)}>Cancel</Button>
+            <Button
+              variant="outline"
+              disabled={promoteBusy || promoteReason.trim().length < 5 || !promoting}
+              onClick={async () => {
+                if (!promoting) return;
+                setPromoteBusy(true);
+                try {
+                  await callSetRole({ data: { user_id: promoting.id, role: "admin", action: "revoke", reason: promoteReason.trim() } });
+                  toast.success("Admin role revoked");
+                  setPromoting(null);
+                } catch (e: any) { toast.error(e.message ?? "Failed"); }
+                finally { setPromoteBusy(false); }
+              }}
+            >Revoke admin</Button>
+            <Button
+              disabled={promoteBusy || promoteReason.trim().length < 5 || !promoting}
+              onClick={async () => {
+                if (!promoting) return;
+                setPromoteBusy(true);
+                try {
+                  await callSetRole({ data: { user_id: promoting.id, role: "admin", action: "grant", reason: promoteReason.trim() } });
+                  toast.success("Promoted to admin");
+                  setPromoting(null);
+                } catch (e: any) { toast.error(e.message ?? "Failed"); }
+                finally { setPromoteBusy(false); }
+              }}
+            >{promoteBusy ? <Loader2 className="size-4 animate-spin" /> : "Promote to admin"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
