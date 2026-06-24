@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import {
   buildExportSafeCss,
   buildScreenshotCaption,
@@ -45,6 +46,11 @@ describe("runbook export helpers", () => {
       expect(css).toContain("--background");
       expect(css).toContain("!important");
     }
+  });
+
+  it("keeps global theme tokens compatible with browser/PDF capture tools", () => {
+    const css = readFileSync("src/styles.css", "utf8");
+    expect(css).not.toMatch(/\b(lab|oklch|color-mix)\(/i);
   });
 
   it("creates stable download filenames", () => {
