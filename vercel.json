@@ -1,5 +1,5 @@
 {
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "NITRO_PRESET=vercel npm run build",
-  "outputDirectory": "dist"
+  "outputDirectory": ".vercel/output"
 }
