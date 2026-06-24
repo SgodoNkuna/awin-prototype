@@ -440,3 +440,5 @@ function OverrideDialog({
     </Dialog>
   );
 }
+
+export default BillingAdminPage;

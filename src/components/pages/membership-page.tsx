@@ -363,3 +363,5 @@ function MembershipPage() {
     </div>
   );
 }
+
+export default MembershipPage;

@@ -565,3 +565,5 @@ function StatusCard({ app, profile }: { app: Application; profile: Profile | nul
     </div>
   );
 }
+
+export default PortalPage;
