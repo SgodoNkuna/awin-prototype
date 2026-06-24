@@ -333,7 +333,7 @@ function ExportsPage() {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const runLock = useRef(false);
   const [selectedPages, setSelectedPages] = useState<string[]>(PAGES.map((page) => page.path));
-  const [selectedThemes, setSelectedThemes] = useState<string[]>(THEMES.map((theme) => theme.id));
+  const [selectedThemes, setSelectedThemes] = useState<string[]>(["color"]);
   const [job, setJob] = useState<ExportJobState | null>(null);
   const [previews, setPreviews] = useState<{ label: string; url: string }[]>([]);
 
@@ -684,6 +684,9 @@ function ExportsPage() {
                 <Button size="sm" variant="ghost" onClick={() => setSelectedThemes(THEMES.map((theme) => theme.id))} disabled={running}>
                   All
                 </Button>
+                <Button size="sm" variant="ghost" onClick={() => setSelectedThemes(["color"])} disabled={running}>
+                  Fast
+                </Button>
                 <Button size="sm" variant="ghost" onClick={() => setSelectedThemes([])} disabled={running}>
                   None
                 </Button>
@@ -702,6 +705,9 @@ function ExportsPage() {
               <span className="text-muted-foreground">Total screenshots:</span>
               <Badge variant="secondary">{totalJobs}</Badge>
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Fast mode captures the default theme only; choose All for the full 76-screenshot theme audit.
+            </p>
           </CardContent>
         </Card>
       </div>
