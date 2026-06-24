@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 
 import appCss from "../styles.css?url";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -28,10 +29,7 @@ function NotFoundComponent() {
           The page you're looking for doesn't exist or has been moved.
         </p>
         <div className="mt-6">
-          <Button
-            asChild
-            className="bg-accent text-accent-foreground hover:bg-accent/90"
-          >
+          <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
             <Link to="/">Back to home</Link>
           </Button>
         </div>
@@ -92,11 +90,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:site_name", content: "A-WIN" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "A-WIN — African Women in Investment Network" },
-      { name: "description", content: "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
-      { property: "og:description", content: "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
-      { name: "twitter:description", content: "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/2cff2693-d322-4fd7-af36-5cc90130733e" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/2cff2693-d322-4fd7-af36-5cc90130733e" },
+      {
+        name: "description",
+        content:
+          "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community",
+      },
+      {
+        property: "og:description",
+        content:
+          "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/2cff2693-d322-4fd7-af36-5cc90130733e",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/2cff2693-d322-4fd7-af36-5cc90130733e",
+      },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -122,6 +140,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Analytics />
         <Scripts />
       </body>
     </html>
