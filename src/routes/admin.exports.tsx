@@ -146,26 +146,47 @@ async function waitForAssets(doc: Document) {
   );
 }
 
+/**
+ * Wait until visible loading spinners disappear (or timeout). Many routes show
+ * a Loader2 (`.animate-spin`) while auth + initial data resolve; capturing too
+ * early produces blank pages, so we poll for a settled DOM.
+ */
+async function waitForContentReady(doc: Document, maxMs = 6000) {
+  const start = Date.now();
+  while (Date.now() - start < maxMs) {
+    const spinners = Array.from(doc.querySelectorAll<HTMLElement>(".animate-spin")).filter(
+      (el) => el.offsetParent !== null,
+    );
+    const skeletons = doc.querySelectorAll<HTMLElement>('[data-loading="true"], .animate-pulse').length;
+    const bodyText = (doc.body.innerText || "").trim().length;
+    if (spinners.length === 0 && skeletons < 4 && bodyText > 80) return;
+    await wait(200);
+  }
+}
+
 async function captureRoute(
   iframe: HTMLIFrameElement,
   path: string,
   theme: string,
   setStatus: (status: string) => void,
+  attempt: number,
 ): Promise<CapturedExport> {
   const page = getPage(path);
   const themeDef = getTheme(theme);
 
   localStorage.setItem(THEME_STORAGE_KEY, theme);
-  setStatus(`Loading ${page.label} (${themeDef.label})…`);
+  const attemptLabel = attempt > 1 ? ` (retry ${attempt - 1})` : "";
+  setStatus(`Loading ${page.label} (${themeDef.label})${attemptLabel}…`);
   await waitForIframeLoad(iframe, path);
 
   const doc = iframe.contentDocument;
   if (!doc?.documentElement || !doc.body) throw new Error("Capture frame did not load the page");
 
   installExportCss(doc, theme);
-  setStatus(`Rendering ${page.label} (${themeDef.label})…`);
+  setStatus(`Rendering ${page.label} (${themeDef.label})${attemptLabel}…`);
   await waitForAssets(doc);
-  await wait(250);
+  await waitForContentReady(doc);
+  await wait(350);
 
   const target = doc.body;
   const width = 1280;
@@ -206,6 +227,26 @@ async function captureRoute(
     }
     throw error;
   }
+}
+
+const MAX_CAPTURE_ATTEMPTS = 3;
+
+async function captureWithRetry(
+  iframe: HTMLIFrameElement,
+  path: string,
+  theme: string,
+  setStatus: (status: string) => void,
+): Promise<CapturedExport> {
+  let lastError: unknown = new Error("Unknown capture failure");
+  for (let attempt = 1; attempt <= MAX_CAPTURE_ATTEMPTS; attempt += 1) {
+    try {
+      return await captureRoute(iframe, path, theme, setStatus, attempt);
+    } catch (error) {
+      lastError = error;
+      if (attempt < MAX_CAPTURE_ATTEMPTS) await wait(400 * attempt);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
 async function downloadScreenshots(captures: CapturedExport[]) {
