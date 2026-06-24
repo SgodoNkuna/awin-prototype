@@ -13,7 +13,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:smoke": "vitest run tests/smoke-routes.test.ts tests/portfolio-rls-policy.test.ts",
-    "test:regression": "vitest run tests/admin-access.test.tsx tests/admin-portfolio-crud.test.tsx tests/portfolio-quickview.test.tsx"
+    "test:regression": "vitest run tests/admin-access.test.tsx tests/admin-portfolio-crud.test.tsx tests/portfolio-quickview.test.tsx",
+    "smoke:deploy": "node scripts/smoke-routes.mjs",
+    "seed:dummy-users": "node scripts/seed-dummy-users.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
