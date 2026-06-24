@@ -146,26 +146,47 @@ async function waitForAssets(doc: Document) {
   );
 }
 
+/**
+ * Wait until visible loading spinners disappear (or timeout). Many routes show
+ * a Loader2 (`.animate-spin`) while auth + initial data resolve; capturing too
+ * early produces blank pages, so we poll for a settled DOM.
+ */
+async function waitForContentReady(doc: Document, maxMs = 6000) {
+  const start = Date.now();
+  while (Date.now() - start < maxMs) {
+    const spinners = Array.from(doc.querySelectorAll<HTMLElement>(".animate-spin")).filter(
+      (el) => el.offsetParent !== null,
+    );
+    const skeletons = doc.querySelectorAll<HTMLElement>('[data-loading="true"], .animate-pulse').length;
+    const bodyText = (doc.body.innerText || "").trim().length;
+    if (spinners.length === 0 && skeletons < 4 && bodyText > 80) return;
+    await wait(200);
+  }
+}
+
 async function captureRoute(
   iframe: HTMLIFrameElement,
   path: string,
   theme: string,
   setStatus: (status: string) => void,
+  attempt: number,
 ): Promise<CapturedExport> {
   const page = getPage(path);
   const themeDef = getTheme(theme);
 
   localStorage.setItem(THEME_STORAGE_KEY, theme);
-  setStatus(`Loading ${page.label} (${themeDef.label})…`);
+  const attemptLabel = attempt > 1 ? ` (retry ${attempt - 1})` : "";
+  setStatus(`Loading ${page.label} (${themeDef.label})${attemptLabel}…`);
   await waitForIframeLoad(iframe, path);
 
   const doc = iframe.contentDocument;
   if (!doc?.documentElement || !doc.body) throw new Error("Capture frame did not load the page");
 
   installExportCss(doc, theme);
-  setStatus(`Rendering ${page.label} (${themeDef.label})…`);
+  setStatus(`Rendering ${page.label} (${themeDef.label})${attemptLabel}…`);
   await waitForAssets(doc);
-  await wait(250);
+  await waitForContentReady(doc);
+  await wait(350);
 
   const target = doc.body;
   const width = 1280;
@@ -206,6 +227,26 @@ async function captureRoute(
     }
     throw error;
   }
+}
+
+const MAX_CAPTURE_ATTEMPTS = 3;
+
+async function captureWithRetry(
+  iframe: HTMLIFrameElement,
+  path: string,
+  theme: string,
+  setStatus: (status: string) => void,
+): Promise<CapturedExport> {
+  let lastError: unknown = new Error("Unknown capture failure");
+  for (let attempt = 1; attempt <= MAX_CAPTURE_ATTEMPTS; attempt += 1) {
+    try {
+      return await captureRoute(iframe, path, theme, setStatus, attempt);
+    } catch (error) {
+      lastError = error;
+      if (attempt < MAX_CAPTURE_ATTEMPTS) await wait(400 * attempt);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
 async function downloadScreenshots(captures: CapturedExport[]) {
@@ -499,8 +540,11 @@ function ExportsPage() {
           const page = getPage(path);
           const theme = getTheme(themeId);
           try {
-            const capture = await captureRoute(iframe, path, themeId, (statusText) => {
-              updateJob((current) => ({ ...current, statusText }));
+            const capture = await captureWithRetry(iframe, path, themeId, (statusText) => {
+              updateJob((current) => ({
+                ...current,
+                statusText: `${statusText} · ${done}/${activeTotal} captured, ${activeTotal - done - 1} remaining`,
+              }));
             });
             await saveJobCapture(newJob.id, capture);
             setPreviews((current) =>
@@ -514,13 +558,15 @@ function ExportsPage() {
           }
 
           done += 1;
+          const remaining = Math.max(activeTotal - done, 0);
+          const failed = errors.length;
           const progress = Math.max(1, Math.min(96, Math.round((done / activeTotal) * 96)));
           updateJob((current) => ({
             ...current,
             done,
             errors,
             progress,
-            statusText: `Captured ${done} of ${activeTotal}`,
+            statusText: `Captured ${done - failed} · ${failed} failed · ${remaining} remaining (of ${activeTotal})`,
           }));
         }
       }
@@ -599,20 +645,29 @@ function ExportsPage() {
         <Card className={job.status === "failed" ? "border-destructive/40" : "border-accent/40"}>
           <CardContent className="p-4 space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  {running ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4 text-accent" />}
-                  Export status: {job.status}
+                  {running ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : job.status === "failed" ? (
+                    <XCircle className="size-4 text-destructive" />
+                  ) : (
+                    <CheckCircle2 className="size-4 text-accent" />
+                  )}
+                  Export status: {job.status} · {job.done - job.errors.length}/{job.total} captured · {Math.max(job.total - job.done, 0)} remaining · {job.errors.length} failed
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {job.statusText} · {capturedCount}/{job.total} processed · Saved {new Date(job.updatedAt).toLocaleString()}
+                <p className="text-xs text-muted-foreground mt-1 break-words">
+                  {job.statusText}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  Last updated {new Date(job.updatedAt).toLocaleString()} · Auto-resumes after refresh
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                {!running && job.status !== "failed" && (
+                {!running && (job.done - job.errors.length) > 0 && (
                   <>
                     <Button size="sm" onClick={() => downloadExisting("pdf")}>
-                      <Download className="size-4 mr-2" /> Download PDF
+                      <Download className="size-4 mr-2" /> Download PDF ({job.done - job.errors.length})
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => downloadExisting("screenshots")}>
                       <ImageDown className="size-4 mr-2" /> Download ZIP
@@ -624,14 +679,13 @@ function ExportsPage() {
                 </Button>
               </div>
             </div>
+            <Progress value={job.status === "complete" ? 100 : job.progress} />
             {(running || job.status === "assembling") && (
-              <div className="space-y-2">
-                <Progress value={job.progress} />
-                <p className="text-sm text-muted-foreground">Keep this tab open for the active capture. If refreshed, completed captures stay saved.</p>
-              </div>
+              <p className="text-xs text-muted-foreground">Keep this tab open for the active capture. If refreshed, completed captures stay saved and the run will continue automatically.</p>
             )}
           </CardContent>
         </Card>
+
       )}
 
       <div className="grid gap-6 md:grid-cols-2">
