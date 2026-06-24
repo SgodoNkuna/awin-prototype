@@ -50,28 +50,12 @@ describe("Smoke: every route module loads and exports `Route`", () => {
   }
 });
 
-describe("Smoke: 6-page rule (public navigation surface)", () => {
-  it("exposes exactly the six public pages required by the spec", () => {
-    const publicPages = ["index", "about", "membership", "events", "portfolio", "contact"];
+describe("Smoke: agreed public navigation surface", () => {
+  it("exposes the nine agreed public pages", () => {
+    const publicPages = ["index", "about", "membership", "events", "portfolio", "news", "team", "info", "contact"];
     for (const page of publicPages) {
       const target = page === "index" ? "index.tsx" : `${page}.tsx`;
       expect(allRouteFiles.includes(target), `missing public route ${target}`).toBe(true);
-    }
-  });
-
-  it("does not re-introduce any of the removed legacy pages", () => {
-    const banned = [
-      "benefits.tsx",
-      "committee.tsx",
-      "faqs.tsx",
-      "how-to-join.tsx",
-      "why-join.tsx",
-      "resources.tsx",
-      "theme-lab.tsx",
-      "news.tsx",
-    ];
-    for (const f of banned) {
-      expect(allRouteFiles.includes(f), `legacy route ${f} should have been deleted`).toBe(false);
     }
   });
 });

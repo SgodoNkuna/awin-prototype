@@ -38,11 +38,11 @@ export const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>
       <span
         className="absolute inset-0 -z-10 rounded-[inherit] pointer-events-none"
         style={{
-          backgroundColor: "color-mix(in oklab, var(--foreground) 6%, transparent)",
+          backgroundColor: "var(--hero-surface)",
           backdropFilter: "blur(14px) saturate(180%)",
           WebkitBackdropFilter: "blur(14px) saturate(180%)",
           boxShadow:
-            "inset 0 0 0 1px color-mix(in srgb, white 12%, transparent), inset 1.8px 3px 0 -2px color-mix(in srgb, white 60%, transparent), inset -2px -2px 0 -2px color-mix(in srgb, white 40%, transparent), inset 0 3px 4px -2px color-mix(in srgb, black 18%, transparent), 0 1px 5px 0 color-mix(in srgb, black 10%, transparent), 0 6px 16px 0 color-mix(in srgb, black 10%, transparent)",
+            "inset 0 0 0 1px rgba(255,255,255,0.12), inset 1.8px 3px 0 -2px rgba(255,255,255,0.6), inset -2px -2px 0 -2px rgba(255,255,255,0.4), inset 0 3px 4px -2px rgba(0,0,0,0.18), 0 1px 5px 0 rgba(0,0,0,0.1), 0 6px 16px 0 rgba(0,0,0,0.1)",
           transition: "background-color 400ms cubic-bezier(1,0,0.4,1), box-shadow 400ms cubic-bezier(1,0,0.4,1)",
         }}
       />
@@ -51,7 +51,7 @@ export const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>
           "relative z-10 flex w-full items-center justify-center gap-[inherit] select-none",
           contentClassName
         )}
-        style={{ textShadow: "0 1px 2px color-mix(in oklab, var(--background) 35%, transparent)" }}
+        style={{ textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}
       >
         {children}
       </span>
