@@ -1,7 +1,7 @@
 import type { CapturedExport } from "@/lib/export-runbook";
 
 export type ExportJobMode = "pdf" | "screenshots";
-export type ExportJobStatus = "running" | "assembling" | "ready" | "complete" | "failed";
+export type ExportJobStatus = "running" | "assembling" | "paused" | "ready" | "complete" | "failed";
 
 export type ExportJobState = {
   id: string;

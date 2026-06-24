@@ -381,7 +381,9 @@ function ExportsPage() {
 
   const updateJob = (next: ExportJobState | ((current: ExportJobState) => ExportJobState)) => {
     setJob((current) => {
-      const resolved = typeof next === "function" ? (next as (value: ExportJobState) => ExportJobState)(current!) : next;
+      const base = current ?? loadExportJob();
+      if (typeof next === "function" && !base) return current;
+      const resolved = typeof next === "function" ? (next as (value: ExportJobState) => ExportJobState)(base!) : next;
       saveExportJob(resolved);
       return resolved;
     });
@@ -433,9 +435,12 @@ function ExportsPage() {
     }
   }
 
-  async function runCapture(mode: ExportJobMode) {
+  async function runCapture(mode: ExportJobMode, resumeJob?: ExportJobState) {
     if (runLock.current) return;
-    if (totalJobs === 0) {
+    const activePages = resumeJob?.selectedPages ?? selectedPages;
+    const activeThemes = resumeJob?.selectedThemes ?? selectedThemes;
+    const activeTotal = activePages.length * activeThemes.length;
+    if (activeTotal === 0) {
       toast.error("Select at least one page and theme");
       return;
     }
@@ -445,20 +450,34 @@ function ExportsPage() {
       return;
     }
 
-    const newJob = createExportJob({ mode, selectedPages, selectedThemes, total: totalJobs });
+    const newJob: ExportJobState = resumeJob
+      ? {
+          ...resumeJob,
+          mode,
+          selectedPages: activePages,
+          selectedThemes: activeThemes,
+          total: activeTotal,
+          status: "running",
+          statusText: "Resuming export…",
+          updatedAt: new Date().toISOString(),
+        }
+      : createExportJob({ mode, selectedPages: activePages, selectedThemes: activeThemes, total: activeTotal });
     runLock.current = true;
     setJob(newJob);
     saveExportJob(newJob);
-    setPreviews([]);
+    if (!resumeJob) setPreviews([]);
     const originalTheme = localStorage.getItem(THEME_STORAGE_KEY);
 
     try {
-      await clearJobCaptures(newJob.id).catch(() => undefined);
-      const errors: string[] = [];
-      let done = 0;
+      if (!resumeJob) await clearJobCaptures(newJob.id).catch(() => undefined);
+      const existingCaptures = resumeJob ? await getJobCaptures(newJob.id).catch(() => [] as CapturedExport[]) : [];
+      const capturedKeys = new Set(existingCaptures.map((capture) => `${capture.page}::${capture.theme}`));
+      const errors: string[] = resumeJob?.errors ?? [];
+      let done = Math.min(existingCaptures.length, activeTotal);
 
-      for (const themeId of selectedThemes) {
-        for (const path of selectedPages) {
+      for (const themeId of activeThemes) {
+        for (const path of activePages) {
+          if (capturedKeys.has(`${path}::${themeId}`)) continue;
           const page = getPage(path);
           const theme = getTheme(themeId);
           try {
@@ -477,13 +496,13 @@ function ExportsPage() {
           }
 
           done += 1;
-          const progress = Math.max(1, Math.min(96, Math.round((done / totalJobs) * 96)));
+          const progress = Math.max(1, Math.min(96, Math.round((done / activeTotal) * 96)));
           updateJob((current) => ({
             ...current,
             done,
             errors,
             progress,
-            statusText: `Captured ${done} of ${totalJobs}`,
+            statusText: `Captured ${done} of ${activeTotal}`,
           }));
         }
       }
@@ -492,10 +511,10 @@ function ExportsPage() {
         ...newJob,
         done,
         errors,
-        progress: errors.length === totalJobs ? 100 : 97,
-        status: errors.length === totalJobs ? "failed" : "ready",
+        progress: errors.length === activeTotal ? 100 : 97,
+        status: errors.length === activeTotal ? "failed" : "ready",
         statusText:
-          errors.length === totalJobs
+          errors.length === activeTotal
             ? "Every capture failed. Adjust selections and try again."
             : "Captures saved. Preparing download…",
         updatedAt: new Date().toISOString(),
@@ -503,7 +522,7 @@ function ExportsPage() {
       setJob(readyJob);
       saveExportJob(readyJob);
 
-      if (errors.length === totalJobs) {
+      if (errors.length === activeTotal) {
         toast.error("Every capture failed");
         return;
       }
@@ -691,6 +710,11 @@ function ExportsPage() {
             {job?.status === "failed" && (
               <Button variant="secondary" onClick={() => runCapture(job.mode)} disabled={running || totalJobs === 0}>
                 <RotateCcw className="size-4 mr-2" /> Retry
+              </Button>
+            )}
+            {job?.status === "paused" && (
+              <Button variant="secondary" onClick={() => runCapture(job.mode, job)} disabled={running || job.total === 0}>
+                <RotateCcw className="size-4 mr-2" /> Resume Export
               </Button>
             )}
           </div>
