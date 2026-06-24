@@ -340,12 +340,13 @@ function ExportsPage() {
   useEffect(() => {
     const saved = loadExportJob();
     if (!saved) return;
+    const shouldAutoResume = saved.status === "running" || saved.status === "assembling";
     const restored: ExportJobState =
-      saved.status === "running" || saved.status === "assembling"
+      shouldAutoResume
         ? {
             ...saved,
             status: "paused",
-            statusText: "Export was interrupted. Saved captures are still available; resume to continue.",
+            statusText: "Export was interrupted by refresh. Saved captures are loading and the run will resume automatically…",
             updatedAt: new Date().toISOString(),
           }
         : saved;
@@ -363,6 +364,13 @@ function ExportsPage() {
         );
       })
       .catch(() => undefined);
+
+    if (shouldAutoResume) {
+      window.setTimeout(() => {
+        toast.info("Resuming the saved export run…");
+        void runCapture(restored.mode, restored);
+      }, 500);
+    }
   }, []);
 
   const running = job?.status === "running" || job?.status === "assembling";
