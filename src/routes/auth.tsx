@@ -33,13 +33,15 @@ const signUpSchema = signInSchema.extend({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user) navigate({ to: "/portal", replace: true });
-  }, [user, navigate]);
+    if (loading || !user) return;
+    // Admins land on the admin dashboard; members continue to the portal.
+    navigate({ to: isAdmin ? "/admin" : "/portal", replace: true });
+  }, [user, isAdmin, loading, navigate]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
