@@ -1,18 +1,18 @@
 # A-WIN
 
-TanStack Start + React 19 + Supabase (Lovable Cloud). Edited inside Lovable, two-way synced to GitHub, deployable to Vercel.
+TanStack Start + React 19 + Supabase. Deployable to Vercel.
 
 ## Deploying to Vercel from GitHub
 
 The project ships pre-configured for Vercel.
 
-1. Push the repo to GitHub (Lovable's GitHub sync does this automatically).
+1. Push the repo to GitHub.
 2. In Vercel: **Add New Project → Import** the GitHub repo.
 3. Framework Preset: **Other** (auto-detected from `vercel.json`).
 4. Build/install/output are read from `vercel.json` — leave the defaults.
 5. Add the environment variables below in **Project Settings → Environment Variables**, then **Deploy**.
 
-`vercel.json` runs `NITRO_PRESET=vercel npm run build`. That switches the Nitro target from `cloudflare-module` (used inside Lovable's preview) to `vercel`, producing the Vercel Build Output (`.vercel/output/`) which Vercel deploys as static assets + serverless functions automatically — no extra config needed.
+`vercel.json` runs `NITRO_PRESET=vercel npm run build`. That switches the Nitro target from `cloudflare-module` (used by some preview environments) to `vercel`, producing the Vercel Build Output (`.vercel/output/`) which Vercel deploys as static assets + serverless functions automatically — no extra config needed.
 
 ### Required environment variables
 
@@ -26,13 +26,13 @@ Server-only (used by server functions / webhooks):
 
 - `SUPABASE_URL`
 - `SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` *(only set if you've provisioned your own Supabase project; not available on Lovable Cloud)*
+- `SUPABASE_SERVICE_ROLE_KEY` *(only set if you've provisioned your own Supabase project)*
 - `PAYFAST_MERCHANT_ID`
 - `PAYFAST_MERCHANT_KEY`
 - `PAYFAST_PASSPHRASE`
-- `LOVABLE_API_KEY` *(only if you keep Lovable AI calls)*
+- `AI_INTEGRATION_API_KEY` *(optional — only if you keep external AI calls)*
 
-Copy the `VITE_*` values from `.env` after Lovable provisions Cloud — never commit `.env`.
+Copy the `VITE_*` values into your local `.env` (never commit `.env`).
 
 ### Webhooks
 
@@ -69,4 +69,4 @@ NITRO_PRESET=vercel npm run build
 - `supabase/migrations/` – database schema
 - `tests/` – vitest + Testing Library
 
-See `.lovable/plan.md` for the sprint roadmap.
+See `/docs` for the project roadmap and handover checklist.
