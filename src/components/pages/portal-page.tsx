@@ -28,9 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BillingTab } from "@/components/portal/BillingTab";
 
-export const Route = ("/portal")({
-  component: PortalPage,
-  head: () => ({ meta: [{ title: "Member Portal | A-WIN" }] })});
+
 
 type Application = {
   id: string;

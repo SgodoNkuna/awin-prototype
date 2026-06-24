@@ -18,16 +18,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 
-export const Route = ("/membership")({
-  component: MembershipPage,
-  head: () => ({
-    meta: [
-      { title: "Join A-WIN | Membership" },
-      {
-        name: "description",
-        content:
-          "Become an A-WIN member. Choose from General, Active or Patron tiers and start your investment journey with us."},
-    ]})});
+
 
 const TIERS = [
   {

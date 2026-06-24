@@ -32,9 +32,7 @@ import {
   retryWebhookEvent,
   overrideMembership} from "@/lib/billing-admin.functions";
 
-export const Route = ("/admin/billing")({
-  component: BillingAdminPage,
-  head: () => ({ meta: [{ title: "Billing | Admin | A-WIN" }] })});
+
 
 type Payment = {
   id: string;
