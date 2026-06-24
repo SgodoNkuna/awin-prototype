@@ -17,6 +17,12 @@ export default defineConfig({
   // to cloudflare-module by @lovable.dev/vite-tanstack-config and this
   // option is ignored, so the preview keeps working unchanged.
   nitro: process.env.NITRO_PRESET
-    ? { preset: process.env.NITRO_PRESET }
+    ? {
+        preset: process.env.NITRO_PRESET,
+        ...(process.env.NITRO_PRESET === "vercel"
+          ? { output: { dir: ".vercel/output" } }
+          : {}),
+      }
     : undefined,
+
 });
