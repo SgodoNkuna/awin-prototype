@@ -12,17 +12,34 @@ export const Route = createFileRoute("/admin/exports")({
   component: ExportsPage,
 });
 
-const PAGES = [
-  { path: "/", label: "Home" },
-  { path: "/about", label: "About" },
-  { path: "/membership", label: "Membership" },
-  { path: "/events", label: "Events" },
-  { path: "/portfolio", label: "Portfolio" },
-  { path: "/news", label: "News & Insights" },
-  { path: "/team", label: "Team & Leadership" },
-  { path: "/info", label: "FAQ & Privacy" },
-  { path: "/contact", label: "Contact" },
+type PageDef = { path: string; label: string; group: "Public" | "Member Portal" | "Admin Console" };
+
+const PAGES: readonly PageDef[] = [
+  // Public site (9)
+  { path: "/", label: "Home", group: "Public" },
+  { path: "/about", label: "About", group: "Public" },
+  { path: "/membership", label: "Membership", group: "Public" },
+  { path: "/events", label: "Events", group: "Public" },
+  { path: "/portfolio", label: "Portfolio", group: "Public" },
+  { path: "/news", label: "News & Insights", group: "Public" },
+  { path: "/team", label: "Team & Leadership", group: "Public" },
+  { path: "/info", label: "FAQ & Privacy", group: "Public" },
+  { path: "/contact", label: "Contact", group: "Public" },
+  // Member portal (signed-in view)
+  { path: "/portal", label: "Member Portal", group: "Member Portal" },
+  // Admin console (inner workings)
+  { path: "/admin", label: "Admin · Dashboard", group: "Admin Console" },
+  { path: "/admin/members", label: "Admin · Members", group: "Admin Console" },
+  { path: "/admin/applications", label: "Admin · Applications", group: "Admin Console" },
+  { path: "/admin/events", label: "Admin · Events", group: "Admin Console" },
+  { path: "/admin/portfolio", label: "Admin · Portfolio", group: "Admin Console" },
+  { path: "/admin/documents", label: "Admin · Documents", group: "Admin Console" },
+  { path: "/admin/messages", label: "Admin · Messages", group: "Admin Console" },
+  { path: "/admin/billing", label: "Admin · Billing", group: "Admin Console" },
+  { path: "/admin/settings", label: "Admin · Settings", group: "Admin Console" },
 ] as const;
+
+const PAGE_GROUPS: PageDef["group"][] = ["Public", "Member Portal", "Admin Console"];
 
 const THEMES = [
   { id: "color", label: "Green (Default)", swatch: "#1f6b46" },
@@ -266,8 +283,12 @@ function ExportsPage() {
       <div>
         <h1 className="text-3xl font-serif">PDF Export</h1>
         <p className="text-muted-foreground mt-2">
-          Generate a print-ready PDF (or individual screenshots) of every public page in every
-          theme — ideal for sharing the site with stakeholders without needing internet access.
+          Generate a print-ready PDF (or individual screenshots) covering the public site,
+          the member portal, and the admin console — every selected page in every theme.
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Admin & portal pages capture using your current sign-in. Sign in as the role you want
+          to document before running the export.
         </p>
       </div>
 
@@ -281,21 +302,50 @@ function ExportsPage() {
                 <Button size="sm" variant="ghost" onClick={() => setSelectedPages([])}>None</Button>
               </div>
             </div>
-            <div className="space-y-2">
-              {PAGES.map((p) => (
-                <label key={p.path} className="flex items-center gap-2 text-sm cursor-pointer">
-                  <Checkbox
-                    checked={selectedPages.includes(p.path)}
-                    onCheckedChange={() => togglePage(p.path)}
-                    disabled={running}
-                  />
-                  <span className="flex-1">{p.label}</span>
-                  <code className="text-xs text-muted-foreground">{p.path}</code>
-                </label>
-              ))}
+            <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1">
+              {PAGE_GROUPS.map((groupName) => {
+                const groupPages = PAGES.filter((p) => p.group === groupName);
+                const allSelected = groupPages.every((p) => selectedPages.includes(p.path));
+                return (
+                  <div key={groupName}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                        {groupName} · {groupPages.length}
+                      </div>
+                      <button
+                        type="button"
+                        className="text-xs text-accent hover:underline"
+                        disabled={running}
+                        onClick={() => {
+                          const paths = groupPages.map((p) => p.path);
+                          setSelectedPages((s) =>
+                            allSelected ? s.filter((x) => !paths.includes(x)) : Array.from(new Set([...s, ...paths])),
+                          );
+                        }}
+                      >
+                        {allSelected ? "Clear" : "Select all"}
+                      </button>
+                    </div>
+                    <div className="space-y-1.5">
+                      {groupPages.map((p) => (
+                        <label key={p.path} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={selectedPages.includes(p.path)}
+                            onCheckedChange={() => togglePage(p.path)}
+                            disabled={running}
+                          />
+                          <span className="flex-1">{p.label}</span>
+                          <code className="text-xs text-muted-foreground">{p.path}</code>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
+
 
         <Card>
           <CardContent className="p-5">
