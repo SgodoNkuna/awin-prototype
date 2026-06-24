@@ -22,6 +22,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as DebugRoutesRouteImport } from './routes/debug.routes'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminPortfolioRouteImport } from './routes/admin.portfolio'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
@@ -98,6 +99,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const DebugRoutesRoute = DebugRoutesRouteImport.update({
+  id: '/debug/routes',
+  path: '/debug/routes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
 }
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/debug/routes': typeof DebugRoutesRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
 }
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
 }
@@ -248,6 +257,7 @@ export interface FileRouteTypes {
     | '/admin/messages'
     | '/admin/portfolio'
     | '/admin/settings'
+    | '/debug/routes'
     | '/admin/'
     | '/api/public/payfast/itn'
   fileRoutesByTo: FileRoutesByTo
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/admin/messages'
     | '/admin/portfolio'
     | '/admin/settings'
+    | '/debug/routes'
     | '/admin'
     | '/api/public/payfast/itn'
   id:
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/admin/messages'
     | '/admin/portfolio'
     | '/admin/settings'
+    | '/debug/routes'
     | '/admin/'
     | '/api/public/payfast/itn'
   fileRoutesById: FileRoutesById
@@ -314,6 +326,7 @@ export interface RootRouteChildren {
   PortalRoute: typeof PortalRoute
   PortfolioRoute: typeof PortfolioRoute
   TeamRoute: typeof TeamRoute
+  DebugRoutesRoute: typeof DebugRoutesRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
 }
 
@@ -409,6 +422,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/debug/routes': {
+      id: '/debug/routes'
+      path: '/debug/routes'
+      fullPath: '/debug/routes'
+      preLoaderRoute: typeof DebugRoutesRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/settings': {
       id: '/admin/settings'
@@ -524,6 +544,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalRoute: PortalRoute,
   PortfolioRoute: PortfolioRoute,
   TeamRoute: TeamRoute,
+  DebugRoutesRoute: DebugRoutesRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Search, Download, Loader2 } from "lucide-react";
+import { Search, Download, Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { setUserRole } from "@/lib/admin-roles.functions";
 
 export const Route = createFileRoute("/admin/members")({
   component: MembersPage,
@@ -33,6 +36,10 @@ function MembersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [editing, setEditing] = useState<Member | null>(null);
+  const [promoting, setPromoting] = useState<Member | null>(null);
+  const [promoteReason, setPromoteReason] = useState("");
+  const [promoteBusy, setPromoteBusy] = useState(false);
+  const callSetRole = useServerFn(setUserRole);
 
   const load = async () => {
     const { data, error } = await supabase
@@ -151,6 +158,9 @@ function MembersPage() {
                           >
                             {m.suspended ? "Unsuspend" : "Suspend"}
                           </Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setPromoting(m); setPromoteReason(""); }}>
+                            <Shield className="size-3.5 mr-1" /> Role
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -215,6 +225,55 @@ function MembersPage() {
                 setEditing(null);
               }}
             >Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!promoting} onOpenChange={(o) => !o && setPromoting(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Manage Admin Role</DialogTitle></DialogHeader>
+          {promoting && (
+            <div className="space-y-3">
+              <p className="text-sm">
+                <span className="font-medium">{promoting.full_name || promoting.email}</span>
+                <br />
+                <span className="text-xs text-muted-foreground">{promoting.email}</span>
+              </p>
+              <div className="grid gap-2">
+                <label className="text-xs font-medium">Reason (audit log, min 5 chars)</label>
+                <Textarea value={promoteReason} onChange={(e) => setPromoteReason(e.target.value)} rows={3} placeholder="e.g. New committee chair — onboarded 2026-06-24" />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setPromoting(null)}>Cancel</Button>
+            <Button
+              variant="outline"
+              disabled={promoteBusy || promoteReason.trim().length < 5 || !promoting}
+              onClick={async () => {
+                if (!promoting) return;
+                setPromoteBusy(true);
+                try {
+                  await callSetRole({ data: { user_id: promoting.id, role: "admin", action: "revoke", reason: promoteReason.trim() } });
+                  toast.success("Admin role revoked");
+                  setPromoting(null);
+                } catch (e: any) { toast.error(e.message ?? "Failed"); }
+                finally { setPromoteBusy(false); }
+              }}
+            >Revoke admin</Button>
+            <Button
+              disabled={promoteBusy || promoteReason.trim().length < 5 || !promoting}
+              onClick={async () => {
+                if (!promoting) return;
+                setPromoteBusy(true);
+                try {
+                  await callSetRole({ data: { user_id: promoting.id, role: "admin", action: "grant", reason: promoteReason.trim() } });
+                  toast.success("Promoted to admin");
+                  setPromoting(null);
+                } catch (e: any) { toast.error(e.message ?? "Failed"); }
+                finally { setPromoteBusy(false); }
+              }}
+            >{promoteBusy ? <Loader2 className="size-4 animate-spin" /> : "Promote to admin"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
