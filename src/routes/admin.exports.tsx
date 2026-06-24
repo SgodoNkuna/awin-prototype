@@ -233,6 +233,21 @@ function ExportsPage() {
         }
         toast.success(`Downloaded ${captured.length} screenshots`);
       }
+
+      // Persist last-export marker so the admin dashboard freshness banner reflects this run
+      try {
+        localStorage.setItem(
+          "awin-last-export",
+          JSON.stringify({
+            at: new Date().toISOString(),
+            count: captured.length,
+            pages: selectedPages.length,
+            themes: selectedThemes.length,
+          }),
+        );
+      } catch {
+        /* ignore quota errors */
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       toast.error(`Export failed: ${msg}`);
