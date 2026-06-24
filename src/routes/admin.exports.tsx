@@ -340,10 +340,20 @@ function ExportsPage() {
   useEffect(() => {
     const saved = loadExportJob();
     if (!saved) return;
-    setJob(saved);
-    setSelectedPages(saved.selectedPages);
-    setSelectedThemes(saved.selectedThemes);
-    getJobCaptures(saved.id)
+    const restored: ExportJobState =
+      saved.status === "running" || saved.status === "assembling"
+        ? {
+            ...saved,
+            status: "paused",
+            statusText: "Export was interrupted. Saved captures are still available; resume to continue.",
+            updatedAt: new Date().toISOString(),
+          }
+        : saved;
+    if (restored !== saved) saveExportJob(restored);
+    setJob(restored);
+    setSelectedPages(restored.selectedPages);
+    setSelectedThemes(restored.selectedThemes);
+    getJobCaptures(restored.id)
       .then((captures) => {
         setPreviews(
           captures.slice(0, SCREENSHOT_PREVIEW_LIMIT).map((capture, index) => ({
