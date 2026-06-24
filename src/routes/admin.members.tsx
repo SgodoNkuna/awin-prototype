@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Search, Download, Loader2 } from "lucide-react";
+import { Search, Download, Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { setUserRole } from "@/lib/admin-roles.functions";
 
 export const Route = createFileRoute("/admin/members")({
   component: MembersPage,
@@ -33,6 +36,10 @@ function MembersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [editing, setEditing] = useState<Member | null>(null);
+  const [promoting, setPromoting] = useState<Member | null>(null);
+  const [promoteReason, setPromoteReason] = useState("");
+  const [promoteBusy, setPromoteBusy] = useState(false);
+  const callSetRole = useServerFn(setUserRole);
 
   const load = async () => {
     const { data, error } = await supabase
