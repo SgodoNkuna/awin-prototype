@@ -12,4 +12,11 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  // Outside Lovable's preview, honour NITRO_PRESET so CI (e.g. Vercel)
+  // can build for its own target. Inside Lovable the preset is forced
+  // to cloudflare-module by @lovable.dev/vite-tanstack-config and this
+  // option is ignored, so the preview keeps working unchanged.
+  nitro: process.env.NITRO_PRESET
+    ? { preset: process.env.NITRO_PRESET }
+    : undefined,
 });
