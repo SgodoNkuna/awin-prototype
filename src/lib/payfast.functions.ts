@@ -24,7 +24,7 @@ const checkoutSchema = z.object({
  */
 export const createPayfastCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => checkoutSchema.parse(input))
+  .inputValidator((input: unknown) => checkoutSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const {

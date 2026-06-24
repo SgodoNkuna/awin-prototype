@@ -48,7 +48,7 @@ export const listAuditLogs = createServerFn({ method: "GET" })
 
 export const retryWebhookEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     await ensureAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -98,7 +98,7 @@ const overrideSchema = z.object({
 
 export const overrideMembership = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: unknown) => overrideSchema.parse(i))
+  .inputValidator((i: unknown) => overrideSchema.parse(i))
   .handler(async ({ data, context }) => {
     await ensureAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
