@@ -18,24 +18,64 @@ import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+type AdminPath =
+  | "/admin"
+  | "/admin/members"
+  | "/admin/applications"
+  | "/admin/events"
+  | "/admin/portfolio"
+  | "/admin/messages"
+  | "/admin/documents"
+  | "/admin/billing"
+  | "/admin/exports"
+  | "/admin/settings";
+
 type NavItem = {
-  to: "/admin" | "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/portfolio" | "/admin/messages" | "/admin/documents" | "/admin/billing" | "/admin/exports" | "/admin/settings";
+  to: AdminPath;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
 };
-const NAV: NavItem[] = [
-  { to: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
-  { to: "/admin/members", label: "Members", icon: Users },
-  { to: "/admin/applications", label: "Applications", icon: ClipboardList },
-  { to: "/admin/events", label: "Events", icon: Calendar },
-  { to: "/admin/portfolio", label: "Portfolio", icon: Briefcase },
-  { to: "/admin/messages", label: "Messages", icon: Mail },
-  { to: "/admin/documents", label: "Documents", icon: FolderOpen },
-  { to: "/admin/billing", label: "Billing", icon: CreditCard },
-  { to: "/admin/exports", label: "PDF Export", icon: FileDown },
-  { to: "/admin/settings", label: "Settings", icon: Settings },
+
+type NavGroup = { label: string; items: NavItem[] };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true }],
+  },
+  {
+    label: "People",
+    items: [
+      { to: "/admin/members", label: "Members", icon: Users },
+      { to: "/admin/applications", label: "Applications", icon: ClipboardList },
+    ],
+  },
+  {
+    label: "Content",
+    items: [
+      { to: "/admin/events", label: "Events", icon: Calendar },
+      { to: "/admin/portfolio", label: "Portfolio", icon: Briefcase },
+      { to: "/admin/documents", label: "Documents", icon: FolderOpen },
+    ],
+  },
+  {
+    label: "Communications",
+    items: [
+      { to: "/admin/messages", label: "Messages", icon: Mail },
+      { to: "/admin/billing", label: "Billing", icon: CreditCard },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { to: "/admin/exports", label: "PDF Export", icon: FileDown },
+      { to: "/admin/settings", label: "Settings", icon: Settings },
+    ],
+  },
 ];
+
+const FLAT_NAV: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
 
 export function AdminLayout() {
   const { user, loading, isAdmin, signOut } = useAuth();
@@ -56,32 +96,45 @@ export function AdminLayout() {
     );
   }
 
+  const isActive = (item: NavItem) =>
+    item.exact ? path === item.to : path === item.to || path.startsWith(item.to + "/");
+
   return (
     <div className="flex min-h-[calc(100vh-5rem)] bg-muted/30">
-      <aside className="hidden md:flex w-60 flex-col border-r bg-card">
-        <div className="px-5 py-5 border-b">
+      <aside className="hidden md:flex w-64 flex-col border-r bg-card sticky top-20 self-start h-[calc(100vh-5rem)]">
+        <div className="px-5 py-4 border-b">
           <div className="text-xs font-semibold uppercase tracking-widest text-accent">A-WIN</div>
           <div className="text-sm font-medium">Admin Console</div>
+          <div className="text-xs text-muted-foreground truncate mt-0.5">{user.email}</div>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
-          {NAV.map((item) => {
-            const active = item.exact ? path === item.to : path === item.to || path.startsWith(item.to + "/");
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground/70 hover:bg-secondary hover:text-foreground",
-                )}
-              >
-                <item.icon className="size-4" />
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto p-3 space-y-4">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label}>
+              <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                {group.label}
+              </div>
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const active = isActive(item);
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        active
+                          ? "bg-primary text-primary-foreground"
+                          : "text-foreground/70 hover:bg-secondary hover:text-foreground",
+                      )}
+                    >
+                      <item.icon className="size-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
         <div className="p-3 border-t space-y-1">
           <Button asChild variant="ghost" size="sm" className="w-full justify-start">
@@ -96,8 +149,8 @@ export function AdminLayout() {
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-20 left-0 right-0 z-40 bg-card border-b overflow-x-auto">
         <div className="flex gap-1 p-2">
-          {NAV.map((item) => {
-            const active = item.exact ? path === item.to : path.startsWith(item.to);
+          {FLAT_NAV.map((item) => {
+            const active = isActive(item);
             return (
               <Link
                 key={item.to}

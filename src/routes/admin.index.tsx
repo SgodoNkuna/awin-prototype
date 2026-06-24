@@ -1,30 +1,74 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Users, ClipboardList, Calendar, Mail, Plus, FileText, ArrowRight } from "lucide-react";
+import {
+  Users,
+  ClipboardList,
+  Calendar,
+  Mail,
+  Plus,
+  FileText,
+  ArrowRight,
+  Camera,
+  CheckCircle2,
+  AlertTriangle,
+  Briefcase,
+  FolderOpen,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/admin/")({
   component: OverviewPage,
 });
+
+const LAST_EXPORT_KEY = "awin-last-export";
 
 type Stats = {
   members: number;
   pending: number;
   upcoming: number;
   unread: number;
+  portfolio: number;
+  documents: number;
 };
 
 type Activity = { type: string; title: string; when: string };
 
+type LastExport = { at: string; count: number; pages: number; themes: number };
+
 function OverviewPage() {
+  const { user } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [activity, setActivity] = useState<Activity[]>([]);
+  const [lastExport, setLastExport] = useState<LastExport | null>(null);
+  const [latestChange, setLatestChange] = useState<string | null>(null);
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LAST_EXPORT_KEY);
+      if (raw) setLastExport(JSON.parse(raw));
+    } catch {
+      /* ignore */
+    }
+
     (async () => {
-      const [members, pending, upcoming, unread, recentApps, recentMsgs] = await Promise.all([
+      const [
+        members,
+        pending,
+        upcoming,
+        unread,
+        portfolio,
+        documents,
+        recentApps,
+        recentMsgs,
+        latestPortfolio,
+        latestEvent,
+        latestNews,
+        latestTeam,
+      ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("applications").select("*", { count: "exact", head: true }).eq("status", "pending"),
         supabase
@@ -32,15 +76,25 @@ function OverviewPage() {
           .select("*", { count: "exact", head: true })
           .gte("event_date", new Date().toISOString().slice(0, 10)),
         supabase.from("contact_messages").select("*", { count: "exact", head: true }).eq("is_read", false),
+        supabase.from("portfolio_items").select("*", { count: "exact", head: true }),
+        supabase.from("documents").select("*", { count: "exact", head: true }),
         supabase.from("applications").select("full_name, created_at").order("created_at", { ascending: false }).limit(3),
         supabase.from("contact_messages").select("name, subject, created_at").order("created_at", { ascending: false }).limit(3),
+        supabase.from("portfolio_items").select("updated_at").order("updated_at", { ascending: false }).limit(1),
+        supabase.from("events").select("updated_at").order("updated_at", { ascending: false }).limit(1),
+        supabase.from("news_articles").select("updated_at").order("updated_at", { ascending: false }).limit(1),
+        supabase.from("team_members").select("updated_at").order("updated_at", { ascending: false }).limit(1),
       ]);
+
       setStats({
         members: members.count ?? 0,
         pending: pending.count ?? 0,
         upcoming: upcoming.count ?? 0,
         unread: unread.count ?? 0,
+        portfolio: portfolio.count ?? 0,
+        documents: documents.count ?? 0,
       });
+
       const a: Activity[] = [
         ...(recentApps.data ?? []).map((x) => ({
           type: "Application",
@@ -56,26 +110,94 @@ function OverviewPage() {
         .sort((a, b) => +new Date(b.when) - +new Date(a.when))
         .slice(0, 8);
       setActivity(a);
+
+      const allLatest = [latestPortfolio, latestEvent, latestNews, latestTeam]
+        .map((r) => r.data?.[0]?.updated_at as string | undefined)
+        .filter((x): x is string => !!x)
+        .sort()
+        .reverse();
+      setLatestChange(allLatest[0] ?? null);
     })();
   }, []);
 
+  const exportStale =
+    !lastExport ||
+    (latestChange && new Date(latestChange).getTime() > new Date(lastExport.at).getTime());
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-serif text-2xl md:text-3xl">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Welcome back to your admin console.</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-serif text-2xl md:text-3xl">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            Welcome back{user?.email ? `, ${user.email.split("@")[0]}` : ""}. Here's what's happening today.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/" target="_blank">View Site</Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link to="/admin/exports">
+              <Camera className="size-4 mr-2" /> Snapshot Site
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Stat icon={Users} label="Total Members" value={stats?.members} accent="text-blue-600" />
-        <Stat icon={ClipboardList} label="Pending Applications" value={stats?.pending} accent="text-amber-600" />
-        <Stat icon={Calendar} label="Upcoming Events" value={stats?.upcoming} accent="text-green-600" />
-        <Stat icon={Mail} label="Unread Messages" value={stats?.unread} accent="text-rose-600" />
+      {/* Snapshot freshness banner */}
+      <Card
+        className={
+          exportStale
+            ? "border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/10"
+            : "border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-950/10"
+        }
+      >
+        <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            {exportStale ? (
+              <AlertTriangle className="size-5 text-amber-600 mt-0.5" />
+            ) : (
+              <CheckCircle2 className="size-5 text-emerald-600 mt-0.5" />
+            )}
+            <div>
+              <p className="text-sm font-medium">
+                {exportStale ? "Site snapshots are out of date" : "Snapshots up to date"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {lastExport
+                  ? `Last export: ${new Date(lastExport.at).toLocaleString()} · ${lastExport.count} screenshot${lastExport.count === 1 ? "" : "s"} (${lastExport.pages} page${lastExport.pages === 1 ? "" : "s"} × ${lastExport.themes} theme${lastExport.themes === 1 ? "" : "s"})`
+                  : "No export has been generated yet."}
+                {latestChange ? ` · Latest content change: ${new Date(latestChange).toLocaleString()}` : ""}
+              </p>
+            </div>
+          </div>
+          <Button asChild size="sm" variant={exportStale ? "default" : "outline"}>
+            <Link to="/admin/exports">
+              <Camera className="size-4 mr-2" />
+              {exportStale ? "Regenerate Now" : "Open Export"}
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <Stat icon={Users} label="Members" value={stats?.members} to="/admin/members" accent="text-blue-600" />
+        <Stat icon={ClipboardList} label="Pending Apps" value={stats?.pending} to="/admin/applications" accent="text-amber-600" />
+        <Stat icon={Calendar} label="Upcoming Events" value={stats?.upcoming} to="/admin/events" accent="text-green-600" />
+        <Stat icon={Mail} label="Unread Msgs" value={stats?.unread} to="/admin/messages" accent="text-rose-600" />
+        <Stat icon={Briefcase} label="Portfolio Items" value={stats?.portfolio} to="/admin/portfolio" accent="text-purple-600" />
+        <Stat icon={FolderOpen} label="Documents" value={stats?.documents} to="/admin/documents" accent="text-cyan-600" />
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
         <Card className="md:col-span-2">
-          <CardHeader><CardTitle className="text-base">Recent Activity</CardTitle></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-base">Recent Activity</CardTitle>
+            {stats && (stats.pending > 0 || stats.unread > 0) ? (
+              <Badge variant="secondary">{stats.pending + stats.unread} needs attention</Badge>
+            ) : null}
+          </CardHeader>
           <CardContent>
             {activity.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nothing recent.</p>
@@ -98,17 +220,15 @@ function OverviewPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Quick Actions</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-2">
-            <Button asChild className="w-full justify-between" variant="outline">
-              <Link to="/admin/events"><span className="flex items-center gap-2"><Plus className="size-4" /> Add Event</span><ArrowRight className="size-4" /></Link>
-            </Button>
-            <Button asChild className="w-full justify-between" variant="outline">
-              <Link to="/admin/portfolio"><span className="flex items-center gap-2"><FileText className="size-4" /> Add Portfolio Item</span><ArrowRight className="size-4" /></Link>
-            </Button>
-            <Button asChild className="w-full justify-between" variant="outline">
-              <Link to="/admin/applications"><span className="flex items-center gap-2"><ClipboardList className="size-4" /> View Applications</span><ArrowRight className="size-4" /></Link>
-            </Button>
+            <QuickAction to="/admin/events" icon={Plus} label="Add Event" />
+            <QuickAction to="/admin/portfolio" icon={FileText} label="Add Portfolio Item" />
+            <QuickAction to="/admin/documents" icon={FolderOpen} label="Upload Document" />
+            <QuickAction to="/admin/applications" icon={ClipboardList} label="Review Applications" />
+            <QuickAction to="/admin/members" icon={Users} label="Manage Members" />
           </CardContent>
         </Card>
       </div>
@@ -117,19 +237,52 @@ function OverviewPage() {
 }
 
 function Stat({
-  icon: Icon, label, value, accent,
-}: { icon: React.ComponentType<{ className?: string }>; label: string; value: number | undefined; accent: string }) {
+  icon: Icon,
+  label,
+  value,
+  accent,
+  to,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number | undefined;
+  accent: string;
+  to: "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/messages" | "/admin/portfolio" | "/admin/documents";
+}) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold mt-1">{value ?? "—"}</p>
+    <Link to={to} className="block transition-transform hover:-translate-y-0.5">
+      <Card className="hover:border-primary/40 transition-colors h-full">
+        <CardContent className="pt-5 pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">{label}</p>
+              <p className="text-2xl font-bold mt-1">{value ?? "—"}</p>
+            </div>
+            <Icon className={`size-7 ${accent} opacity-70`} />
           </div>
-          <Icon className={`size-8 ${accent} opacity-70`} />
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+function QuickAction({
+  to,
+  icon: Icon,
+  label,
+}: {
+  to: "/admin/events" | "/admin/portfolio" | "/admin/documents" | "/admin/applications" | "/admin/members";
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}) {
+  return (
+    <Button asChild className="w-full justify-between" variant="outline">
+      <Link to={to}>
+        <span className="flex items-center gap-2">
+          <Icon className="size-4" /> {label}
+        </span>
+        <ArrowRight className="size-4" />
+      </Link>
+    </Button>
   );
 }
