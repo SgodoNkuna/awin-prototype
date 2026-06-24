@@ -1,6 +1,5 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "NITRO_PRESET=vercel npm run build",
-  "installCommand": "npm install",
-  "framework": null
+  "outputDirectory": ".vercel/output"
 }
