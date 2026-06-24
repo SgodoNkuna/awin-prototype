@@ -1,23 +1,24 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, Users, BookOpen, Sparkles, ChevronRight } from "lucide-react";
+import { Heart, Users, BookOpen, Sparkles, ChevronRight, Sprout, Globe2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About A-WIN | African Women in Investment Network" },
+      { title: "About A-WIN — African Women Investment Network" },
       {
         name: "description",
         content:
-          "Learn about A-WIN's story, mission, values, leadership team and partners building a movement of women investors across Africa.",
+          "A-WIN is a community of African women empowering each other through investment, financial education and collaboration. Founded 2025, growing every month.",
       },
       { property: "og:title", content: "About A-WIN" },
       {
         property: "og:description",
         content:
-          "Our story, mission, leadership and partners — a community of women building wealth together.",
+          "Empowering African women, from all walks of life, through investment and collaboration.",
       },
     ],
   }),
@@ -28,12 +29,12 @@ const values = [
   {
     icon: Heart,
     title: "Empowerment",
-    body: "We equip women with the tools, knowledge and confidence to take ownership of their financial futures.",
+    body: "Every woman, regardless of background, deserves access to financial knowledge and investment opportunity.",
   },
   {
     icon: Users,
     title: "Community",
-    body: "We grow stronger together. Sisterhood, mentorship and honest conversations sit at the heart of A-WIN.",
+    body: "We grow stronger together — sisterhood, mentorship and honest money conversations sit at the heart of A-WIN.",
   },
   {
     icon: BookOpen,
@@ -47,39 +48,18 @@ const values = [
   },
 ];
 
-type TeamMember = { id: string; name: string; title: string; bio: string | null; photo_url: string | null };
-
-const PLACEHOLDER_BIO =
-  "Committee member profile coming soon. A-WIN's leadership team bios will be published here.";
-
-const FALLBACK_TEAM: TeamMember[] = [
-  { id: "f1", name: "[Name TBC]", title: "[Role TBC]", bio: PLACEHOLDER_BIO, photo_url: null },
-  { id: "f2", name: "[Name TBC]", title: "[Role TBC]", bio: PLACEHOLDER_BIO, photo_url: null },
-  { id: "f3", name: "[Name TBC]", title: "[Role TBC]", bio: PLACEHOLDER_BIO, photo_url: null },
-];
-
-function initialsFor(name: string) {
-  const clean = name.replace(/\[|\]/g, "").trim();
-  if (!clean || clean.toLowerCase().includes("tbc")) return "?";
-  return clean
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
+type TeamMember = { id: string; name: string; title: string; photo_url: string | null };
 
 function AboutPage() {
-  const [team, setTeam] = useState<TeamMember[]>(FALLBACK_TEAM);
+  const [team, setTeam] = useState<TeamMember[]>([]);
   useEffect(() => {
     supabase
       .from("team_members")
-      .select("id, name, title, bio, photo_url")
+      .select("id, name, title, photo_url")
       .eq("published", true)
       .order("order_index")
-      .then(({ data }) => {
-        if (data && data.length > 0) setTeam(data as TeamMember[]);
-      });
+      .limit(3)
+      .then(({ data }) => setTeam((data as TeamMember[]) ?? []));
   }, []);
 
   return (
@@ -96,78 +76,85 @@ function AboutPage() {
             aria-label="Breadcrumb"
             className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70"
           >
-            <Link to="/" className="hover:text-accent transition-colors">
-              Home
-            </Link>
+            <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
             <span className="text-accent">About</span>
           </nav>
           <h1 className="mt-5 font-serif">About A-WIN</h1>
-          <p className="mt-5 max-w-2xl text-primary-foreground/85 md:text-lg">
-            A movement of African women rewriting the rules of wealth, one
-            confident investor at a time.
+          <p className="mt-5 max-w-3xl text-primary-foreground/85 md:text-xl italic">
+            Empowering African women, from all walks of life, through investment and collaboration.
           </p>
         </div>
       </section>
 
-      {/* OUR STORY */}
+      {/* WHO WE ARE */}
       <section className="py-20">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 md:grid-cols-2">
-          <div
-            className="aspect-[4/3] w-full rounded-2xl shadow-[var(--shadow-elegant)]"
-            style={{ background: "var(--gradient-hero)" }}
-            aria-hidden="true"
-          />
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-accent">
-              Our Story
-            </span>
-            <h2 className="mt-3 font-serif">From a Conversation to a Movement</h2>
-            <p className="mt-5 leading-relaxed text-muted-foreground">
-              A-WIN began around a kitchen table — a handful of women trading
-              notes on retirement annuities, side hustles and the markets. What
-              started as a small WhatsApp group has grown into a continent-wide
-              network of investors, mentors and community leaders.
+        <div className="mx-auto max-w-5xl px-4">
+          <span className="text-xs font-semibold uppercase tracking-widest text-accent">Who We Are</span>
+          <h2 className="mt-3 font-serif">A community of visionary African women</h2>
+          <div className="mt-6 space-y-5 text-lg leading-relaxed text-muted-foreground">
+            <p>
+              The African Women Investment Network (A-WIN) is a community of visionary African women
+              united by a shared commitment to building wealth, supporting one another, and creating
+              sustainable impact through collaboration and collective investment.
             </p>
-            <p className="mt-4 leading-relaxed text-muted-foreground">
-              Today, A-WIN runs masterclasses, member chapters and an annual
-              summit — all built on the same belief that wealth is something
-              women build together, not in silence.
+            <p>
+              A-WIN was founded in <strong className="text-foreground">2025</strong> by a group of
+              businesswomen. What began as a small, passionate group has grown to{" "}
+              <strong className="text-foreground">over fifty members and counting</strong>. Our
+              mission is to empower women to grow their wealth, strengthen their businesses, and
+              access investment opportunities that drive long-term financial independence.
             </p>
           </div>
         </div>
       </section>
 
-      {/* MISSION & VALUES */}
+      {/* PURPOSE */}
       <section className="bg-secondary/50 py-20">
+        <div className="mx-auto max-w-5xl px-4">
+          <span className="text-xs font-semibold uppercase tracking-widest text-accent">
+            Our Purpose Goes Beyond Saving
+          </span>
+          <h2 className="mt-3 font-serif">Shifting the culture</h2>
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <div className="space-y-4 text-muted-foreground leading-relaxed">
+              <p>
+                At A-WIN, we believe every African woman — regardless of her background, location, or
+                income level — deserves access to financial knowledge and investment opportunities.
+                We are intentional about reaching women from townships, rural communities, and all
+                walks of life, because financial empowerment must be inclusive to be truly
+                transformative.
+              </p>
+            </div>
+            <div className="space-y-4 text-muted-foreground leading-relaxed">
+              <p>
+                We are on a mission to shift the culture. Too many women prioritise credit and
+                non-essential spending while saving and investing remain an afterthought. A-WIN
+                exists to change that mindset — to build a generation of women who think about
+                investing first and <em>consumer spending</em> second. We are cultivating a movement
+                that replaces short-term consumption with medium-to-long-term wealth creation.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* VALUES */}
+      <section className="py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div className="text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-accent">
-              What Drives Us
-            </span>
-            <h2 className="mt-3 font-serif">Our Mission & Values</h2>
-            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-              The principles that shape every event, course and conversation
-              inside A-WIN.
-            </p>
+            <span className="text-xs font-semibold uppercase tracking-widest text-accent">What Drives Us</span>
+            <h2 className="mt-3 font-serif">Our Values</h2>
           </div>
-
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {values.map((v) => (
-              <Card
-                key={v.title}
-                className="border-border/60 shadow-[var(--shadow-elegant)] hover-scale"
-              >
+              <Card key={v.title} className="border-border/60 shadow-[var(--shadow-elegant)] hover-scale">
                 <CardContent className="p-7">
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/15 text-accent">
                     <v.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mt-5 font-serif text-xl text-foreground">
-                    {v.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {v.body}
-                  </p>
+                  <h3 className="mt-5 font-serif text-xl text-foreground">{v.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{v.body}</p>
                 </CardContent>
               </Card>
             ))}
@@ -175,70 +162,114 @@ function AboutPage() {
         </div>
       </section>
 
-      {/* LEADERSHIP */}
-      <section className="py-20">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-accent">
-              The Team
-            </span>
-            <h2 className="mt-3 font-serif">Leadership</h2>
-            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-              Meet Our Committee — Full profiles and photos coming soon.
-            </p>
+      {/* WHO CAN JOIN */}
+      <section className="bg-card border-y border-border py-20">
+        <div className="mx-auto max-w-5xl px-4">
+          <div className="grid gap-10 md:grid-cols-2">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-widest text-accent">Who Can Join</span>
+              <h2 className="mt-3 font-serif">A-WIN is open to any woman who…</h2>
+              <ul className="mt-6 space-y-3 text-muted-foreground">
+                {[
+                  "Shares our vision of financial empowerment, collaboration and long-term wealth creation.",
+                  "Can pay the nominal annual membership fee (currently R200/year, reviewed annually).",
+                  "Can contribute a minimum of R500/month toward collective investment opportunities.",
+                  "Is a business owner, aspiring entrepreneur, professional, side-hustler — or simply ready to take control of her financial future.",
+                ].map((b) => (
+                  <li key={b} className="flex gap-3">
+                    <Sprout className="h-5 w-5 mt-0.5 flex-none text-accent" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 text-sm text-muted-foreground">
+                Women from all walks of life are welcome. <strong>We especially welcome women who are new to investing.</strong>
+              </p>
+            </div>
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-widest text-accent">Member Benefits</span>
+              <h2 className="mt-3 font-serif">What you gain</h2>
+              <div className="mt-6 space-y-4">
+                {[
+                  { t: "Investment Opportunities", b: "Exposure to offshore tax-free investments and other carefully selected growth opportunities tailored for women investors." },
+                  { t: "Financial Advisory Support", b: "Consultation with a qualified financial advisor who assesses your risk appetite and recommends a portfolio aligned with your goals." },
+                  { t: "Business Support & Collaboration", b: "Connect with like-minded women; support each other's businesses through crowdfunding and referrals." },
+                  { t: "Community & Learning", b: "Workshops, networking and mentorship that strengthen your financial knowledge, money mindset and leadership capacity." },
+                ].map((x) => (
+                  <div key={x.t}>
+                    <div className="font-semibold text-foreground">{x.t}</div>
+                    <div className="text-sm text-muted-foreground">{x.b}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {team.map((m) => {
-              const isPlaceholder = !m.photo_url && m.name.includes("[");
-              return (
-                <Card
-                  key={m.id}
-                  className="border-border/60 text-center shadow-[var(--shadow-elegant)] hover-scale"
-                >
+      {/* JOIN THE MOVEMENT */}
+      <section
+        className="relative overflow-hidden px-4 py-20 text-primary-foreground"
+        style={{ background: "var(--gradient-hero)" }}
+      >
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="relative mx-auto max-w-3xl text-center">
+          <Globe2 className="mx-auto h-10 w-10 text-accent" />
+          <h2 className="mt-4 font-serif text-primary-foreground">Join the movement</h2>
+          <p className="mt-4 text-primary-foreground/85 leading-relaxed">
+            By joining A-WIN, you become part of a growing movement of African women creating wealth
+            with purpose — women choosing investment over consumer spending, collaboration over
+            competition, and long-term freedom over short-term gratification. Together, we are
+            transforming Africa's economic landscape, one investment and one woman at a time.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Link to="/membership">Apply for Membership</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10">
+              <Link to="/team">Meet the Team</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* LEADERSHIP PREVIEW */}
+      {team.length > 0 && (
+        <section className="py-20">
+          <div className="mx-auto max-w-6xl px-4">
+            <div className="flex items-end justify-between mb-10">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-widest text-accent">The Team</span>
+                <h2 className="mt-3 font-serif">Leadership</h2>
+              </div>
+              <Button asChild variant="outline"><Link to="/team">View full team</Link></Button>
+            </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {team.map((m) => (
+                <Card key={m.id} className="border-border/60 text-center shadow-[var(--shadow-elegant)]">
                   <CardContent className="p-7">
-                    {isPlaceholder ? (
-                      <div
-                        className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-muted text-2xl font-serif text-muted-foreground"
-                        aria-hidden="true"
-                      >
-                        {initialsFor(m.name)}
-                      </div>
-                    ) : (
-                      <div
-                        className="mx-auto h-28 w-28 rounded-full bg-cover bg-center"
-                        style={{
-                          background: m.photo_url
-                            ? `url(${m.photo_url}) center/cover`
-                            : "var(--gradient-hero)",
-                        }}
-                        aria-hidden="true"
-                      />
-                    )}
+                    <div
+                      className="mx-auto h-24 w-24 rounded-full bg-cover bg-center"
+                      style={{
+                        background: m.photo_url
+                          ? `url(${m.photo_url}) center/cover`
+                          : "var(--gradient-hero)",
+                      }}
+                      aria-hidden="true"
+                    />
                     <h3 className="mt-5 font-serif text-lg text-foreground">{m.name}</h3>
                     <div className="text-sm font-medium text-accent">{m.title}</div>
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{m.bio}</p>
                   </CardContent>
                 </Card>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* PARTNERS */}
-      <section className="border-t border-border bg-card py-20">
-        <div className="mx-auto max-w-3xl px-4 text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-accent">
-            Our Partners
-          </span>
-          <h2 className="mt-3 font-serif">Our Partners</h2>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            A-WIN's partnerships will be announced here.
-          </p>
-        </div>
-      </section>
-
+      <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
+        <strong className="text-foreground">A-WIN</strong> — African Women Investment Network · Founded 2025
+      </footer>
     </>
   );
 }
