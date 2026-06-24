@@ -176,67 +176,77 @@ function Index() {
 
       {/* MEMBERSHIP PREVIEW */}
       <section className="bg-secondary/50 py-20">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-5xl px-4">
           <div className="text-center">
             <span className="text-xs font-semibold uppercase tracking-widest text-accent">
               Membership
             </span>
-            <h2 className="mt-3 font-serif">Choose Your Path</h2>
-            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-              Flexible tiers designed to meet you wherever you are on your
-              investment journey.
+            <h2 className="mt-3 font-serif">One Membership · Built for Long-Term Wealth</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+              A-WIN follows a single, transparent membership model — a small annual
+              fee plus a monthly contribution toward collective investments. Reviewed
+              annually by the community.
             </p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {tiers.map((tier) => (
-              <Card
-                key={tier.name}
-                className={
-                  tier.featured
-                    ? "relative border-2 border-accent shadow-[var(--shadow-gold-glow)] hover-scale"
-                    : "border-border/60 shadow-[var(--shadow-elegant)] hover-scale"
-                }
-              >
-                {tier.featured && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
-                    Recommended
-                  </Badge>
-                )}
-                <CardContent className="p-8">
-                  <h3 className="font-serif text-foreground">{tier.name}</h3>
-                  <div className="mt-3 flex items-baseline gap-1">
-                    <span className="font-serif text-4xl text-primary">
-                      {tier.price}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {tier.cadence}
-                    </span>
-                  </div>
-                  <ul className="mt-6 space-y-3">
-                    {tier.benefits.map((b) => (
-                      <li key={b} className="flex items-start gap-2 text-sm">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        <span className="text-foreground/85">{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    asChild
-                    className={
-                      tier.featured
-                        ? "mt-7 w-full bg-accent text-accent-foreground hover:bg-accent/90"
-                        : "mt-7 w-full"
-                    }
-                  >
-                    <Link to="/membership">Join Now</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Card className="border-border/60 shadow-[var(--shadow-elegant)] hover-scale">
+              <CardContent className="p-8">
+                <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+                  Annual Membership Fee
+                </div>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="font-serif text-4xl text-primary">{membership.fee}</span>
+                  <span className="text-sm text-muted-foreground">{membership.feeCadence}</span>
+                </div>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Covers administration, member services and access to the A-WIN community.
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="relative border-2 border-accent shadow-[var(--shadow-gold-glow)] hover-scale">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
+                Investment Commitment
+              </Badge>
+              <CardContent className="p-8">
+                <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+                  Monthly Contribution
+                </div>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="font-serif text-4xl text-primary">{membership.contribution}</span>
+                  <span className="text-sm text-muted-foreground">{membership.contributionCadence} minimum</span>
+                </div>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Directed into collective investment opportunities curated for women investors.
+                </p>
+              </CardContent>
+            </Card>
           </div>
+
+          <Card className="mt-6 border-border/60 shadow-[var(--shadow-elegant)]">
+            <CardContent className="p-8">
+              <h3 className="font-serif text-foreground">What every member gets</h3>
+              <ul className="mt-5 grid gap-3 md:grid-cols-2">
+                {membership.benefits.map((b) => (
+                  <li key={b} className="flex items-start gap-2 text-sm">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <span className="text-foreground/85">{b}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  <Link to="/membership">Apply for Membership</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to="/about">Read Our Story</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
+
 
       {/* UPCOMING EVENTS */}
       <section className="py-20">
