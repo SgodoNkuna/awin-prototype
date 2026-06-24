@@ -12,17 +12,34 @@ export const Route = createFileRoute("/admin/exports")({
   component: ExportsPage,
 });
 
-const PAGES = [
-  { path: "/", label: "Home" },
-  { path: "/about", label: "About" },
-  { path: "/membership", label: "Membership" },
-  { path: "/events", label: "Events" },
-  { path: "/portfolio", label: "Portfolio" },
-  { path: "/news", label: "News & Insights" },
-  { path: "/team", label: "Team & Leadership" },
-  { path: "/info", label: "FAQ & Privacy" },
-  { path: "/contact", label: "Contact" },
+type PageDef = { path: string; label: string; group: "Public" | "Member Portal" | "Admin Console" };
+
+const PAGES: readonly PageDef[] = [
+  // Public site (9)
+  { path: "/", label: "Home", group: "Public" },
+  { path: "/about", label: "About", group: "Public" },
+  { path: "/membership", label: "Membership", group: "Public" },
+  { path: "/events", label: "Events", group: "Public" },
+  { path: "/portfolio", label: "Portfolio", group: "Public" },
+  { path: "/news", label: "News & Insights", group: "Public" },
+  { path: "/team", label: "Team & Leadership", group: "Public" },
+  { path: "/info", label: "FAQ & Privacy", group: "Public" },
+  { path: "/contact", label: "Contact", group: "Public" },
+  // Member portal (signed-in view)
+  { path: "/portal", label: "Member Portal", group: "Member Portal" },
+  // Admin console (inner workings)
+  { path: "/admin", label: "Admin · Dashboard", group: "Admin Console" },
+  { path: "/admin/members", label: "Admin · Members", group: "Admin Console" },
+  { path: "/admin/applications", label: "Admin · Applications", group: "Admin Console" },
+  { path: "/admin/events", label: "Admin · Events", group: "Admin Console" },
+  { path: "/admin/portfolio", label: "Admin · Portfolio", group: "Admin Console" },
+  { path: "/admin/documents", label: "Admin · Documents", group: "Admin Console" },
+  { path: "/admin/messages", label: "Admin · Messages", group: "Admin Console" },
+  { path: "/admin/billing", label: "Admin · Billing", group: "Admin Console" },
+  { path: "/admin/settings", label: "Admin · Settings", group: "Admin Console" },
 ] as const;
+
+const PAGE_GROUPS: PageDef["group"][] = ["Public", "Member Portal", "Admin Console"];
 
 const THEMES = [
   { id: "color", label: "Green (Default)", swatch: "#1f6b46" },
