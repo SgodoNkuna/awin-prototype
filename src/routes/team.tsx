@@ -25,7 +25,6 @@ type Member = {
   title: string;
   bio: string | null;
   photo_url: string | null;
-  linkedin_url: string | null;
   order_index: number | null;
 };
 
@@ -43,7 +42,7 @@ function TeamPage() {
   useEffect(() => {
     supabase
       .from("team_members")
-      .select("id, name, title, bio, photo_url, linkedin_url, order_index")
+      .select("id, name, title, bio, photo_url, order_index")
       .eq("published", true)
       .order("order_index")
       .then(({ data }) => setTeam((data as Member[]) ?? []));

@@ -25,7 +25,7 @@ type Article = {
   title: string;
   slug: string | null;
   excerpt: string | null;
-  cover_image_url: string | null;
+  cover_image: string | null;
   category: string | null;
   published_at: string | null;
   author_name: string | null;
@@ -37,7 +37,7 @@ function NewsPage() {
   useEffect(() => {
     supabase
       .from("news_articles")
-      .select("id, title, slug, excerpt, cover_image_url, category, published_at, author_name")
+      .select("id, title, slug, excerpt, cover_image, category, published_at, author_name")
       .eq("published", true)
       .order("published_at", { ascending: false })
       .then(({ data }) => setArticles((data as Article[]) ?? []));
