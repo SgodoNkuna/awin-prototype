@@ -149,9 +149,11 @@ async function waitForAssets(doc: Document) {
 /**
  * Wait until visible loading spinners disappear (or timeout). Many routes show
  * a Loader2 (`.animate-spin`) while auth + initial data resolve; capturing too
- * early produces blank pages, so we poll for a settled DOM.
+ * early produces blank pages, so we poll for a settled DOM. Admin routes get a
+ * longer budget so the role check + first data query can finish.
  */
-async function waitForContentReady(doc: Document, maxMs = 6000) {
+async function waitForContentReady(doc: Document, isAdminRoute: boolean) {
+  const maxMs = isAdminRoute ? 12000 : 6000;
   const start = Date.now();
   while (Date.now() - start < maxMs) {
     const spinners = Array.from(doc.querySelectorAll<HTMLElement>(".animate-spin")).filter(
@@ -159,8 +161,8 @@ async function waitForContentReady(doc: Document, maxMs = 6000) {
     );
     const skeletons = doc.querySelectorAll<HTMLElement>('[data-loading="true"], .animate-pulse').length;
     const bodyText = (doc.body.innerText || "").trim().length;
-    if (spinners.length === 0 && skeletons < 4 && bodyText > 80) return;
-    await wait(200);
+    if (spinners.length === 0 && skeletons < 4 && bodyText > 120) return;
+    await wait(220);
   }
 }
 
@@ -173,6 +175,8 @@ async function captureRoute(
 ): Promise<CapturedExport> {
   const page = getPage(path);
   const themeDef = getTheme(theme);
+  const isAdminRoute = path.startsWith("/admin");
+  const isProtected = isAdminRoute || path.startsWith("/portal");
 
   localStorage.setItem(THEME_STORAGE_KEY, theme);
   const attemptLabel = attempt > 1 ? ` (retry ${attempt - 1})` : "";
@@ -185,7 +189,18 @@ async function captureRoute(
   installExportCss(doc, theme);
   setStatus(`Rendering ${page.label} (${themeDef.label})${attemptLabel}…`);
   await waitForAssets(doc);
-  await waitForContentReady(doc);
+  await waitForContentReady(doc, isAdminRoute);
+
+  // Detect auth redirect: if we asked for /admin/* but the iframe ended up on
+  // /portal or /auth, this user can't render the page — surface a clear error
+  // instead of saving a misleading screenshot.
+  const finalPath = iframe.contentWindow?.location.pathname ?? path;
+  if (isProtected && !finalPath.startsWith(path)) {
+    throw new Error(
+      `Route redirected to ${finalPath}. Sign in as an admin in this browser to capture protected pages.`,
+    );
+  }
+
   await wait(350);
 
   const target = doc.body;
