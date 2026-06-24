@@ -87,8 +87,8 @@ function NewsPage() {
                   <div
                     className="aspect-video w-full bg-cover bg-center"
                     style={{
-                      background: a.cover_image_url
-                        ? `url(${a.cover_image_url}) center/cover`
+                      background: a.cover_image
+                        ? `url(${a.cover_image}) center/cover`
                         : "var(--gradient-hero)",
                     }}
                     aria-hidden="true"

@@ -106,16 +106,6 @@ function TeamPage() {
                     {m.bio && (
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{m.bio}</p>
                     )}
-                    {m.linkedin_url && (
-                      <a
-                        href={m.linkedin_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-4 inline-flex items-center gap-1.5 text-xs text-accent hover:underline"
-                      >
-                        <Linkedin className="h-3.5 w-3.5" /> LinkedIn
-                      </a>
-                    )}
                   </CardContent>
                 </Card>
               ))}
