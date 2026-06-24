@@ -158,6 +158,9 @@ function MembersPage() {
                           >
                             {m.suspended ? "Unsuspend" : "Suspend"}
                           </Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setPromoting(m); setPromoteReason(""); }}>
+                            <Shield className="size-3.5 mr-1" /> Role
+                          </Button>
                         </div>
                       </td>
                     </tr>
