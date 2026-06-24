@@ -645,20 +645,29 @@ function ExportsPage() {
         <Card className={job.status === "failed" ? "border-destructive/40" : "border-accent/40"}>
           <CardContent className="p-4 space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  {running ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4 text-accent" />}
-                  Export status: {job.status}
+                  {running ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : job.status === "failed" ? (
+                    <XCircle className="size-4 text-destructive" />
+                  ) : (
+                    <CheckCircle2 className="size-4 text-accent" />
+                  )}
+                  Export status: {job.status} · {job.done - job.errors.length}/{job.total} captured · {Math.max(job.total - job.done, 0)} remaining · {job.errors.length} failed
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {job.statusText} · {capturedCount}/{job.total} processed · Saved {new Date(job.updatedAt).toLocaleString()}
+                <p className="text-xs text-muted-foreground mt-1 break-words">
+                  {job.statusText}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  Last updated {new Date(job.updatedAt).toLocaleString()} · Auto-resumes after refresh
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                {!running && job.status !== "failed" && (
+                {!running && (job.done - job.errors.length) > 0 && (
                   <>
                     <Button size="sm" onClick={() => downloadExisting("pdf")}>
-                      <Download className="size-4 mr-2" /> Download PDF
+                      <Download className="size-4 mr-2" /> Download PDF ({job.done - job.errors.length})
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => downloadExisting("screenshots")}>
                       <ImageDown className="size-4 mr-2" /> Download ZIP
@@ -670,14 +679,13 @@ function ExportsPage() {
                 </Button>
               </div>
             </div>
+            <Progress value={job.status === "complete" ? 100 : job.progress} />
             {(running || job.status === "assembling") && (
-              <div className="space-y-2">
-                <Progress value={job.progress} />
-                <p className="text-sm text-muted-foreground">Keep this tab open for the active capture. If refreshed, completed captures stay saved.</p>
-              </div>
+              <p className="text-xs text-muted-foreground">Keep this tab open for the active capture. If refreshed, completed captures stay saved and the run will continue automatically.</p>
             )}
           </CardContent>
         </Card>
+
       )}
 
       <div className="grid gap-6 md:grid-cols-2">
