@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Loader2,
@@ -15,8 +15,7 @@ import {
   ExternalLink,
   Eye,
   Send,
-  CreditCard,
-} from "lucide-react";
+  CreditCard} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
@@ -29,10 +28,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BillingTab } from "@/components/portal/BillingTab";
 
-export const Route = createFileRoute("/portal")({
+export const Route = ("/portal")({
   component: PortalPage,
-  head: () => ({ meta: [{ title: "Member Portal | A-WIN" }] }),
-});
+  head: () => ({ meta: [{ title: "Member Portal | A-WIN" }] })});
 
 type Application = {
   id: string;
@@ -168,8 +166,7 @@ function PortalPage() {
       event_id: eventId,
       user_id: user.id,
       full_name: profile?.full_name || user.email || "",
-      email: user.email || "",
-    });
+      email: user.email || ""});
     setRegisteringId(null);
     if (error) {
       setRegisterErrors((e) => ({ ...e, [eventId]: error.message }));
@@ -461,8 +458,7 @@ function StatusBadge({ status }: { status: string }) {
     under_review: { label: "Under Review", cls: "bg-amber-500/15 text-amber-700 dark:text-amber-400", Icon: Eye },
     approved: { label: "Approved", cls: "bg-green-500/15 text-green-700 dark:text-green-400", Icon: CheckCircle2 },
     rejected: { label: "Rejected", cls: "bg-destructive/15 text-destructive", Icon: XCircle },
-    active: { label: "Active", cls: "bg-green-500/15 text-green-700 dark:text-green-400", Icon: CheckCircle2 },
-  };
+    active: { label: "Active", cls: "bg-green-500/15 text-green-700 dark:text-green-400", Icon: CheckCircle2 }};
   const { label, cls, Icon } = map[status] ?? map.pending;
   return (
     <Badge variant="outline" className={cls}>
@@ -481,8 +477,7 @@ function StatusTimeline({ app }: { app: Application }) {
       label: app.status === "rejected" ? "Rejected" : "Accepted",
       at: fmt(app.decided_at),
       Icon: app.status === "rejected" ? XCircle : CheckCircle2,
-      done: ["approved", "rejected"].includes(app.status),
-    },
+      done: ["approved", "rejected"].includes(app.status)},
   ];
   return (
     <ol className="relative space-y-4 border-l pl-5">

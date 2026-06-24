@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState, useCallback, memo } from "react";
 import { Check, FileText, Users, MailCheck, PartyPopper, Loader2, ShieldCheck, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,14 +12,13 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  SelectValue} from "@/components/ui/select";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 
-export const Route = createFileRoute("/membership")({
+export const Route = ("/membership")({
   component: MembershipPage,
   head: () => ({
     meta: [
@@ -27,11 +26,8 @@ export const Route = createFileRoute("/membership")({
       {
         name: "description",
         content:
-          "Become an A-WIN member. Choose from General, Active or Patron tiers and start your investment journey with us.",
-      },
-    ],
-  }),
-});
+          "Become an A-WIN member. Choose from General, Active or Patron tiers and start your investment journey with us."},
+    ]})});
 
 const TIERS = [
   {
@@ -43,8 +39,7 @@ const TIERS = [
       "Invitations to public events",
       "Community forum access",
       "Educational resources library",
-    ],
-  },
+    ]},
   {
     id: "active" as const,
     name: "Active Member",
@@ -56,8 +51,7 @@ const TIERS = [
       "Investment club participation",
       "Mentorship matching",
       "Discounted event tickets",
-    ],
-  },
+    ]},
   {
     id: "patron" as const,
     name: "Patron Member",
@@ -69,8 +63,7 @@ const TIERS = [
       "Exclusive Patron-only summits",
       "Recognition on the donor wall",
       "Direct line to the executive team",
-    ],
-  },
+    ]},
 ];
 
 const STEPS = [
@@ -90,14 +83,12 @@ const applicationSchema = z.object({
   experience: z.enum(["beginner", "intermediate", "advanced"]),
   motivation: z.string().trim().min(10, "Tell us a bit more").max(2000),
   referral: z.string().trim().max(120).optional(),
-  tier: z.enum(["general", "active", "patron"]),
-});
+  tier: z.enum(["general", "active", "patron"])});
 
 const TierCard = memo(function TierCard({
   tier,
   isSelected,
-  onSelect,
-}: {
+  onSelect}: {
   tier: (typeof TIERS)[number];
   isSelected: boolean;
   onSelect: (id: "general" | "active" | "patron") => void;
@@ -171,8 +162,7 @@ function MembershipPage() {
         experience: String(fd.get("experience") ?? "") as "beginner" | "intermediate" | "advanced",
         motivation: String(fd.get("motivation") ?? ""),
         referral: String(fd.get("referral") ?? "") || undefined,
-        tier: selectedTier,
-      };
+        tier: selectedTier};
 
       const parsed = applicationSchema.safeParse(raw);
       if (!parsed.success) {
@@ -183,8 +173,7 @@ function MembershipPage() {
       setSubmitting(true);
       const { error } = await supabase.from("applications").insert({
         ...parsed.data,
-        user_id: user?.id ?? null,
-      });
+        user_id: user?.id ?? null});
       setSubmitting(false);
 
       if (error) {

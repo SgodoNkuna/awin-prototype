@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, RotateCw, ShieldAlert, ShieldCheck, History, FileText } from "lucide-react";
@@ -14,8 +14,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  DialogTitle} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -24,21 +23,18 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  SelectValue} from "@/components/ui/select";
 import {
   listPayments,
   listWebhookEvents,
   listAuditLogs,
   listMembersBrief,
   retryWebhookEvent,
-  overrideMembership,
-} from "@/lib/billing-admin.functions";
+  overrideMembership} from "@/lib/billing-admin.functions";
 
-export const Route = createFileRoute("/admin/billing")({
+export const Route = ("/admin/billing")({
   component: BillingAdminPage,
-  head: () => ({ meta: [{ title: "Billing | Admin | A-WIN" }] }),
-});
+  head: () => ({ meta: [{ title: "Billing | Admin | A-WIN" }] })});
 
 type Payment = {
   id: string;
@@ -97,8 +93,7 @@ function statusBadge(s: string) {
     pending: "bg-yellow-500 text-white",
     failed: "bg-destructive text-destructive-foreground",
     refunded: "bg-muted text-foreground",
-    cancelled: "bg-muted text-foreground",
-  };
+    cancelled: "bg-muted text-foreground"};
   return <Badge className={map[s] ?? ""}>{s}</Badge>;
 }
 
@@ -346,8 +341,7 @@ function OverrideDialog({
   open,
   onOpenChange,
   members,
-  onSubmit,
-}: {
+  onSubmit}: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   members: Member[];
@@ -373,8 +367,7 @@ function OverrideDialog({
       user_id: userId,
       action,
       tier: action === "activate" ? tier : undefined,
-      reason: reason.trim(),
-    });
+      reason: reason.trim()});
     setSubmitting(false);
     setUserId("");
     setReason("");
