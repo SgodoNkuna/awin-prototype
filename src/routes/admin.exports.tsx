@@ -540,8 +540,11 @@ function ExportsPage() {
           const page = getPage(path);
           const theme = getTheme(themeId);
           try {
-            const capture = await captureRoute(iframe, path, themeId, (statusText) => {
-              updateJob((current) => ({ ...current, statusText }));
+            const capture = await captureWithRetry(iframe, path, themeId, (statusText) => {
+              updateJob((current) => ({
+                ...current,
+                statusText: `${statusText} · ${done}/${activeTotal} captured, ${activeTotal - done - 1} remaining`,
+              }));
             });
             await saveJobCapture(newJob.id, capture);
             setPreviews((current) =>
