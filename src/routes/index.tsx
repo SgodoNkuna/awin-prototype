@@ -34,9 +34,9 @@ export const Route = createFileRoute("/")({
 });
 
 const DEFAULT_STATS = {
-  members: "Growing Community",
+  members: "50+ Members",
   events: "Regular Events",
-  years: "Est. 2024",
+  years: "Est. 2025",
 };
 
 function useHomepageStats() {
@@ -62,43 +62,20 @@ function useHomepageStats() {
   return stats;
 }
 
-const tiers = [
-  {
-    name: "Starter",
-    price: "R250",
-    cadence: "/month",
-    benefits: [
-      "Access to community forum",
-      "Monthly newsletter",
-      "Beginner investment guides",
-    ],
-    featured: false,
-  },
-  {
-    name: "Premium",
-    price: "R650",
-    cadence: "/month",
-    benefits: [
-      "Everything in Starter",
-      "Live investment masterclasses",
-      "Member-only events & meetups",
-      "1:1 mentorship sessions",
-    ],
-    featured: true,
-  },
-  {
-    name: "Elite",
-    price: "R1,500",
-    cadence: "/month",
-    benefits: [
-      "Everything in Premium",
-      "Exclusive deal flow access",
-      "Private advisory circle",
-      "Annual retreat invitation",
-    ],
-    featured: false,
-  },
-];
+// A-WIN follows a single membership model (not multi-tier):
+//   R200 / year nominal membership fee + R500 / month collective investment contribution.
+const membership = {
+  fee: "R200",
+  feeCadence: "/ year",
+  contribution: "R500",
+  contributionCadence: "/ month",
+  benefits: [
+    "Offshore tax-free and curated investment opportunities",
+    "Consultation with a qualified financial advisor",
+    "Workshops, mentorship and a supportive sisterhood",
+    "Business collaboration, crowdfunding and referrals",
+  ],
+};
 
 const events = [
   {
