@@ -558,13 +558,15 @@ function ExportsPage() {
           }
 
           done += 1;
+          const remaining = Math.max(activeTotal - done, 0);
+          const failed = errors.length;
           const progress = Math.max(1, Math.min(96, Math.round((done / activeTotal) * 96)));
           updateJob((current) => ({
             ...current,
             done,
             errors,
             progress,
-            statusText: `Captured ${done} of ${activeTotal}`,
+            statusText: `Captured ${done - failed} · ${failed} failed · ${remaining} remaining (of ${activeTotal})`,
           }));
         }
       }
