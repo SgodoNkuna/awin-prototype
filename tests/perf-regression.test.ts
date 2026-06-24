@@ -45,7 +45,7 @@ describe("perf regression: home portfolio carousel query", () => {
 });
 
 describe("perf regression: portal document download", () => {
-  const src = read("src/routes/portal.tsx");
+  const src = read("src/components/pages/portal-page.tsx");
 
   it("requests a 60-second signed URL (short-lived, fast to mint)", () => {
     expect(src).toMatch(

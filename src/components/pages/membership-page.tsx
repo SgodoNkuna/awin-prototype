@@ -1,8 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { useState, useCallback, memo } from "react";
-import { Check, FileText, Users, MailCheck, PartyPopper, Loader2, ShieldCheck, Info } from "lucide-react";
+import { useState, useCallback } from "react";
+import {
+  Check,
+  FileText,
+  Users,
+  MailCheck,
+  PartyPopper,
+  Loader2,
+  ShieldCheck,
+  Info,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,56 +21,34 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue} from "@/components/ui/select";
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 
-
-
-const TIERS = [
-  {
-    id: "general" as const,
-    name: "General Member",
-    featured: false,
-    benefits: [
-      "Access to monthly newsletter",
-      "Invitations to public events",
-      "Community forum access",
-      "Educational resources library",
-    ]},
-  {
-    id: "active" as const,
-    name: "Active Member",
-    featured: true,
-    benefits: [
-      "Everything in General",
-      "Voting rights at AGM",
-      "Member-only workshops & webinars",
-      "Investment club participation",
-      "Mentorship matching",
-      "Discounted event tickets",
-    ]},
-  {
-    id: "patron" as const,
-    name: "Patron Member",
-    featured: false,
-    benefits: [
-      "Everything in Active",
-      "Priority access to all events",
-      "1-on-1 advisory sessions",
-      "Exclusive Patron-only summits",
-      "Recognition on the donor wall",
-      "Direct line to the executive team",
-    ]},
-];
+// SINGLE MEMBERSHIP MODEL — must stay in sync with index.tsx and about.tsx.
+// Verified by tests/content-consistency.test.ts.
+export const MEMBERSHIP_MODEL = {
+  fee: "R200",
+  feeCadence: "/ year",
+  contribution: "R500",
+  contributionCadence: "/ month",
+  foundedYear: "2025",
+  benefits: [
+    "Offshore tax-free and curated investment opportunities",
+    "Consultation with a qualified financial advisor",
+    "Workshops, mentorship and a supportive sisterhood",
+    "Business collaboration, crowdfunding and referrals",
+  ],
+} as const;
 
 const STEPS = [
   { n: 1, title: "Submit Application", icon: FileText, desc: "Fill out the form below with your details." },
   { n: 2, title: "Committee Review", icon: Users, desc: "Our team reviews within 5 business days." },
-  { n: 3, title: "Payment Details", icon: MailCheck, desc: "Receive payment details securely from our team after approval." },
-  { n: 4, title: "Welcome to A-WIN", icon: PartyPopper, desc: "Access all your member benefits instantly." },
+  { n: 3, title: "Payment Details", icon: MailCheck, desc: "Receive payment details securely after approval." },
+  { n: 4, title: "Welcome to A-WIN", icon: PartyPopper, desc: "Access your member benefits and community." },
 ];
 
 const applicationSchema = z.object({
@@ -74,70 +61,12 @@ const applicationSchema = z.object({
   experience: z.enum(["beginner", "intermediate", "advanced"]),
   motivation: z.string().trim().min(10, "Tell us a bit more").max(2000),
   referral: z.string().trim().max(120).optional(),
-  tier: z.enum(["general", "active", "patron"])});
-
-const TierCard = memo(function TierCard({
-  tier,
-  isSelected,
-  onSelect}: {
-  tier: (typeof TIERS)[number];
-  isSelected: boolean;
-  onSelect: (id: "general" | "active" | "patron") => void;
-}) {
-  return (
-    <Card
-      className={`relative flex flex-col transition-transform duration-200 hover:-translate-y-1 ${
-        tier.featured
-          ? "border-2 border-accent shadow-xl md:scale-105"
-          : "border border-border shadow-sm"
-      } ${isSelected ? "ring-2 ring-primary" : ""}`}
-    >
-      {tier.featured && (
-        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
-          Recommended
-        </Badge>
-      )}
-      <CardHeader className="pb-3">
-        <CardTitle className="text-xl md:text-2xl">{tier.name}</CardTitle>
-        <p className="text-sm text-muted-foreground mt-1 font-medium">
-          Fee: Contact us to learn more
-        </p>
-      </CardHeader>
-      <CardContent className="flex flex-col flex-1 pt-0">
-        <ul className="space-y-2 mb-6 flex-1">
-          {tier.benefits.map((b) => (
-            <li key={b} className="flex gap-2 text-sm">
-              <Check className="size-4 text-accent shrink-0 mt-0.5" />
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-        <Button
-          onClick={() => onSelect(tier.id)}
-          variant={tier.featured ? "default" : "outline"}
-          className="w-full"
-          aria-pressed={isSelected}
-        >
-          {isSelected ? "Selected" : "Apply Now"}
-        </Button>
-      </CardContent>
-    </Card>
-  );
 });
 
 function MembershipPage() {
   const { user } = useAuth();
-  const [selectedTier, setSelectedTier] = useState<"general" | "active" | "patron">("active");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
-  const scrollToForm = useCallback((tier: "general" | "active" | "patron") => {
-    setSelectedTier(tier);
-    const el = document.getElementById("application");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, []);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -153,7 +82,7 @@ function MembershipPage() {
         experience: String(fd.get("experience") ?? "") as "beginner" | "intermediate" | "advanced",
         motivation: String(fd.get("motivation") ?? ""),
         referral: String(fd.get("referral") ?? "") || undefined,
-        tier: selectedTier};
+      };
 
       const parsed = applicationSchema.safeParse(raw);
       if (!parsed.success) {
@@ -162,9 +91,12 @@ function MembershipPage() {
       }
 
       setSubmitting(true);
+      // tier column kept for backward compatibility; single model always stores "active".
       const { error } = await supabase.from("applications").insert({
         ...parsed.data,
-        user_id: user?.id ?? null});
+        tier: "active",
+        user_id: user?.id ?? null,
+      });
       setSubmitting(false);
 
       if (error) {
@@ -175,8 +107,12 @@ function MembershipPage() {
       toast.success("Application received!");
       (e.target as HTMLFormElement).reset();
     },
-    [selectedTier, user?.id]
+    [user?.id],
   );
+
+  const scrollToForm = () => {
+    document.getElementById("application")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="flex flex-col">
@@ -185,28 +121,82 @@ function MembershipPage() {
         <div className="container mx-auto px-4 text-center">
           <h1 className="font-bold mb-4">Join A-WIN</h1>
           <p className="text-base md:text-xl max-w-2xl mx-auto opacity-90 leading-relaxed">
-            Choose the membership tier that fits your journey. Grow your wealth and your network alongside a community of women investors.
+            One transparent membership. A small annual fee plus a monthly investment commitment — building wealth, together, since {MEMBERSHIP_MODEL.foundedYear}.
           </p>
         </div>
       </section>
 
-      {/* Tiers */}
-      <section className="py-16 md:py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <h2 className="font-bold text-center mb-10 md:mb-14">Membership Tiers</h2>
-          <div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto items-stretch">
-            {TIERS.map((tier) => (
-              <TierCard
-                key={tier.id}
-                tier={tier}
-                isSelected={selectedTier === tier.id}
-                onSelect={scrollToForm}
-              />
-            ))}
+      {/* Single membership model */}
+      <section id="fees" className="py-16 md:py-24 bg-background">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="text-center mb-10">
+            <span className="text-xs font-semibold uppercase tracking-widest text-accent">Fees &amp; Commitment</span>
+            <h2 className="font-bold mt-2">One Membership · Built for Long-Term Wealth</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+              A-WIN follows a single, transparent membership model. Reviewed annually by the community.
+            </p>
           </div>
+
+          <div className="grid gap-6 md:grid-cols-2 items-stretch">
+            <Card className="border-border/60 shadow-[var(--shadow-elegant)]">
+              <CardContent className="p-8">
+                <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+                  Annual Membership Fee
+                </div>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="font-serif text-4xl text-primary">{MEMBERSHIP_MODEL.fee}</span>
+                  <span className="text-sm text-muted-foreground">{MEMBERSHIP_MODEL.feeCadence}</span>
+                </div>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Covers administration, member services and access to the A-WIN community.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="relative border-2 border-accent shadow-[var(--shadow-gold-glow)]">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
+                Investment Commitment
+              </Badge>
+              <CardContent className="p-8">
+                <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+                  Monthly Contribution
+                </div>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="font-serif text-4xl text-primary">{MEMBERSHIP_MODEL.contribution}</span>
+                  <span className="text-sm text-muted-foreground">{MEMBERSHIP_MODEL.contributionCadence} minimum</span>
+                </div>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Directed into collective investment opportunities curated for women investors.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="mt-6 border-border/60 shadow-[var(--shadow-elegant)]">
+            <CardContent className="p-8">
+              <h3 className="font-serif text-foreground">What every member gets</h3>
+              <ul className="mt-5 grid gap-3 md:grid-cols-2">
+                {MEMBERSHIP_MODEL.benefits.map((b) => (
+                  <li key={b} className="flex items-start gap-2 text-sm">
+                    <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <span className="text-foreground/85">{b}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button onClick={scrollToForm} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  Apply Now
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to="/about">Read Our Story</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <p className="text-center text-sm text-muted-foreground mt-8 flex items-center justify-center gap-1.5">
             <Info className="size-4" />
-            Benefits confirmed upon membership approval
+            Final benefits and payment details are confirmed upon approval.
           </p>
         </div>
       </section>
@@ -290,7 +280,7 @@ function MembershipPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="beginner">Beginner</SelectItem>
+                      <SelectItem value="beginner">Beginner — new to investing</SelectItem>
                       <SelectItem value="intermediate">Intermediate</SelectItem>
                       <SelectItem value="advanced">Advanced</SelectItem>
                     </SelectContent>
@@ -305,23 +295,6 @@ function MembershipPage() {
                 <div>
                   <Label htmlFor="referral">Referral (optional)</Label>
                   <Input id="referral" name="referral" maxLength={120} placeholder="Who referred you?" />
-                </div>
-
-                <div>
-                  <Label htmlFor="tier">Membership Tier *</Label>
-                  <Select
-                    value={selectedTier}
-                    onValueChange={(v) => setSelectedTier(v as "general" | "active" | "patron")}
-                  >
-                    <SelectTrigger id="tier">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="general">General Member</SelectItem>
-                      <SelectItem value="active">Active Member</SelectItem>
-                      <SelectItem value="patron">Patron Member</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <Button type="submit" size="lg" className="w-full" disabled={submitting}>
