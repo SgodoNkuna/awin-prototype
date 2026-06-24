@@ -30,6 +30,9 @@ export function SiteFooter() {
             <li><Link to="/membership" className="text-primary-foreground/80 hover:text-accent">Membership</Link></li>
             <li><Link to="/events" className="text-primary-foreground/80 hover:text-accent">Events</Link></li>
             <li><Link to="/portfolio" className="text-primary-foreground/80 hover:text-accent">Portfolio</Link></li>
+            <li><Link to="/news" className="text-primary-foreground/80 hover:text-accent">News</Link></li>
+            <li><Link to="/team" className="text-primary-foreground/80 hover:text-accent">Team</Link></li>
+            <li><Link to="/info" className="text-primary-foreground/80 hover:text-accent">FAQ & Privacy</Link></li>
             <li><Link to="/contact" className="text-primary-foreground/80 hover:text-accent">Contact</Link></li>
           </ul>
         </div>
