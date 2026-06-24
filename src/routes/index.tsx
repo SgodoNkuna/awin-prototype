@@ -329,7 +329,7 @@ function Index() {
         className="relative overflow-hidden py-20 text-accent-foreground"
         style={{ background: "var(--gradient-gold)" }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,oklch(1_0_0/0.25),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.25),transparent_55%)]" />
         <div className="relative mx-auto max-w-3xl px-4 text-center">
           <h2 className="font-serif text-accent-foreground">
             Ready to Start Your Investment Journey?
