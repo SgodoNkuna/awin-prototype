@@ -12,13 +12,14 @@ import {
   LogOut,
   Loader2,
   CreditCard,
+  FileDown,
 } from "lucide-react";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
-  to: "/admin" | "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/portfolio" | "/admin/messages" | "/admin/documents" | "/admin/billing" | "/admin/settings";
+  to: "/admin" | "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/portfolio" | "/admin/messages" | "/admin/documents" | "/admin/billing" | "/admin/exports" | "/admin/settings";
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
@@ -32,6 +33,7 @@ const NAV: NavItem[] = [
   { to: "/admin/messages", label: "Messages", icon: Mail },
   { to: "/admin/documents", label: "Documents", icon: FolderOpen },
   { to: "/admin/billing", label: "Billing", icon: CreditCard },
+  { to: "/admin/exports", label: "PDF Export", icon: FileDown },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
