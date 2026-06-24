@@ -9,9 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TeamRouteImport } from './routes/team'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PortalRouteImport } from './routes/portal'
+import { Route as NewsRouteImport } from './routes/news'
 import { Route as MembershipRouteImport } from './routes/membership'
+import { Route as InfoRouteImport } from './routes/info'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -23,12 +26,18 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminPortfolioRouteImport } from './routes/admin.portfolio'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
+import { Route as AdminExportsRouteImport } from './routes/admin.exports'
 import { Route as AdminEventsRouteImport } from './routes/admin.events'
 import { Route as AdminDocumentsRouteImport } from './routes/admin.documents'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast.itn'
 
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortfolioRoute = PortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
@@ -39,9 +48,19 @@ const PortalRoute = PortalRouteImport.update({
   path: '/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MembershipRoute = MembershipRouteImport.update({
   id: '/membership',
   path: '/membership',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InfoRoute = InfoRouteImport.update({
+  id: '/info',
+  path: '/info',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsRoute = EventsRouteImport.update({
@@ -99,6 +118,11 @@ const AdminMembersRoute = AdminMembersRouteImport.update({
   path: '/members',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminExportsRoute = AdminExportsRouteImport.update({
+  id: '/exports',
+  path: '/exports',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminEventsRoute = AdminEventsRouteImport.update({
   id: '/events',
   path: '/events',
@@ -132,13 +156,17 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
+  '/info': typeof InfoRoute
   '/membership': typeof MembershipRoute
+  '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
+  '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/exports': typeof AdminExportsRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
@@ -152,13 +180,17 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
+  '/info': typeof InfoRoute
   '/membership': typeof MembershipRoute
+  '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
+  '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/exports': typeof AdminExportsRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
@@ -174,13 +206,17 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
+  '/info': typeof InfoRoute
   '/membership': typeof MembershipRoute
+  '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
+  '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/exports': typeof AdminExportsRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
@@ -197,13 +233,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/events'
+    | '/info'
     | '/membership'
+    | '/news'
     | '/portal'
     | '/portfolio'
+    | '/team'
     | '/admin/applications'
     | '/admin/billing'
     | '/admin/documents'
     | '/admin/events'
+    | '/admin/exports'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
@@ -217,13 +257,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/events'
+    | '/info'
     | '/membership'
+    | '/news'
     | '/portal'
     | '/portfolio'
+    | '/team'
     | '/admin/applications'
     | '/admin/billing'
     | '/admin/documents'
     | '/admin/events'
+    | '/admin/exports'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
@@ -238,13 +282,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/events'
+    | '/info'
     | '/membership'
+    | '/news'
     | '/portal'
     | '/portfolio'
+    | '/team'
     | '/admin/applications'
     | '/admin/billing'
     | '/admin/documents'
     | '/admin/events'
+    | '/admin/exports'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
@@ -260,14 +308,24 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   EventsRoute: typeof EventsRoute
+  InfoRoute: typeof InfoRoute
   MembershipRoute: typeof MembershipRoute
+  NewsRoute: typeof NewsRoute
   PortalRoute: typeof PortalRoute
   PortfolioRoute: typeof PortfolioRoute
+  TeamRoute: typeof TeamRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portfolio': {
       id: '/portfolio'
       path: '/portfolio'
@@ -282,11 +340,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/membership': {
       id: '/membership'
       path: '/membership'
       fullPath: '/membership'
       preLoaderRoute: typeof MembershipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/info': {
+      id: '/info'
+      path: '/info'
+      fullPath: '/info'
+      preLoaderRoute: typeof InfoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events': {
@@ -366,6 +438,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMembersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/exports': {
+      id: '/admin/exports'
+      path: '/exports'
+      fullPath: '/admin/exports'
+      preLoaderRoute: typeof AdminExportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/events': {
       id: '/admin/events'
       path: '/events'
@@ -409,6 +488,7 @@ interface AdminRouteChildren {
   AdminBillingRoute: typeof AdminBillingRoute
   AdminDocumentsRoute: typeof AdminDocumentsRoute
   AdminEventsRoute: typeof AdminEventsRoute
+  AdminExportsRoute: typeof AdminExportsRoute
   AdminMembersRoute: typeof AdminMembersRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminPortfolioRoute: typeof AdminPortfolioRoute
@@ -421,6 +501,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBillingRoute: AdminBillingRoute,
   AdminDocumentsRoute: AdminDocumentsRoute,
   AdminEventsRoute: AdminEventsRoute,
+  AdminExportsRoute: AdminExportsRoute,
   AdminMembersRoute: AdminMembersRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminPortfolioRoute: AdminPortfolioRoute,
@@ -437,9 +518,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   EventsRoute: EventsRoute,
+  InfoRoute: InfoRoute,
   MembershipRoute: MembershipRoute,
+  NewsRoute: NewsRoute,
   PortalRoute: PortalRoute,
   PortfolioRoute: PortfolioRoute,
+  TeamRoute: TeamRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
 }
 export const routeTree = rootRouteImport
