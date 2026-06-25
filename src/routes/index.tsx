@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LogoHero } from "@/components/site/LogoHero";
 import { PortfolioCarousel } from "@/components/site/PortfolioCarousel";
+import { WCWGallery } from "@/components/site/WCWGallery";
 import { supabase } from "@/integrations/supabase/client";
 
 
@@ -307,8 +308,12 @@ function Index() {
         </div>
       </section>
 
+      {/* WCW SUMMIT GALLERY */}
+      <WCWGallery />
+
       {/* PORTFOLIO CAROUSEL */}
       <PortfolioCarousel />
+
 
 
       {/* CTA BANNER */}
