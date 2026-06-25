@@ -76,17 +76,17 @@
   --popover: #ffffff;
   --popover-foreground: #252736;
 
-  /* Brand — lighter green primary (A symbol) */
-  --primary: #5fbf7a;
-  --primary-foreground: #0f2a18;
-  --primary-deep: #3a8a52;
+  /* Brand — richer mid-green primary (A symbol) */
+  --primary: #2f9655;
+  --primary-foreground: #ffffff;
+  --primary-deep: #1f6a3a;
   --hero-foreground: #fffaf0;
-  --hero-muted: #ece7d8;
-  --hero-surface: rgba(255, 250, 240, 0.16);
-  --hero-border: rgba(255, 250, 240, 0.36);
+  --hero-muted: #f4eedf;
+  --hero-surface: rgba(255, 250, 240, 0.18);
+  --hero-border: rgba(255, 250, 240, 0.42);
 
   /* Accent — bolder orange (WIN) */
-  --accent: #ea7826;
+  --accent: #e26a18;
   --accent-foreground: #ffffff;
   --accent-soft: #fbd9b4;
 
@@ -98,33 +98,33 @@
 
   --destructive: #c73c2f;
   --destructive-foreground: #fbf8ef;
-  --success: #3aaf5c;
+  --success: #2f9655;
   --success-foreground: #fbf8ef;
 
   --border: #e4ddcf;
   --input: #e4ddcf;
-  --ring: #ea7826;
+  --ring: #e26a18;
 
-  --chart-1: #5fbf7a;
-  --chart-2: #ea7826;
+  --chart-1: #2f9655;
+  --chart-2: #e26a18;
   --chart-3: #4f7fb7;
-  --chart-4: #3aaf5c;
+  --chart-4: #1f6a3a;
   --chart-5: #c73c2f;
 
-  --sidebar: #1d4a30;
+  --sidebar: #163d27;
   --sidebar-foreground: #fbf8ef;
-  --sidebar-primary: #ea7826;
+  --sidebar-primary: #e26a18;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #2a6242;
+  --sidebar-accent: #205634;
   --sidebar-accent-foreground: #fbf8ef;
-  --sidebar-border: #2a6242;
-  --sidebar-ring: #ea7826;
+  --sidebar-border: #205634;
+  --sidebar-ring: #e26a18;
 
   /* Gradients & shadows */
-  --gradient-hero: linear-gradient(135deg, #2d8049 0%, #1d4a30 55%, #ea7826 140%);
-  --gradient-gold: linear-gradient(135deg, #f29445 0%, #d35f17 100%);
-  --shadow-elegant: 0 10px 30px -10px rgba(45, 128, 73, 0.28);
-  --shadow-gold-glow: 0 0 0 1px rgba(234, 120, 38, 0.4), 0 10px 30px -10px rgba(234, 120, 38, 0.45);
+  --gradient-hero: linear-gradient(135deg, #1f6a3a 0%, #122e1d 60%, #e26a18 160%);
+  --gradient-gold: linear-gradient(135deg, #f08a3d 0%, #c25612 100%);
+  --shadow-elegant: 0 10px 30px -10px rgba(31, 106, 58, 0.32);
+  --shadow-gold-glow: 0 0 0 1px rgba(226, 106, 24, 0.42), 0 10px 30px -10px rgba(226, 106, 24, 0.48);
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -316,3 +316,9 @@
 .awin-accordion [data-slot="accordion-trigger"] svg {
   color: #4CAF25;
 }
+
+/* Hero typography legibility — applied across hero gradients */
+section [style*="gradient-hero"] h1,
+section[style*="gradient-hero"] h1 { text-shadow: 0 2px 18px rgba(0,0,0,0.35); }
+section [style*="gradient-hero"] p,
+section[style*="gradient-hero"] p { text-shadow: 0 1px 10px rgba(0,0,0,0.45); font-weight: 500; }

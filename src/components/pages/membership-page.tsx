@@ -15,7 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 import {
   Select,
   SelectContent,
@@ -59,9 +59,18 @@ const applicationSchema = z.object({
   occupation: z.string().trim().min(1, "Required").max(120),
   employer: z.string().trim().max(120).optional(),
   experience: z.enum(["beginner", "intermediate", "advanced"]),
-  motivation: z.string().trim().min(10, "Tell us a bit more").max(2000),
+  // Repurposed: stores "Where did you hear about A-WIN?" (kept in `motivation` column for backward compatibility).
+  motivation: z.string().trim().min(2, "Please tell us where you heard about A-WIN").max(2000),
   referral: z.string().trim().max(120).optional(),
 });
+
+const ONBOARDING = [
+  "Proof of payment of the R200 joining fee",
+  "Completed Letter of Authority (LoA) and Risk Profile Assessment (RPA)",
+  "FICA documents submitted",
+  "Consultation with a qualified Financial Advisor",
+  "Completion of application forms for the investment",
+];
 
 function MembershipPage() {
   const { user } = useAuth();
@@ -220,6 +229,33 @@ function MembershipPage() {
         </div>
       </section>
 
+      {/* Onboarding requirements */}
+      <section className="py-12 md:py-16 bg-background">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <Card className="border-2 border-accent/40 shadow-[var(--shadow-elegant)]">
+            <CardContent className="p-8">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-accent">
+                <ShieldCheck className="size-4" /> Onboarding requirements
+              </div>
+              <h3 className="font-serif text-foreground mt-2">What you'll need to complete onboarding</h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                Once your application is approved, you'll be guided through these steps to activate your A-WIN membership.
+              </p>
+              <ol className="mt-5 space-y-3">
+                {ONBOARDING.map((item, i) => (
+                  <li key={item} className="flex gap-3 text-sm">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-xs">
+                      {i + 1}
+                    </span>
+                    <span className="text-foreground/90 leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Application form */}
       <section id="application" className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 max-w-2xl">
@@ -288,13 +324,25 @@ function MembershipPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="motivation">Why do you want to join? *</Label>
-                  <Textarea id="motivation" name="motivation" required rows={4} maxLength={2000} />
+                  <Label htmlFor="motivation">Where did you hear about A-WIN? *</Label>
+                  <Select name="motivation" defaultValue="Social media">
+                    <SelectTrigger id="motivation">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Social media">Social media</SelectItem>
+                      <SelectItem value="Friend or member referral">Friend or member referral</SelectItem>
+                      <SelectItem value="A-WIN event or workshop">A-WIN event or workshop</SelectItem>
+                      <SelectItem value="Phumelele Ndumo (Founder)">Phumelele Ndumo (Founder)</SelectItem>
+                      <SelectItem value="News / podcast / article">News / podcast / article</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="referral">Referral (optional)</Label>
-                  <Input id="referral" name="referral" maxLength={120} placeholder="Who referred you?" />
+                  <Label htmlFor="referral">Who referred you? (optional)</Label>
+                  <Input id="referral" name="referral" maxLength={120} placeholder="Name of the person who told you" />
                 </div>
 
                 <Button type="submit" size="lg" className="w-full" disabled={submitting}>

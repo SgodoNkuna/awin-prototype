@@ -25,6 +25,11 @@ type TeamMember = {
   photo_url: string | null;
   order_index: number;
   published: boolean;
+  category: string | null;
+  expertise: string[] | null;
+  location: string | null;
+  contact_email: string | null;
+  website: string | null;
 };
 
 type Tier = {
@@ -201,7 +206,7 @@ function SettingsPage() {
         <TabsContent value="team" className="space-y-3 mt-4">
           <Button
             size="sm"
-            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", order_index: team?.length ?? 0, published: true }])}
+            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "" }])}
           >
             <Plus className="size-4 mr-2" />Add Member
           </Button>
@@ -219,6 +224,25 @@ function SettingsPage() {
                 <Field label="Photo URL">
                   <Input value={m.photo_url ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, photo_url: e.target.value } : x))} />
                 </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Category">
+                    <Input value={m.category ?? ""} placeholder="Finance & Accounting" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, category: e.target.value } : x))} />
+                  </Field>
+                  <Field label="Location">
+                    <Input value={m.location ?? ""} placeholder="Johannesburg, ZA" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, location: e.target.value } : x))} />
+                  </Field>
+                </div>
+                <Field label="Expertise (comma-separated)">
+                  <Input value={(m.expertise ?? []).join(", ")} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, expertise: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) } : x))} />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Contact email">
+                    <Input value={m.contact_email ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, contact_email: e.target.value } : x))} />
+                  </Field>
+                  <Field label="Website">
+                    <Input value={m.website ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, website: e.target.value } : x))} />
+                  </Field>
+                </div>
                 <Field label="Bio">
                   <Textarea rows={2} value={m.bio ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, bio: e.target.value } : x))} />
                 </Field>
@@ -226,7 +250,7 @@ function SettingsPage() {
                   <Button
                     size="sm"
                     onClick={async () => {
-                      const payload = { name: m.name, title: m.title, bio: m.bio, photo_url: m.photo_url, order_index: m.order_index, published: m.published };
+                      const payload = { name: m.name, title: m.title, bio: m.bio, photo_url: m.photo_url, order_index: m.order_index, published: m.published, category: m.category || null, expertise: m.expertise && m.expertise.length ? m.expertise : null, location: m.location || null, contact_email: m.contact_email || null, website: m.website || null };
                       const { error } = m.id
                         ? await supabase.from("team_members").update(payload).eq("id", m.id)
                         : await supabase.from("team_members").insert(payload);

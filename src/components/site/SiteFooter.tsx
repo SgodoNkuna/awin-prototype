@@ -78,7 +78,7 @@ export function SiteFooter() {
 
       <div className="border-t border-primary-foreground/10">
         <div className="container mx-auto flex flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-primary-foreground/60 md:flex-row md:px-8">
-          <p>© {year} A-WIN — African Women in Investment Network. All rights reserved.</p>
+          <p>© {year} A-WIN — African Women Investment Network. All rights reserved.</p>
           <p>Built by Lusandla Marketing</p>
         </div>
       </div>
