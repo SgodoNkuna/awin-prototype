@@ -64,7 +64,10 @@ function NewsPage() {
         </div>
       </section>
 
+      <WCWGallery />
+
       <section className="py-16">
+
         <div className="mx-auto max-w-6xl px-4">
           {articles === null ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
