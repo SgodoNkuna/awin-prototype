@@ -76,57 +76,58 @@
   --popover: #ffffff;
   --popover-foreground: #252736;
 
-  /* Brand — green primary (A symbol) */
-  --primary: #45a85c;
-  --primary-foreground: #fffaf0;
-  --primary-deep: #2f7045;
+  /* Brand — lighter green primary (A symbol) */
+  --primary: #5fbf7a;
+  --primary-foreground: #0f2a18;
+  --primary-deep: #3a8a52;
   --hero-foreground: #fffaf0;
   --hero-muted: #ece7d8;
-  --hero-surface: rgba(255, 250, 240, 0.14);
-  --hero-border: rgba(255, 250, 240, 0.34);
+  --hero-surface: rgba(255, 250, 240, 0.16);
+  --hero-border: rgba(255, 250, 240, 0.36);
 
-  /* Accent — orange (WIN) */
-  --accent: #d99a38;
-  --accent-foreground: #272334;
-  --accent-soft: #f4e4ba;
+  /* Accent — bolder orange (WIN) */
+  --accent: #ea7826;
+  --accent-foreground: #ffffff;
+  --accent-soft: #fbd9b4;
 
   --secondary: #f3efe2;
   --secondary-foreground: #272334;
 
   --muted: #f2efe8;
-  --muted-foreground: #666977;
+  --muted-foreground: #5a5d6b;
 
   --destructive: #c73c2f;
   --destructive-foreground: #fbf8ef;
-  --success: #2f9d55;
+  --success: #3aaf5c;
   --success-foreground: #fbf8ef;
 
   --border: #e4ddcf;
   --input: #e4ddcf;
-  --ring: #d99a38;
+  --ring: #ea7826;
 
-  --chart-1: #45a85c;
-  --chart-2: #d99a38;
+  --chart-1: #5fbf7a;
+  --chart-2: #ea7826;
   --chart-3: #4f7fb7;
-  --chart-4: #2f9d55;
+  --chart-4: #3aaf5c;
   --chart-5: #c73c2f;
 
-  --sidebar: #173c27;
+  --sidebar: #1d4a30;
   --sidebar-foreground: #fbf8ef;
-  --sidebar-primary: #d99a38;
-  --sidebar-primary-foreground: #272334;
-  --sidebar-accent: #245337;
+  --sidebar-primary: #ea7826;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2a6242;
   --sidebar-accent-foreground: #fbf8ef;
-  --sidebar-border: #245337;
-  --sidebar-ring: #d99a38;
+  --sidebar-border: #2a6242;
+  --sidebar-ring: #ea7826;
 
   /* Gradients & shadows */
-  --gradient-hero: linear-gradient(135deg, #245f3c 0%, #183d2a 100%);
-  --gradient-gold: linear-gradient(135deg, #e6b04b 0%, #cc8030 100%);
-  --shadow-elegant: 0 10px 30px -10px rgba(47, 112, 69, 0.22);
-  --shadow-gold-glow: 0 0 0 1px rgba(217, 154, 56, 0.35), 0 10px 30px -10px rgba(217, 154, 56, 0.4);
+  --gradient-hero: linear-gradient(135deg, #2d8049 0%, #1d4a30 55%, #ea7826 140%);
+  --gradient-gold: linear-gradient(135deg, #f29445 0%, #d35f17 100%);
+  --shadow-elegant: 0 10px 30px -10px rgba(45, 128, 73, 0.28);
+  --shadow-gold-glow: 0 0 0 1px rgba(234, 120, 38, 0.4), 0 10px 30px -10px rgba(234, 120, 38, 0.45);
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 
 .dark {
   --background: #181c2a;
