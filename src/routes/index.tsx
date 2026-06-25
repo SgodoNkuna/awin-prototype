@@ -308,8 +308,12 @@ function Index() {
         </div>
       </section>
 
+      {/* WCW SUMMIT GALLERY */}
+      <WCWGallery />
+
       {/* PORTFOLIO CAROUSEL */}
       <PortfolioCarousel />
+
 
 
       {/* CTA BANNER */}
