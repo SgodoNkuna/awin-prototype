@@ -1,0 +1,31 @@
+
+ALTER TABLE public.team_members
+  ADD COLUMN IF NOT EXISTS category TEXT,
+  ADD COLUMN IF NOT EXISTS expertise TEXT[],
+  ADD COLUMN IF NOT EXISTS location TEXT,
+  ADD COLUMN IF NOT EXISTS contact_email TEXT,
+  ADD COLUMN IF NOT EXISTS website TEXT;
+
+GRANT SELECT ON public.team_members TO anon;
+
+-- Wipe any prior dummy seed
+DELETE FROM public.team_members;
+
+INSERT INTO public.team_members (name, title, bio, photo_url, category, expertise, location, contact_email, website, order_index, published) VALUES
+('Phumelele Ndumo', 'Founder of A-WIN · Financial Advisor', 'BCom, Higher Diploma in Computer Auditing, Masters in Business Leadership. Author of the SA best-seller "From Debt to Riches: Steps to Financial Success." Founder of ThuthukaSA Financial Services Provider (FSP No: 47992) and founder of A-WIN (African Women Investment Network). Passionate about helping people and stokvels invest — especially in offshore tax-free investments.', '/__l5e/assets-v1/54619555-28f6-49d0-9846-d90bcc87e6e5/phumelele-ndumo.jpeg', 'Leadership', ARRAY['Financial Advisory','Offshore Investing','Author','Stokvel Investing'], 'South Africa', 'info@thuthuka-sa.co.za', 'https://www.thuthuka-sa.co.za', 0, true),
+
+('Nosipho Ngaka', 'CA (SA) · MCom Taxation', 'Highly experienced Chartered Accountant with 15 years across the private and public sector. PhD Accounting Candidate and FISA Candidate. Trusted technical advisor, thought leader, educator and builder of systems of transformation — driving impact through governance, robust financial reporting and regulatory compliance.', '/__l5e/assets-v1/cfa5cd97-7dc3-4c16-aff9-a826ce1e2772/nosipho-ngaka.jpeg', 'Finance & Accounting', ARRAY['Chartered Accountant','Taxation','Governance','Public Sector'], 'South Africa', 'nosipho@finlitad.co.za', NULL, 10, true),
+
+('Thinavhuyo Ndidinwangani Mpye', 'Managing Director · Mpye Consulting · CA (SA)', 'Chartered Accountant and governance professional with 15+ years post-articles experience. Chairperson of the Audit and Risk Committee of PRASA and Audit Committee of the National Empowerment Fund (NEF). Contributed to PRASA''s performance improvement from 17% (2020) to 93% (2025). Passionate about mentoring future finance leaders.', '/__l5e/assets-v1/e4ad0903-a278-45a3-a052-e42e9d8bea20/thinavhuyo-mpye.jpeg', 'Finance & Accounting', ARRAY['Corporate Governance','Audit & Risk','Financial Strategy','Mentorship'], 'South Africa', 'ndidi@mpyeconsulting.co.za', 'https://www.mpyeconsulting.co.za', 20, true),
+
+('Tseleng Thamaga', 'Founder & Managing Director · TLE Consultants', 'B.Com Accounting & Auditing, Certified Technical Financial Accountant (ICB) with 27 years hands-on experience in the micro-finance industry. Start-up champion building strong finances for the informal economy through bookkeeping, payroll, start-up setup and financial management.', '/__l5e/assets-v1/924bc798-a115-4b3b-8f8d-fed70df601ef/tseleng-thamaga.jpeg', 'Finance & Accounting', ARRAY['Bookkeeping','Payroll','Start-up Setup','Financial Management'], 'Centurion, Pretoria', 'tselengthamaga@yahoo.com', NULL, 30, true),
+
+('Nonhlanhla Dube', 'Managing Director · Libalele Development Enterprise', 'Governance & Skills Development Leader with 20+ years of leadership experience across SETAs, public-sector institutions and community development. Holds BA SW4 (Honours), BA Hons (HRD), and certifications in development programmes and supervisory management. Driving responsible governance, capability and sustainable development.', '/__l5e/assets-v1/6565d5d6-b798-425c-b95f-b26cbfa808e1/nonhlanhla-dube.jpeg', 'Governance & Skills', ARRAY['Corporate Governance','Skills Development','SETAs','Programme Management'], 'Germiston, Gauteng', 'info@libalelewellness.co.za', 'https://www.libalelewellness.co.za', 40, true),
+
+('Tebogo Thwane', 'IT Specialist · Entrepreneur · CEO Segalogodimo Holdings', 'IT Specialist, entrepreneur and purpose-driven leader. CEO of Segalogodimo Holdings and Director at Anchored In Hope Foundation. Property manager and investor, operates a bespoke personalised gifting business and sells Clinica beauty products. Focused on poverty eradication and personal development.', '/__l5e/assets-v1/c3e27b54-0892-402f-b7dd-18285b0721ba/tebogo-thwane.jpeg', 'Technology & Business', ARRAY['IT','Property Investment','Entrepreneurship','Community Impact'], 'South Africa', 'Segalogodimoholdings@gmail.com', NULL, 50, true),
+
+('Dinah Mpyana', 'Sales Guru · Content Creator', 'Passionate Sales Professional and Content Creator dedicated to helping people grow, connect and succeed. Through engaging content, business insights and authentic storytelling, she inspires individuals to pursue opportunities and build confidence. Empowering women in business is at the heart of her mission.', '/__l5e/assets-v1/07ea2953-8ffb-4e75-b87c-1153657728c0/dinah-mpyana.jpeg', 'Sales & Marketing', ARRAY['Sales','Content Creation','Business Development','Women in Business'], 'South Africa', NULL, 'https://www.facebook.com/share/1CkFBUVcu9/', 60, true),
+
+('Thatohatsi Mariti', 'Civil Engineer (Traffic & Transportation)', 'Civil Engineer specialising in Traffic and Transportation with a passion for designing better connections and sustainable communities. Property investor and educator who Airbnbs her Midrand cottage and owns rentals in Lesotho to fund education for young relatives. Believes in self-empowerment and community uplift.', '/__l5e/assets-v1/371a7152-9632-4def-8449-0993821a5210/thatohatsi-mariti.jpeg', 'Engineering & Property', ARRAY['Civil Engineering','Property Investment','Financial Literacy','Education'], 'New Zealand', NULL, NULL, 70, true),
+
+('Dolly Mbuyane', 'Founder & MD · Nozihle Cleaning Services', 'Founder and Managing Director of Nozihle Cleaning Services — providing quality service since 2002. Specialises in office & commercial, residential, deep, specialised cleaning and hygiene solutions. "We transform everyday spaces into pristine environments."', '/__l5e/assets-v1/15d81a9d-88f1-4a11-acc6-f49ba8bb96b3/dolly-mbuyane.jpeg', 'Services & Operations', ARRAY['Cleaning Services','Operations','Hygiene Solutions','SME Founder'], 'South Africa', 'dolly@nozihlecleaningservices.co.za', 'https://www.nozihlecleaningservices.co.za', 80, true);

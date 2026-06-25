@@ -596,36 +596,51 @@ export type Database = {
       team_members: {
         Row: {
           bio: string | null
+          category: string | null
+          contact_email: string | null
           created_at: string
+          expertise: string[] | null
           id: string
+          location: string | null
           name: string
           order_index: number
           photo_url: string | null
           published: boolean
           title: string
           updated_at: string
+          website: string | null
         }
         Insert: {
           bio?: string | null
+          category?: string | null
+          contact_email?: string | null
           created_at?: string
+          expertise?: string[] | null
           id?: string
+          location?: string | null
           name: string
           order_index?: number
           photo_url?: string | null
           published?: boolean
           title: string
           updated_at?: string
+          website?: string | null
         }
         Update: {
           bio?: string | null
+          category?: string | null
+          contact_email?: string | null
           created_at?: string
+          expertise?: string[] | null
           id?: string
+          location?: string | null
           name?: string
           order_index?: number
           photo_url?: string | null
           published?: boolean
           title?: string
           updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }

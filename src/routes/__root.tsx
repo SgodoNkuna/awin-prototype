@@ -75,14 +75,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "A-WIN — African Women in Investment Network" },
+      { title: "A-WIN — African Women Investment Network" },
       {
         name: "description",
         content:
           "A-WIN empowers African women to build generational wealth through investment education, networking, and mentorship.",
       },
       { name: "author", content: "A-WIN" },
-      { property: "og:title", content: "A-WIN — African Women in Investment Network" },
+      { property: "og:title", content: "A-WIN — African Women Investment Network" },
       {
         property: "og:description",
         content:
@@ -91,7 +91,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "A-WIN" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "A-WIN — African Women in Investment Network" },
+      { name: "twitter:title", content: "A-WIN — African Women Investment Network" },
       { name: "description", content: "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
       { property: "og:description", content: "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
       { name: "twitter:description", content: "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },

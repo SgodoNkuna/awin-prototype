@@ -17,13 +17,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "A-WIN | African Women in Investment Network" },
+      { title: "A-WIN | African Women Investment Network" },
       {
         name: "description",
         content:
           "A-WIN is a community of women building wealth, knowledge, and legacy together through investment, education, and networking.",
       },
-      { property: "og:title", content: "A-WIN | African Women in Investment Network" },
+      { property: "og:title", content: "A-WIN | African Women Investment Network" },
       {
         property: "og:description",
         content:

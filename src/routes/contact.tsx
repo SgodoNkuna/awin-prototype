@@ -39,9 +39,10 @@ const contactSchema = z.object({
 });
 
 const INFO = [
-  { icon: Mail, label: "Email", value: "hello@a-win.co.za" },
-  { icon: Phone, label: "Phone", value: "+27 (0)11 000 0000" },
-  { icon: MapPin, label: "Location", value: "Sandton, Johannesburg, South Africa" },
+  { icon: Mail, label: "Email", value: "info@thuthuka-sa.co.za" },
+  { icon: Phone, label: "Phone", value: "+27 11 568 2635" },
+  { icon: Phone, label: "Mobile", value: "+27 69 245 0228" },
+  { icon: MapPin, label: "Location", value: "Centurion, Pretoria, South Africa" },
   { icon: Clock, label: "Office Hours", value: "Mon – Fri · 09:00 – 17:00 SAST" },
 ];
 
@@ -165,7 +166,7 @@ function ContactPage() {
               <div className="aspect-video bg-muted">
                 <iframe
                   title="A-WIN office location on map"
-                  src="https://www.google.com/maps?q=Sandton%2C%20Johannesburg%2C%20South%20Africa&output=embed"
+                  src="https://www.google.com/maps?q=Centurion%2C+Pretoria%2C+South+Africa&output=embed"
                   className="h-full w-full border-0"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
@@ -174,10 +175,10 @@ function ContactPage() {
               </div>
               <CardContent className="pt-4 flex items-center justify-between gap-2">
                 <span className="text-xs text-muted-foreground">
-                  Sandton, Johannesburg, South Africa
+                  Centurion, Pretoria, South Africa
                 </span>
                 <a
-                  href="https://www.google.com/maps/dir/?api=1&destination=Sandton%2C+Johannesburg%2C+South+Africa"
+                  href="https://www.google.com/maps/dir/?api=1&destination=Centurion%2C+Pretoria%2C+South+Africa"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs font-medium text-primary story-link"

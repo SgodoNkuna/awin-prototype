@@ -14,21 +14,35 @@ import vid2 from "@/assets/wcw/wcw-32.mp4.asset.json";
 import vid3 from "@/assets/wcw/wcw-32-1.mp4.asset.json";
 import vid4 from "@/assets/wcw/wcw-32-2.mp4.asset.json";
 
-const images = [
-  { src: wcw1.url, caption: "Member moments — From Debt to Riches book signing" },
-  { src: wcw2.url, caption: "Sisterhood at the WCW Summit" },
-  { src: wcw3.url, caption: "Panel: Women Creating Wealth" },
-  { src: wcw4.url, caption: "Celebrating member milestones" },
-  { src: wcw5.url, caption: "Mentorship in action" },
-  { src: wcw6.url, caption: "Graduation embrace — November 2024" },
+// Paired sequence: each photo aligns with the matching video segment from the
+// Graça Machel Trust · Women Creating Wealth Graduation (November 2024).
+const pairs = [
+  {
+    image: { src: wcw1.url, caption: "1 · Opening — From Debt to Riches book signing" },
+    video: { src: vid1.url, caption: "1 · Opening — WCW Summit highlight reel" },
+  },
+  {
+    image: { src: wcw2.url, caption: "2 · Sisterhood on the floor" },
+    video: { src: vid2.url, caption: "2 · Member testimonial" },
+  },
+  {
+    image: { src: wcw3.url, caption: "3 · Panel: Women Creating Wealth" },
+    video: { src: vid3.url, caption: "3 · On-stage moments" },
+  },
+  {
+    image: { src: wcw4.url, caption: "4 · Celebrating member milestones" },
+    video: { src: vid4.url, caption: "4 · Behind the scenes" },
+  },
 ];
 
-const videos = [
-  { src: vid1.url, caption: "WCW Summit highlight reel" },
-  { src: vid2.url, caption: "Member testimonial" },
-  { src: vid3.url, caption: "On-stage moments" },
-  { src: vid4.url, caption: "Behind the scenes" },
+// Additional photos (no paired video) shown after the main sequence.
+const extraImages = [
+  { src: wcw5.url, caption: "5 · Mentorship in action" },
+  { src: wcw6.url, caption: "6 · Graduation embrace" },
 ];
+
+const images = [...pairs.map((p) => p.image), ...extraImages];
+const videos = pairs.map((p) => p.video);
 
 type Selected =
   | { kind: "image"; src: string; caption: string }
@@ -67,14 +81,14 @@ export function WCWGallery() {
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-left text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/55 to-transparent p-3 text-left text-xs font-semibold text-white">
                 {img.caption}
               </span>
             </button>
           ))}
         </div>
 
-        <h3 className="mt-12 font-serif text-xl text-foreground">Video highlights</h3>
+        <h3 className="mt-12 font-serif text-xl text-foreground">Video highlights (paired with photos above)</h3>
         <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
           {videos.map((v) => (
             <button
