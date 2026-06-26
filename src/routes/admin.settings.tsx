@@ -30,7 +30,11 @@ type TeamMember = {
   location: string | null;
   contact_email: string | null;
   website: string | null;
+  linkedin_url: string | null;
+  social_url: string | null;
+  portfolio_images: string[] | null;
 };
+
 
 type Tier = {
   id: string;
