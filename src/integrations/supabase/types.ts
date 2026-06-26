@@ -601,11 +601,14 @@ export type Database = {
           created_at: string
           expertise: string[] | null
           id: string
+          linkedin_url: string | null
           location: string | null
           name: string
           order_index: number
           photo_url: string | null
+          portfolio_images: string[]
           published: boolean
+          social_url: string | null
           title: string
           updated_at: string
           website: string | null
@@ -617,11 +620,14 @@ export type Database = {
           created_at?: string
           expertise?: string[] | null
           id?: string
+          linkedin_url?: string | null
           location?: string | null
           name: string
           order_index?: number
           photo_url?: string | null
+          portfolio_images?: string[]
           published?: boolean
+          social_url?: string | null
           title: string
           updated_at?: string
           website?: string | null
@@ -633,11 +639,14 @@ export type Database = {
           created_at?: string
           expertise?: string[] | null
           id?: string
+          linkedin_url?: string | null
           location?: string | null
           name?: string
           order_index?: number
           photo_url?: string | null
+          portfolio_images?: string[]
           published?: boolean
+          social_url?: string | null
           title?: string
           updated_at?: string
           website?: string | null

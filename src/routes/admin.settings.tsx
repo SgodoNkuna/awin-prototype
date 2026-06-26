@@ -30,7 +30,11 @@ type TeamMember = {
   location: string | null;
   contact_email: string | null;
   website: string | null;
+  linkedin_url: string | null;
+  social_url: string | null;
+  portfolio_images: string[] | null;
 };
+
 
 type Tier = {
   id: string;
@@ -206,7 +210,7 @@ function SettingsPage() {
         <TabsContent value="team" className="space-y-3 mt-4">
           <Button
             size="sm"
-            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "" }])}
+            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "", linkedin_url: "", social_url: "", portfolio_images: [] }])}
           >
             <Plus className="size-4 mr-2" />Add Member
           </Button>
@@ -246,11 +250,27 @@ function SettingsPage() {
                 <Field label="Bio">
                   <Textarea rows={2} value={m.bio ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, bio: e.target.value } : x))} />
                 </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="LinkedIn URL">
+                    <Input value={m.linkedin_url ?? ""} placeholder="https://linkedin.com/in/…" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, linkedin_url: e.target.value } : x))} />
+                  </Field>
+                  <Field label="Other social URL">
+                    <Input value={m.social_url ?? ""} placeholder="https://instagram.com/…" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, social_url: e.target.value } : x))} />
+                  </Field>
+                </div>
+                <Field label="Portfolio image URLs (comma-separated)">
+                  <Textarea
+                    rows={2}
+                    value={(m.portfolio_images ?? []).join(", ")}
+                    placeholder="https://…/a.jpg, https://…/b.jpg"
+                    onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, portfolio_images: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) } : x))}
+                  />
+                </Field>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
                     onClick={async () => {
-                      const payload = { name: m.name, title: m.title, bio: m.bio, photo_url: m.photo_url, order_index: m.order_index, published: m.published, category: m.category || null, expertise: m.expertise && m.expertise.length ? m.expertise : null, location: m.location || null, contact_email: m.contact_email || null, website: m.website || null };
+                      const payload = { name: m.name, title: m.title, bio: m.bio, photo_url: m.photo_url, order_index: m.order_index, published: m.published, category: m.category || null, expertise: m.expertise && m.expertise.length ? m.expertise : null, location: m.location || null, contact_email: m.contact_email || null, website: m.website || null, linkedin_url: m.linkedin_url || null, social_url: m.social_url || null, portfolio_images: m.portfolio_images && m.portfolio_images.length ? m.portfolio_images : [] };
                       const { error } = m.id
                         ? await supabase.from("team_members").update(payload).eq("id", m.id)
                         : await supabase.from("team_members").insert(payload);
@@ -261,6 +281,7 @@ function SettingsPage() {
                   >
                     <Save className="size-4 mr-2" />Save
                   </Button>
+
                   {m.id && (
                     <Button
                       size="sm"

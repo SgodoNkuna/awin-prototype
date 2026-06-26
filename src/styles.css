@@ -340,3 +340,23 @@ section[style*="gradient-hero"] p { text-shadow: 0 1px 10px rgba(0,0,0,0.45); fo
   animation: awin-shimmer 1.5s linear infinite;
   border-radius: 8px;
 }
+
+/* Prevent iOS form-zoom: any input/select/textarea must be 16px+ on mobile. */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Placeholder contrast — ensure visible on all themes. */
+::placeholder { color: color-mix(in srgb, var(--muted-foreground) 85%, transparent); opacity: 1; }
+
+/* Hide native scrollbar on horizontal pill rails */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Global button safety: any white-on-white from defaulted text */
+button:disabled { opacity: 0.5; }
+
