@@ -328,3 +328,15 @@ section [style*="gradient-hero"] h1,
 section[style*="gradient-hero"] h1 { text-shadow: 0 2px 18px rgba(0,0,0,0.35); }
 section [style*="gradient-hero"] p,
 section[style*="gradient-hero"] p { text-shadow: 0 1px 10px rgba(0,0,0,0.45); font-weight: 500; }
+
+/* Skeleton shimmer */
+@keyframes awin-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.awin-skeleton {
+  background: linear-gradient(90deg, #E8E8E8 0%, #F5F5F5 50%, #E8E8E8 100%);
+  background-size: 800px 100%;
+  animation: awin-shimmer 1.5s linear infinite;
+  border-radius: 8px;
+}
