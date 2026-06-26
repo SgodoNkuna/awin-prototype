@@ -39,6 +39,9 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-deep: var(--accent-deep);
+  --color-primary-light: var(--primary-light);
+
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
@@ -68,65 +71,68 @@
 :root {
   --radius: 0.75rem;
 
-  /* Surfaces */
-  --background: #fbf8ef;
-  --foreground: #252736;
-  --card: #ffffff;
-  --card-foreground: #252736;
-  --popover: #ffffff;
-  --popover-foreground: #252736;
+  /* Surfaces — light, neutral */
+  --background: #FAFAFA;
+  --foreground: #1A1A1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A1A;
 
-  /* Brand — richer mid-green primary (A symbol) */
-  --primary: #2f9655;
-  --primary-foreground: #ffffff;
-  --primary-deep: #1f6a3a;
-  --hero-foreground: #fffaf0;
-  --hero-muted: #f4eedf;
-  --hero-surface: rgba(255, 250, 240, 0.18);
-  --hero-border: rgba(255, 250, 240, 0.42);
+  /* Brand — warm olive green (A symbol) */
+  --primary: #3D8B2F;
+  --primary-foreground: #FFFFFF;
+  --primary-deep: #2A6020;
+  --primary-light: #F0F7ED;
+  --hero-foreground: #FFFFFF;
+  --hero-muted: rgba(255, 255, 255, 0.9);
+  --hero-surface: rgba(255, 255, 255, 0.14);
+  --hero-border: rgba(255, 255, 255, 0.38);
 
-  /* Accent — bolder orange (WIN) */
-  --accent: #e26a18;
-  --accent-foreground: #ffffff;
-  --accent-soft: #fbd9b4;
+  /* Accent — dominant amber orange (WIN) */
+  --accent: #E8960A;
+  --accent-foreground: #FFFFFF;
+  --accent-soft: #FEF6E4;
+  --accent-deep: #C97D08;
 
-  --secondary: #f3efe2;
-  --secondary-foreground: #272334;
+  --secondary: #F0F7ED;
+  --secondary-foreground: #2A6020;
 
-  --muted: #f2efe8;
-  --muted-foreground: #5a5d6b;
+  --muted: #F4F4F4;
+  --muted-foreground: #6B6B6B;
 
-  --destructive: #c73c2f;
-  --destructive-foreground: #fbf8ef;
-  --success: #2f9655;
-  --success-foreground: #fbf8ef;
+  --destructive: #C0392B;
+  --destructive-foreground: #FFFFFF;
+  --success: #3D8B2F;
+  --success-foreground: #FFFFFF;
 
-  --border: #e4ddcf;
-  --input: #e4ddcf;
-  --ring: #e26a18;
+  --border: #D0D0D0;
+  --input: #D0D0D0;
+  --ring: #3D8B2F;
 
-  --chart-1: #2f9655;
-  --chart-2: #e26a18;
-  --chart-3: #4f7fb7;
-  --chart-4: #1f6a3a;
-  --chart-5: #c73c2f;
+  --chart-1: #3D8B2F;
+  --chart-2: #E8960A;
+  --chart-3: #4F7FB7;
+  --chart-4: #2A6020;
+  --chart-5: #C0392B;
 
-  --sidebar: #163d27;
-  --sidebar-foreground: #fbf8ef;
-  --sidebar-primary: #e26a18;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #205634;
-  --sidebar-accent-foreground: #fbf8ef;
-  --sidebar-border: #205634;
-  --sidebar-ring: #e26a18;
+  --sidebar: #2A6020;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #E8960A;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #3D8B2F;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #E8960A;
 
   /* Gradients & shadows */
-  --gradient-hero: linear-gradient(135deg, #1f6a3a 0%, #122e1d 60%, #e26a18 160%);
-  --gradient-gold: linear-gradient(135deg, #f08a3d 0%, #c25612 100%);
-  --shadow-elegant: 0 10px 30px -10px rgba(31, 106, 58, 0.32);
-  --shadow-gold-glow: 0 0 0 1px rgba(226, 106, 24, 0.42), 0 10px 30px -10px rgba(226, 106, 24, 0.48);
+  --gradient-hero: linear-gradient(135deg, #3D8B2F 0%, #2A6020 100%);
+  --gradient-gold: linear-gradient(135deg, #E8960A 0%, #C97D08 100%);
+  --shadow-elegant: 0 10px 30px -10px rgba(42, 96, 32, 0.32);
+  --shadow-gold-glow: 0 0 0 1px rgba(232, 150, 10, 0.42), 0 10px 30px -10px rgba(232, 150, 10, 0.48);
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 
 
 .dark {
@@ -322,3 +328,15 @@ section [style*="gradient-hero"] h1,
 section[style*="gradient-hero"] h1 { text-shadow: 0 2px 18px rgba(0,0,0,0.35); }
 section [style*="gradient-hero"] p,
 section[style*="gradient-hero"] p { text-shadow: 0 1px 10px rgba(0,0,0,0.45); font-weight: 500; }
+
+/* Skeleton shimmer */
+@keyframes awin-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.awin-skeleton {
+  background: linear-gradient(90deg, #E8E8E8 0%, #F5F5F5 50%, #E8E8E8 100%);
+  background-size: 800px 100%;
+  animation: awin-shimmer 1.5s linear infinite;
+  border-radius: 8px;
+}
