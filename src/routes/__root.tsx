@@ -17,28 +17,48 @@ import { AuthProvider } from "@/lib/use-auth";
 
 function NotFoundComponent() {
   return (
-    <div
-      className="flex min-h-[70vh] items-center justify-center px-4 text-primary-foreground"
-      style={{ background: "var(--gradient-hero)" }}
-    >
-      <div className="max-w-md text-center">
-        <p className="font-serif text-7xl text-accent md:text-9xl">404</p>
-        <h1 className="mt-4 font-serif text-2xl">Page not found</h1>
-        <p className="mt-2 text-sm text-primary-foreground/70">
-          The page you're looking for doesn't exist or has been moved.
+    <div className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-background px-4 py-12">
+      {/* Decorative blobs */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full"
+        style={{ background: "var(--primary)", opacity: 0.06 }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full"
+        style={{ background: "var(--accent)", opacity: 0.06 }}
+      />
+      <div className="relative max-w-lg text-center">
+        <p
+          className="font-serif font-black leading-none"
+          style={{ color: "var(--accent)", fontSize: "clamp(80px, 15vw, 140px)" }}
+        >
+          404
         </p>
-        <div className="mt-6">
+        <h1 className="mt-2 font-serif text-2xl text-foreground">Page Not Found</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          The page you are looking for may have moved or does not exist.
+        </p>
+        <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button
             asChild
-            className="bg-accent text-accent-foreground hover:bg-accent/90"
+            className="w-full bg-accent text-accent-foreground hover:bg-[var(--accent-deep)] sm:w-auto"
           >
-            <Link to="/">Back to home</Link>
+            <Link to="/">Go to Homepage</Link>
+          </Button>
+          <Button
+            asChild
+            className="w-full bg-primary text-primary-foreground hover:bg-[var(--primary-deep)] sm:w-auto"
+          >
+            <Link to="/team">View Our Members</Link>
           </Button>
         </div>
       </div>
     </div>
   );
 }
+
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
