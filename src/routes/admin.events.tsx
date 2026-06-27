@@ -247,18 +247,50 @@ function EventsAdminPage() {
       {/* Registrations dialog */}
       <Dialog open={!!viewingRegs} onOpenChange={(o) => !o && setViewingRegs(null)}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Attendees: {viewingRegs?.title}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Attendees: {viewingRegs?.title}</DialogTitle>
+          </DialogHeader>
+          {(() => {
+            const confirmed = regs.filter((r) => r.status === "confirmed").length;
+            const cancelled = regs.filter((r) => r.status === "cancelled").length;
+            return (
+              <div className="flex flex-wrap gap-2 -mt-1">
+                <Badge>{confirmed} confirmed</Badge>
+                {cancelled > 0 && <Badge variant="outline">{cancelled} cancelled</Badge>}
+              </div>
+            );
+          })()}
           {regs.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4">No registrations yet.</p>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {regs.map((r) => (
-                <div key={r.id} className="flex justify-between items-start text-sm border-b pb-2">
-                  <div>
-                    <p className="font-medium">{r.full_name}</p>
-                    <p className="text-xs text-muted-foreground">{r.email}{r.phone && ` · ${r.phone}`}</p>
+                <div key={r.id} className="flex justify-between items-center gap-3 text-sm border-b pb-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium truncate">{r.full_name}</p>
+                      {r.status === "cancelled" && (
+                        <Badge variant="outline" className="text-xs">Cancelled</Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {r.email}{r.phone && ` · ${r.phone}`}
+                    </p>
                   </div>
-                  <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(r.created_at).toLocaleDateString()}
+                    </span>
+                    {r.status === "confirmed" ? (
+                      <Button size="sm" variant="ghost" onClick={() => cancelReg(r.id)}>
+                        Cancel
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="ghost" onClick={() => reinstateReg(r.id)}>
+                        Reinstate
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
