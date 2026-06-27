@@ -62,6 +62,9 @@ function EventsPage() {
   const [registering, setRegistering] = useState<EventRow | null>(null);
   const [reg, setReg] = useState({ full_name: "", email: "", phone: "" });
   const [submitting, setSubmitting] = useState(false);
+  // event_id -> registration row for the current user
+  const [myRsvps, setMyRsvps] = useState<Record<string, { id: string; status: string }>>({});
+  const [cancelling, setCancelling] = useState<string | null>(null);
 
   useEffect(() => {
     supabase
@@ -71,6 +74,24 @@ function EventsPage() {
       .order("event_date", { ascending: true })
       .then(({ data }) => setEvents((data as EventRow[]) ?? []));
   }, []);
+
+  const loadMyRsvps = useCallback(async () => {
+    if (!user?.id) {
+      setMyRsvps({});
+      return;
+    }
+    const { data } = await supabase
+      .from("event_registrations")
+      .select("id, event_id, status")
+      .eq("user_id", user.id);
+    const map: Record<string, { id: string; status: string }> = {};
+    for (const r of (data ?? []) as { id: string; event_id: string; status: string }[]) {
+      map[r.event_id] = { id: r.id, status: r.status };
+    }
+    setMyRsvps(map);
+  }, [user?.id]);
+
+  useEffect(() => { loadMyRsvps(); }, [loadMyRsvps]);
 
   useEffect(() => {
     if (registering && user) {
@@ -98,18 +119,29 @@ function EventsPage() {
     }
     if (!cleanName) return toast.error("Name and email are required.");
     setSubmitting(true);
-    const { error } = await supabase.from("event_registrations").insert({
+
+    // For authenticated users, upsert on (event_id, user_id) so cancelled → confirmed re-uses the row.
+    const payload = {
       event_id: registering.id,
       user_id: user?.id ?? null,
       full_name: cleanName,
       email: cleanEmail,
       phone: sanitizePhone(reg.phone) || null,
-    });
+      status: "confirmed" as const,
+    };
+
+    const { error } = user?.id
+      ? await supabase
+          .from("event_registrations")
+          .upsert(payload, { onConflict: "event_id,user_id" })
+      : await supabase.from("event_registrations").insert(payload);
+
     setSubmitting(false);
     if (error) {
       if (isDuplicateError(error)) {
         toast.success("You're already registered for this event.");
         setRegistering(null);
+        await loadMyRsvps();
         return;
       }
       return toast.error(error.message);
@@ -117,6 +149,22 @@ function EventsPage() {
     toast.success("You're registered! We'll email confirmation soon.");
     setRegistering(null);
     setReg({ full_name: "", email: "", phone: "" });
+    await loadMyRsvps();
+  };
+
+  const cancelRsvp = async (eventId: string) => {
+    const row = myRsvps[eventId];
+    if (!row) return;
+    if (!confirm("Cancel your registration for this event?")) return;
+    setCancelling(eventId);
+    const { error } = await supabase
+      .from("event_registrations")
+      .update({ status: "cancelled" })
+      .eq("id", row.id);
+    setCancelling(null);
+    if (error) return toast.error(error.message);
+    toast.success("Your registration has been cancelled.");
+    await loadMyRsvps();
   };
 
 
