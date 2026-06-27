@@ -160,13 +160,19 @@ function PortalPage() {
     setRegisteringId(eventId);
     setRegisterErrors((e) => { const n = { ...e }; delete n[eventId]; return n; });
     const tId = toast.loading("Registering you for the event…");
+    const { sanitizeText, isDuplicateError } = await import("@/lib/sanitize");
     const { error } = await supabase.from("event_registrations").insert({
       event_id: eventId,
       user_id: user.id,
-      full_name: profile?.full_name || user.email || "",
-      email: user.email || ""});
+      full_name: sanitizeText(profile?.full_name || user.email || ""),
+      email: (user.email || "").trim().toLowerCase()});
     setRegisteringId(null);
     if (error) {
+      if (isDuplicateError(error)) {
+        setRegisteredIds((s) => new Set(s).add(eventId));
+        toast.success("You're already registered for this event.", { id: tId });
+        return;
+      }
       setRegisterErrors((e) => ({ ...e, [eventId]: error.message }));
       toast.error(error.message, { id: tId, action: { label: "Retry", onClick: () => registerForEvent(eventId) } });
       return;
@@ -174,6 +180,7 @@ function PortalPage() {
     setRegisteredIds((s) => new Set(s).add(eventId));
     toast.success("You're registered. See you there!", { id: tId });
   };
+
 
   const downloadDoc = async (doc: DocRow) => {
     setDownloadingId(doc.id);

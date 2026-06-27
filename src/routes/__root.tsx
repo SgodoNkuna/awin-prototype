@@ -117,6 +117,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:description", content: "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/2cff2693-d322-4fd7-af36-5cc90130733e" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/2cff2693-d322-4fd7-af36-5cc90130733e" },
+      {
+        httpEquiv: "Content-Security-Policy",
+        content:
+          "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: ; media-src 'self' blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.payfast.co.za https://sandbox.payfast.co.za https://fonts.googleapis.com https://fonts.gstatic.com; frame-src 'self' https://www.google.com https://www.payfast.co.za https://sandbox.payfast.co.za; frame-ancestors 'self';",
+      },
+      { httpEquiv: "X-Content-Type-Options", content: "nosniff" },
+      { name: "referrer", content: "strict-origin-when-cross-origin" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

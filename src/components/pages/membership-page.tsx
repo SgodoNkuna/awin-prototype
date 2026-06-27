@@ -81,16 +81,27 @@ function MembershipPage() {
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       const fd = new FormData(e.currentTarget);
+      const { sanitizeText, sanitizeOptionalText, sanitizeEmail, sanitizeIdNumber, sanitizePhone, isDuplicateError } =
+        await import("@/lib/sanitize");
+
+      let cleanEmail = "";
+      try {
+        cleanEmail = sanitizeEmail(String(fd.get("email") ?? ""));
+      } catch {
+        toast.error("Please enter a valid email address.");
+        return;
+      }
+
       const raw = {
-        full_name: String(fd.get("full_name") ?? ""),
-        email: String(fd.get("email") ?? ""),
-        phone: String(fd.get("phone") ?? ""),
-        id_number: String(fd.get("id_number") ?? ""),
-        occupation: String(fd.get("occupation") ?? ""),
-        employer: String(fd.get("employer") ?? "") || undefined,
+        full_name: sanitizeText(String(fd.get("full_name") ?? "")),
+        email: cleanEmail,
+        phone: sanitizePhone(String(fd.get("phone") ?? "")),
+        id_number: sanitizeIdNumber(String(fd.get("id_number") ?? "")),
+        occupation: sanitizeText(String(fd.get("occupation") ?? "")),
+        employer: sanitizeOptionalText(String(fd.get("employer") ?? "")) ?? undefined,
         experience: String(fd.get("experience") ?? "") as "beginner" | "intermediate" | "advanced",
-        motivation: String(fd.get("motivation") ?? ""),
-        referral: String(fd.get("referral") ?? "") || undefined,
+        motivation: sanitizeText(String(fd.get("motivation") ?? "")),
+        referral: sanitizeOptionalText(String(fd.get("referral") ?? "")) ?? undefined,
       };
 
       const parsed = applicationSchema.safeParse(raw);
@@ -109,6 +120,10 @@ function MembershipPage() {
       setSubmitting(false);
 
       if (error) {
+        if (isDuplicateError(error)) {
+          toast.error("An application with this email is already in review. We'll be in touch shortly.");
+          return;
+        }
         toast.error("Could not submit. Please try again.");
         return;
       }
@@ -118,6 +133,7 @@ function MembershipPage() {
     },
     [user?.id],
   );
+
 
   const scrollToForm = () => {
     document.getElementById("application")?.scrollIntoView({ behavior: "smooth", block: "start" });
