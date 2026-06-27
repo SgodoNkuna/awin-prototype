@@ -57,15 +57,40 @@ function EventsAdminPage() {
   };
   useEffect(() => { load(); }, []);
 
+  const loadRegs = async (eventId: string) => {
+    const { data } = await supabase
+      .from("event_registrations")
+      .select("id, full_name, email, phone, created_at, status")
+      .eq("event_id", eventId)
+      .order("created_at", { ascending: false });
+    setRegs((data as Registration[]) ?? []);
+  };
+
   useEffect(() => {
     if (!viewingRegs) return;
-    supabase
-      .from("event_registrations")
-      .select("id, full_name, email, phone, created_at")
-      .eq("event_id", viewingRegs.id)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => setRegs((data as Registration[]) ?? []));
+    loadRegs(viewingRegs.id);
   }, [viewingRegs]);
+
+  const cancelReg = async (id: string) => {
+    if (!confirm("Cancel this attendee's registration?")) return;
+    const { error } = await supabase
+      .from("event_registrations")
+      .update({ status: "cancelled" })
+      .eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Registration cancelled");
+    if (viewingRegs) loadRegs(viewingRegs.id);
+  };
+
+  const reinstateReg = async (id: string) => {
+    const { error } = await supabase
+      .from("event_registrations")
+      .update({ status: "confirmed" })
+      .eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Registration reinstated");
+    if (viewingRegs) loadRegs(viewingRegs.id);
+  };
 
   const save = async () => {
     if (!editing?.title || !editing.event_date || !editing.location) {
