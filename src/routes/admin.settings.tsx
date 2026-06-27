@@ -270,7 +270,24 @@ function SettingsPage() {
                   <Button
                     size="sm"
                     onClick={async () => {
-                      const payload = { name: m.name, title: m.title, bio: m.bio, photo_url: m.photo_url, order_index: m.order_index, published: m.published, category: m.category || null, expertise: m.expertise && m.expertise.length ? m.expertise : null, location: m.location || null, contact_email: m.contact_email || null, website: m.website || null, linkedin_url: m.linkedin_url || null, social_url: m.social_url || null, portfolio_images: m.portfolio_images && m.portfolio_images.length ? m.portfolio_images : [] };
+                      const { sanitizeText, sanitizeOptionalText, sanitizeUrl } = await import("@/lib/sanitize");
+                      const cleanEmail = (m.contact_email ?? "").trim().toLowerCase() || null;
+                      const payload = {
+                        name: sanitizeText(m.name),
+                        title: sanitizeText(m.title),
+                        bio: sanitizeOptionalText(m.bio),
+                        photo_url: sanitizeUrl(m.photo_url),
+                        order_index: m.order_index,
+                        published: m.published,
+                        category: sanitizeOptionalText(m.category),
+                        expertise: m.expertise && m.expertise.length ? m.expertise.map((s) => sanitizeText(s)).filter(Boolean) : null,
+                        location: sanitizeOptionalText(m.location),
+                        contact_email: cleanEmail,
+                        website: sanitizeUrl(m.website),
+                        linkedin_url: sanitizeUrl(m.linkedin_url),
+                        social_url: sanitizeUrl(m.social_url),
+                        portfolio_images: m.portfolio_images && m.portfolio_images.length ? m.portfolio_images.map((s) => sanitizeUrl(s)).filter((u): u is string => !!u) : [],
+                      };
                       const { error } = m.id
                         ? await supabase.from("team_members").update(payload).eq("id", m.id)
                         : await supabase.from("team_members").insert(payload);
@@ -281,6 +298,7 @@ function SettingsPage() {
                   >
                     <Save className="size-4 mr-2" />Save
                   </Button>
+
 
                   {m.id && (
                     <Button

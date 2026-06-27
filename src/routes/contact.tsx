@@ -54,11 +54,19 @@ function ContactPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    const { sanitizeText, sanitizeEmail } = await import("@/lib/sanitize");
+    let cleanEmail = "";
+    try {
+      cleanEmail = sanitizeEmail(String(fd.get("email") ?? ""));
+    } catch {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
     const raw = {
-      name: String(fd.get("name") ?? ""),
-      email: String(fd.get("email") ?? ""),
+      name: sanitizeText(String(fd.get("name") ?? "")),
+      email: cleanEmail,
       subject,
-      message: String(fd.get("message") ?? ""),
+      message: sanitizeText(String(fd.get("message") ?? "")),
     };
     const parsed = contactSchema.safeParse(raw);
     if (!parsed.success) {
@@ -76,6 +84,7 @@ function ContactPage() {
     toast.success("Message sent — we'll be in touch.");
     (e.target as HTMLFormElement).reset();
   };
+
 
   return (
     <div className="flex flex-col">

@@ -88,21 +88,37 @@ function EventsPage() {
 
   const submitRegistration = async () => {
     if (!registering) return;
-    if (!reg.full_name || !reg.email) return toast.error("Name and email are required.");
+    const { sanitizeText, sanitizeEmail, sanitizePhone, isDuplicateError } = await import("@/lib/sanitize");
+    const cleanName = sanitizeText(reg.full_name);
+    let cleanEmail = "";
+    try {
+      cleanEmail = sanitizeEmail(reg.email);
+    } catch {
+      return toast.error("Please enter a valid email address.");
+    }
+    if (!cleanName) return toast.error("Name and email are required.");
     setSubmitting(true);
     const { error } = await supabase.from("event_registrations").insert({
       event_id: registering.id,
       user_id: user?.id ?? null,
-      full_name: reg.full_name,
-      email: reg.email,
-      phone: reg.phone || null,
+      full_name: cleanName,
+      email: cleanEmail,
+      phone: sanitizePhone(reg.phone) || null,
     });
     setSubmitting(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      if (isDuplicateError(error)) {
+        toast.success("You're already registered for this event.");
+        setRegistering(null);
+        return;
+      }
+      return toast.error(error.message);
+    }
     toast.success("You're registered! We'll email confirmation soon.");
     setRegistering(null);
     setReg({ full_name: "", email: "", phone: "" });
   };
+
 
   return (
     <>
