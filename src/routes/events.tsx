@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calendar, MapPin, ChevronRight, Loader2 } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
@@ -62,6 +62,9 @@ function EventsPage() {
   const [registering, setRegistering] = useState<EventRow | null>(null);
   const [reg, setReg] = useState({ full_name: "", email: "", phone: "" });
   const [submitting, setSubmitting] = useState(false);
+  // event_id -> registration row for the current user
+  const [myRsvps, setMyRsvps] = useState<Record<string, { id: string; status: string }>>({});
+  const [cancelling, setCancelling] = useState<string | null>(null);
 
   useEffect(() => {
     supabase
@@ -71,6 +74,24 @@ function EventsPage() {
       .order("event_date", { ascending: true })
       .then(({ data }) => setEvents((data as EventRow[]) ?? []));
   }, []);
+
+  const loadMyRsvps = useCallback(async () => {
+    if (!user?.id) {
+      setMyRsvps({});
+      return;
+    }
+    const { data } = await supabase
+      .from("event_registrations")
+      .select("id, event_id, status")
+      .eq("user_id", user.id);
+    const map: Record<string, { id: string; status: string }> = {};
+    for (const r of (data ?? []) as { id: string; event_id: string; status: string }[]) {
+      map[r.event_id] = { id: r.id, status: r.status };
+    }
+    setMyRsvps(map);
+  }, [user?.id]);
+
+  useEffect(() => { loadMyRsvps(); }, [loadMyRsvps]);
 
   useEffect(() => {
     if (registering && user) {
@@ -98,18 +119,29 @@ function EventsPage() {
     }
     if (!cleanName) return toast.error("Name and email are required.");
     setSubmitting(true);
-    const { error } = await supabase.from("event_registrations").insert({
+
+    // For authenticated users, upsert on (event_id, user_id) so cancelled → confirmed re-uses the row.
+    const payload = {
       event_id: registering.id,
       user_id: user?.id ?? null,
       full_name: cleanName,
       email: cleanEmail,
       phone: sanitizePhone(reg.phone) || null,
-    });
+      status: "confirmed" as const,
+    };
+
+    const { error } = user?.id
+      ? await supabase
+          .from("event_registrations")
+          .upsert(payload, { onConflict: "event_id,user_id" })
+      : await supabase.from("event_registrations").insert(payload);
+
     setSubmitting(false);
     if (error) {
       if (isDuplicateError(error)) {
         toast.success("You're already registered for this event.");
         setRegistering(null);
+        await loadMyRsvps();
         return;
       }
       return toast.error(error.message);
@@ -117,6 +149,22 @@ function EventsPage() {
     toast.success("You're registered! We'll email confirmation soon.");
     setRegistering(null);
     setReg({ full_name: "", email: "", phone: "" });
+    await loadMyRsvps();
+  };
+
+  const cancelRsvp = async (eventId: string) => {
+    const row = myRsvps[eventId];
+    if (!row) return;
+    if (!confirm("Cancel your registration for this event?")) return;
+    setCancelling(eventId);
+    const { error } = await supabase
+      .from("event_registrations")
+      .update({ status: "cancelled" })
+      .eq("id", row.id);
+    setCancelling(null);
+    if (error) return toast.error(error.message);
+    toast.success("Your registration has been cancelled.");
+    await loadMyRsvps();
   };
 
 
@@ -214,14 +262,44 @@ function EventsPage() {
                         <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {e.location}</span>
                       </div>
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">{e.description}</p>
-                      <Button
-                        className={cn("mt-5 w-full", !isPast && "bg-accent text-accent-foreground hover:bg-accent/90")}
-                        variant={isPast ? "outline" : "default"}
-                        disabled={isPast}
-                        onClick={() => setRegistering(e)}
-                      >
-                        {isPast ? "Event Ended" : "Register"}
-                      </Button>
+                      {(() => {
+                        const my = myRsvps[e.id];
+                        const isConfirmed = my?.status === "confirmed";
+                        if (isPast) {
+                          return (
+                            <Button className="mt-5 w-full" variant="outline" disabled>
+                              Event Ended
+                            </Button>
+                          );
+                        }
+                        if (isConfirmed) {
+                          return (
+                            <div className="mt-5 space-y-2">
+                              <div className="flex items-center justify-center gap-2 rounded-md bg-green-100 px-3 py-2 text-sm font-medium text-green-800 dark:bg-green-900/30 dark:text-green-200">
+                                <CheckCircle2 className="size-4" />
+                                You are registered
+                              </div>
+                              <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => cancelRsvp(e.id)}
+                                disabled={cancelling === e.id}
+                              >
+                                {cancelling === e.id && <Loader2 className="size-4 mr-2 animate-spin" />}
+                                Cancel registration
+                              </Button>
+                            </div>
+                          );
+                        }
+                        return (
+                          <Button
+                            className="mt-5 w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                            onClick={() => setRegistering(e)}
+                          >
+                            {my?.status === "cancelled" ? "Re-register" : "Register"}
+                          </Button>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 );
