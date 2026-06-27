@@ -72,14 +72,18 @@ const ONBOARDING = [
   "Completion of application forms for the investment",
 ];
 
+const SUPPORT_EMAIL = "phumelele@thuthuka-sa.co.za";
+
 function MembershipPage() {
   const { user } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+      setDuplicateWarning(null);
       const fd = new FormData(e.currentTarget);
       const { sanitizeText, sanitizeOptionalText, sanitizeEmail, sanitizeIdNumber, sanitizePhone, isDuplicateError } =
         await import("@/lib/sanitize");
@@ -92,11 +96,13 @@ function MembershipPage() {
         return;
       }
 
+      const cleanIdNumber = sanitizeIdNumber(String(fd.get("id_number") ?? ""));
+
       const raw = {
         full_name: sanitizeText(String(fd.get("full_name") ?? "")),
         email: cleanEmail,
         phone: sanitizePhone(String(fd.get("phone") ?? "")),
-        id_number: sanitizeIdNumber(String(fd.get("id_number") ?? "")),
+        id_number: cleanIdNumber,
         occupation: sanitizeText(String(fd.get("occupation") ?? "")),
         employer: sanitizeOptionalText(String(fd.get("employer") ?? "")) ?? undefined,
         experience: String(fd.get("experience") ?? "") as "beginner" | "intermediate" | "advanced",
@@ -111,6 +117,41 @@ function MembershipPage() {
       }
 
       setSubmitting(true);
+
+      // Pre-flight duplicate check: existing application OR existing approved member.
+      // Use parameterised .or() with .eq sub-clauses — never string interpolation into a filter.
+      const [{ data: existingApp }, { data: existingMember }] = await Promise.all([
+        supabase
+          .from("applications")
+          .select("id, status")
+          .or(`email.eq.${cleanEmail},id_number.eq.${cleanIdNumber}`)
+          .maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("id, membership_status")
+          .eq("email", cleanEmail)
+          .in("membership_status", ["active", "pending"])
+          .maybeSingle(),
+      ]);
+
+      if (existingMember) {
+        setSubmitting(false);
+        setDuplicateWarning(
+          "You are already a registered A-WIN member. Please sign in to access your member portal.",
+        );
+        return;
+      }
+
+      if (existingApp) {
+        setSubmitting(false);
+        const msg =
+          existingApp.status === "approved"
+            ? `An approved application already exists for this email or ID number. If you believe this is an error, please contact ${SUPPORT_EMAIL}.`
+            : `An application for this email or ID number is already in progress (status: ${existingApp.status}). Please contact ${SUPPORT_EMAIL} if you need assistance.`;
+        setDuplicateWarning(msg);
+        return;
+      }
+
       // tier column kept for backward compatibility; single model always stores "active".
       const { error } = await supabase.from("applications").insert({
         ...parsed.data,
@@ -121,7 +162,9 @@ function MembershipPage() {
 
       if (error) {
         if (isDuplicateError(error)) {
-          toast.error("An application with this email is already in review. We'll be in touch shortly.");
+          setDuplicateWarning(
+            `An application with this email address or ID number already exists. Please contact ${SUPPORT_EMAIL} if you need assistance.`,
+          );
           return;
         }
         toast.error("Could not submit. Please try again.");
