@@ -37,6 +37,7 @@ type Registration = {
   email: string;
   phone: string | null;
   created_at: string;
+  status: string;
 };
 
 const empty = (): Partial<EventRow> => ({
