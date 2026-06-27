@@ -262,14 +262,44 @@ function EventsPage() {
                         <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {e.location}</span>
                       </div>
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">{e.description}</p>
-                      <Button
-                        className={cn("mt-5 w-full", !isPast && "bg-accent text-accent-foreground hover:bg-accent/90")}
-                        variant={isPast ? "outline" : "default"}
-                        disabled={isPast}
-                        onClick={() => setRegistering(e)}
-                      >
-                        {isPast ? "Event Ended" : "Register"}
-                      </Button>
+                      {(() => {
+                        const my = myRsvps[e.id];
+                        const isConfirmed = my?.status === "confirmed";
+                        if (isPast) {
+                          return (
+                            <Button className="mt-5 w-full" variant="outline" disabled>
+                              Event Ended
+                            </Button>
+                          );
+                        }
+                        if (isConfirmed) {
+                          return (
+                            <div className="mt-5 space-y-2">
+                              <div className="flex items-center justify-center gap-2 rounded-md bg-green-100 px-3 py-2 text-sm font-medium text-green-800 dark:bg-green-900/30 dark:text-green-200">
+                                <CheckCircle2 className="size-4" />
+                                You are registered
+                              </div>
+                              <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => cancelRsvp(e.id)}
+                                disabled={cancelling === e.id}
+                              >
+                                {cancelling === e.id && <Loader2 className="size-4 mr-2 animate-spin" />}
+                                Cancel registration
+                              </Button>
+                            </div>
+                          );
+                        }
+                        return (
+                          <Button
+                            className="mt-5 w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                            onClick={() => setRegistering(e)}
+                          >
+                            {my?.status === "cancelled" ? "Re-register" : "Register"}
+                          </Button>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 );
