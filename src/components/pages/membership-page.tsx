@@ -404,6 +404,15 @@ function MembershipPage() {
                   <Input id="referral" name="referral" maxLength={120} placeholder="Name of the person who told you" />
                 </div>
 
+                {duplicateWarning && (
+                  <div
+                    role="alert"
+                    className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-500/50 dark:bg-amber-950/40 dark:text-amber-100"
+                  >
+                    {duplicateWarning}
+                  </div>
+                )}
+
                 <Button type="submit" size="lg" className="w-full" disabled={submitting}>
                   {submitting && <Loader2 className="size-4 animate-spin mr-2" />}
                   Submit Application
