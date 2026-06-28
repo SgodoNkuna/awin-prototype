@@ -110,7 +110,7 @@ function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
   );
 }
 
-function MembersPage() {
+export function MembersPage() {
   const [team, setTeam] = useState<Member[] | null>(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("All");
