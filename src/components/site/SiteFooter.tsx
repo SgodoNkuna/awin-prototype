@@ -29,7 +29,7 @@ export function SiteFooter() {
             <li><Link to="/about" className="text-white/85 hover:text-[#E8960A]">About</Link></li>
             <li><Link to="/membership" className="text-white/85 hover:text-[#E8960A]">Membership</Link></li>
             <li><Link to="/events" className="text-white/85 hover:text-[#E8960A]">Events</Link></li>
-            <li><Link to="/portfolio" className="text-white/85 hover:text-[#E8960A]">Portfolio</Link></li>
+            
             <li><Link to="/news" className="text-white/85 hover:text-[#E8960A]">News &amp; Gallery</Link></li>
             <li><Link to="/members" className="text-white/85 hover:text-[#E8960A]">Our Members</Link></li>
             <li><Link to="/info" className="text-white/85 hover:text-[#E8960A]">FAQ &amp; Privacy</Link></li>
