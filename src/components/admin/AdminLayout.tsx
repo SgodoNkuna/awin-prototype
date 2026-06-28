@@ -156,11 +156,14 @@ export function AdminLayout() {
   return (
     <div className="flex min-h-[calc(100vh-5rem)] bg-muted/30">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r bg-card sticky top-20 self-start h-[calc(100vh-5rem)]">
-        <div className="px-5 py-4 border-b">
-          <div className="text-xs font-semibold uppercase tracking-widest text-accent">A-WIN</div>
-          <div className="text-sm font-medium">Admin Console</div>
-          <div className="text-xs text-muted-foreground truncate mt-0.5">{user.email}</div>
+      <aside
+        className="hidden md:flex w-64 flex-col border-r sticky top-20 self-start h-[calc(100vh-5rem)]"
+        style={{ background: "#2A6020", color: "#FFFFFF" }}
+      >
+        <div className="px-5 py-4 border-b border-white/10">
+          <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-WIN</div>
+          <div className="text-sm font-medium text-white">Admin Console</div>
+          <div className="text-xs text-white/70 truncate mt-0.5">{user.email}</div>
         </div>
         <NavList />
         <Footer />
@@ -171,17 +174,26 @@ export function AdminLayout() {
         <div className="flex items-center gap-2 px-3 py-2">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2" aria-label="Open admin menu">
+              <Button
+                size="sm"
+                className="gap-2 min-h-11 text-white font-semibold"
+                style={{ background: "#E8960A" }}
+                aria-label="Open admin menu"
+              >
                 <Menu className="size-4" />
                 Menu
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0 flex flex-col">
+            <SheetContent
+              side="left"
+              className="w-72 p-0 flex flex-col border-0"
+              style={{ background: "#2A6020", color: "#FFFFFF" }}
+            >
               <SheetTitle className="sr-only">Admin navigation</SheetTitle>
-              <div className="px-5 py-4 border-b">
-                <div className="text-xs font-semibold uppercase tracking-widest text-accent">A-WIN</div>
-                <div className="text-sm font-medium">Admin Console</div>
-                <div className="text-xs text-muted-foreground truncate mt-0.5">{user.email}</div>
+              <div className="px-5 py-4 border-b border-white/10">
+                <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-WIN</div>
+                <div className="text-sm font-medium text-white">{currentLabel}</div>
+                <div className="text-xs text-white/70 truncate mt-0.5">{user.email}</div>
               </div>
               <NavList onNav={() => setMobileOpen(false)} />
               <Footer onNav={() => setMobileOpen(false)} />
