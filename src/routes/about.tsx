@@ -227,7 +227,7 @@ function AboutPage() {
               <Link to="/membership">Apply for Membership</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10">
-              <Link to="/team">Meet the Team</Link>
+              <Link to="/members">Meet the Team</Link>
             </Button>
           </div>
         </div>
@@ -242,7 +242,7 @@ function AboutPage() {
                 <span className="text-xs font-semibold uppercase tracking-widest text-accent">The Team</span>
                 <h2 className="mt-3 font-serif">Leadership</h2>
               </div>
-              <Button asChild variant="outline"><Link to="/team">View full team</Link></Button>
+              <Button asChild variant="outline"><Link to="/members">View full team</Link></Button>
             </div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {team.map((m) => (
