@@ -183,7 +183,7 @@ export function LogoHero() {
           className="mx-auto mt-6 max-w-2xl text-base md:text-lg text-hero-muted drop-shadow-[0_2px_16px_rgba(0,0,0,0.72)]"
         >
           A-WIN is a community of women building wealth, knowledge and legacy
-          together — through investment, education and a powerful peer network.
+          together through investment, education and a powerful peer network.
         </motion.p>
 
         <motion.div
