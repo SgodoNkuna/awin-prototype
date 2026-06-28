@@ -1,15 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import TeamPage from "./team";
+import { MembersPage } from "./team";
 
 // Canonical members directory route. /team kept as legacy alias.
 export const Route = createFileRoute("/members")({
-  component: () => {
-    const Comp = (TeamPage as unknown as { options?: { component?: React.ComponentType } })
-      ?.options?.component;
-    if (Comp) return <Comp />;
-    // Fallback: dynamic import will not be needed because /team route exists
-    return null;
-  },
+  component: MembersPage,
   head: () => ({
     meta: [
       { title: "Our Members | A-WIN" },
