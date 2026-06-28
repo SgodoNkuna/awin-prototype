@@ -184,8 +184,8 @@ function Index() {
             </span>
             <h2 className="mt-3 font-serif">One Membership · Built for Long-Term Wealth</h2>
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-              A-WIN follows a single, transparent membership model — a small annual
-              fee plus a monthly contribution toward collective investments. Reviewed
+              A-WIN follows a single, transparent membership model. A small annual
+              fee plus a monthly contribution toward collective investments, reviewed
               annually by the community.
             </p>
           </div>

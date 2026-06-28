@@ -85,7 +85,7 @@ export function PortfolioCarousel() {
             </h2>
           </div>
           <Link
-            to="/portfolio"
+            to="/members"
             className="hidden text-sm font-medium text-primary story-link sm:inline-flex items-center gap-1"
           >
             View all <ArrowRight className="h-4 w-4" />
@@ -109,7 +109,7 @@ export function PortfolioCarousel() {
                 aria-label={`${item.title}, slide ${i + 1} of ${items.length}`}
               >
                 <Link
-                  to="/portfolio"
+                  to="/members"
                   aria-label={`View ${item.title} in member portfolio`}
                   className="block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
@@ -155,7 +155,7 @@ export function PortfolioCarousel() {
 
         <div className="mt-8 text-center sm:hidden">
           <Link
-            to="/portfolio"
+            to="/members"
             className="text-sm font-medium text-primary story-link inline-flex items-center gap-1"
           >
             View all members <ArrowRight className="h-4 w-4" />
