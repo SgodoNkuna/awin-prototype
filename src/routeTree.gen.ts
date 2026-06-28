@@ -14,6 +14,7 @@ import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as MembershipRouteImport } from './routes/membership'
+import { Route as MembersRouteImport } from './routes/members'
 import { Route as InfoRouteImport } from './routes/info'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -57,6 +58,11 @@ const NewsRoute = NewsRouteImport.update({
 const MembershipRoute = MembershipRouteImport.update({
   id: '/membership',
   path: '/membership',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MembersRoute = MembersRouteImport.update({
+  id: '/members',
+  path: '/members',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InfoRoute = InfoRouteImport.update({
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
+  '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
+  '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
+  '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
@@ -243,6 +252,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/events'
     | '/info'
+    | '/members'
     | '/membership'
     | '/news'
     | '/portal'
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/events'
     | '/info'
+    | '/members'
     | '/membership'
     | '/news'
     | '/portal'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/events'
     | '/info'
+    | '/members'
     | '/membership'
     | '/news'
     | '/portal'
@@ -321,6 +333,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   EventsRoute: typeof EventsRoute
   InfoRoute: typeof InfoRoute
+  MembersRoute: typeof MembersRoute
   MembershipRoute: typeof MembershipRoute
   NewsRoute: typeof NewsRoute
   PortalRoute: typeof PortalRoute
@@ -365,6 +378,13 @@ declare module '@tanstack/react-router' {
       path: '/membership'
       fullPath: '/membership'
       preLoaderRoute: typeof MembershipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/members': {
+      id: '/members'
+      path: '/members'
+      fullPath: '/members'
+      preLoaderRoute: typeof MembersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/info': {
@@ -539,6 +559,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   EventsRoute: EventsRoute,
   InfoRoute: InfoRoute,
+  MembersRoute: MembersRoute,
   MembershipRoute: MembershipRoute,
   NewsRoute: NewsRoute,
   PortalRoute: PortalRoute,

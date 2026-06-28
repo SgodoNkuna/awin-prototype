@@ -113,7 +113,7 @@ export function AdminLayout() {
     <nav className="flex-1 overflow-y-auto p-3 space-y-4">
       {NAV_GROUPS.map((group) => (
         <div key={group.label}>
-          <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-white/60">
             {group.label}
           </div>
           <div className="space-y-0.5">
@@ -125,10 +125,10 @@ export function AdminLayout() {
                   to={item.to}
                   onClick={onNav}
                   className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-11",
                     active
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground/80 hover:bg-secondary hover:text-foreground",
+                      ? "bg-[#E8960A] text-white"
+                      : "text-white/85 hover:bg-white/10 hover:text-white",
                   )}
                 >
                   <item.icon className="size-4" />
@@ -143,24 +143,34 @@ export function AdminLayout() {
   );
 
   const Footer = ({ onNav }: { onNav?: () => void }) => (
-    <div className="p-3 border-t space-y-1">
-      <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={onNav}>
-        <Link to="/portal">My Portal</Link>
-      </Button>
-      <Button onClick={() => { onNav?.(); signOut(); }} variant="ghost" size="sm" className="w-full justify-start">
-        <LogOut className="size-4 mr-2" /> Sign Out
-      </Button>
+    <div className="p-3 border-t border-white/10 space-y-1">
+      <Link
+        to="/portal"
+        onClick={onNav}
+        className="flex w-full items-center rounded-md px-3 py-2 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white min-h-11"
+      >
+        My Portal
+      </Link>
+      <button
+        onClick={() => { onNav?.(); signOut(); }}
+        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white min-h-11"
+      >
+        <LogOut className="size-4" /> Sign Out
+      </button>
     </div>
   );
 
   return (
     <div className="flex min-h-[calc(100vh-5rem)] bg-muted/30">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r bg-card sticky top-20 self-start h-[calc(100vh-5rem)]">
-        <div className="px-5 py-4 border-b">
-          <div className="text-xs font-semibold uppercase tracking-widest text-accent">A-WIN</div>
-          <div className="text-sm font-medium">Admin Console</div>
-          <div className="text-xs text-muted-foreground truncate mt-0.5">{user.email}</div>
+      <aside
+        className="hidden md:flex w-64 flex-col border-r sticky top-20 self-start h-[calc(100vh-5rem)]"
+        style={{ background: "#2A6020", color: "#FFFFFF" }}
+      >
+        <div className="px-5 py-4 border-b border-white/10">
+          <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-WIN</div>
+          <div className="text-sm font-medium text-white">Admin Console</div>
+          <div className="text-xs text-white/70 truncate mt-0.5">{user.email}</div>
         </div>
         <NavList />
         <Footer />
@@ -171,17 +181,26 @@ export function AdminLayout() {
         <div className="flex items-center gap-2 px-3 py-2">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2" aria-label="Open admin menu">
+              <Button
+                size="sm"
+                className="gap-2 min-h-11 text-white font-semibold"
+                style={{ background: "#E8960A" }}
+                aria-label="Open admin menu"
+              >
                 <Menu className="size-4" />
                 Menu
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0 flex flex-col">
+            <SheetContent
+              side="left"
+              className="w-72 p-0 flex flex-col border-0"
+              style={{ background: "#2A6020", color: "#FFFFFF" }}
+            >
               <SheetTitle className="sr-only">Admin navigation</SheetTitle>
-              <div className="px-5 py-4 border-b">
-                <div className="text-xs font-semibold uppercase tracking-widest text-accent">A-WIN</div>
-                <div className="text-sm font-medium">Admin Console</div>
-                <div className="text-xs text-muted-foreground truncate mt-0.5">{user.email}</div>
+              <div className="px-5 py-4 border-b border-white/10">
+                <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-WIN</div>
+                <div className="text-sm font-medium text-white">{currentLabel}</div>
+                <div className="text-xs text-white/70 truncate mt-0.5">{user.email}</div>
               </div>
               <NavList onNav={() => setMobileOpen(false)} />
               <Footer onNav={() => setMobileOpen(false)} />

@@ -51,7 +51,7 @@ function NotFoundComponent() {
             asChild
             className="w-full bg-primary text-primary-foreground hover:bg-[var(--primary-deep)] sm:w-auto"
           >
-            <Link to="/team">View Our Members</Link>
+            <Link to="/members">View Our Members</Link>
           </Button>
         </div>
       </div>
