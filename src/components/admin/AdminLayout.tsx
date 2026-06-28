@@ -113,7 +113,7 @@ export function AdminLayout() {
     <nav className="flex-1 overflow-y-auto p-3 space-y-4">
       {NAV_GROUPS.map((group) => (
         <div key={group.label}>
-          <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-white/60">
             {group.label}
           </div>
           <div className="space-y-0.5">
@@ -125,10 +125,10 @@ export function AdminLayout() {
                   to={item.to}
                   onClick={onNav}
                   className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-11",
                     active
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground/80 hover:bg-secondary hover:text-foreground",
+                      ? "bg-[#E8960A] text-white"
+                      : "text-white/85 hover:bg-white/10 hover:text-white",
                   )}
                 >
                   <item.icon className="size-4" />
@@ -143,13 +143,20 @@ export function AdminLayout() {
   );
 
   const Footer = ({ onNav }: { onNav?: () => void }) => (
-    <div className="p-3 border-t space-y-1">
-      <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={onNav}>
-        <Link to="/portal">My Portal</Link>
-      </Button>
-      <Button onClick={() => { onNav?.(); signOut(); }} variant="ghost" size="sm" className="w-full justify-start">
-        <LogOut className="size-4 mr-2" /> Sign Out
-      </Button>
+    <div className="p-3 border-t border-white/10 space-y-1">
+      <Link
+        to="/portal"
+        onClick={onNav}
+        className="flex w-full items-center rounded-md px-3 py-2 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white min-h-11"
+      >
+        My Portal
+      </Link>
+      <button
+        onClick={() => { onNav?.(); signOut(); }}
+        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white/85 hover:bg-white/10 hover:text-white min-h-11"
+      >
+        <LogOut className="size-4" /> Sign Out
+      </button>
     </div>
   );
 
