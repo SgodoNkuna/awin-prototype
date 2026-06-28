@@ -12,7 +12,7 @@ const NAV = [
   { to: "/about", label: "About" },
   { to: "/membership", label: "Membership" },
   { to: "/events", label: "Events" },
-  { to: "/portfolio", label: "Portfolio" },
+  
   { to: "/news", label: "News & Gallery" },
   { to: "/members", label: "Our Members" },
   { to: "/info", label: "FAQ" },
