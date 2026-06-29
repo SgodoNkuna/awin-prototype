@@ -89,14 +89,16 @@ function initials(name: string) {
 }
 
 function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
+  // Lead with name; use bio (or title fallback) as the personal tagline.
+  const tagline = m.bio?.trim() || (m.committee_position ?? "");
   return (
     <button
       type="button"
       onClick={() => onOpen(m)}
-      className="block h-full w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-2xl"
+      className="group block h-full w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-2xl"
     >
-      <Card className="h-full border-border/60 bg-card shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)]">
-        <CardContent className="p-5">
+      <Card className="h-full border-border/60 bg-card shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)] flex flex-col">
+        <CardContent className="p-5 flex flex-col gap-4 h-full">
           <div className="flex gap-4">
             {m.photo_url ? (
               <div
@@ -109,22 +111,52 @@ function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
                 {initials(m.name)}
               </div>
             )}
-            <div className="min-w-0">
-              <h3 className="font-serif text-lg text-foreground leading-tight truncate">{m.name}</h3>
-              <div className="text-xs font-medium text-accent line-clamp-2">{m.title}</div>
-              {m.category && (
-                <Badge variant="outline" className="mt-2 border-primary/30 text-[10px] text-primary">
-                  {m.category}
-                </Badge>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-serif text-xl font-bold text-foreground leading-tight">{m.name}</h3>
+              {tagline && (
+                <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{tagline}</p>
               )}
             </div>
           </div>
-          {m.bio && <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{m.bio}</p>}
-          <div className="mt-4 inline-flex items-center text-sm font-semibold text-accent">
-            View Portfolio <ChevronRight className="ml-1 h-4 w-4" />
+          <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+            {m.category ? (
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Services offered</span>
+                <Badge className="self-start bg-accent text-accent-foreground text-[11px]">{m.category}</Badge>
+              </div>
+            ) : <span />}
+            <span className="inline-flex items-center text-xs font-semibold text-accent">
+              View <ChevronRight className="ml-0.5 h-3.5 w-3.5" />
+            </span>
           </div>
         </CardContent>
       </Card>
+    </button>
+  );
+}
+
+function CommitteeCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(m)}
+      className="flex w-44 shrink-0 flex-col items-center rounded-2xl border border-border/60 bg-card p-4 text-center shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-52"
+    >
+      {m.photo_url ? (
+        <div
+          className="size-20 rounded-full bg-cover bg-center ring-2 ring-accent/40 sm:size-24"
+          style={{ backgroundImage: `url(${m.photo_url})` }}
+          aria-hidden="true"
+        />
+      ) : (
+        <div className="size-20 rounded-full bg-muted flex items-center justify-center text-xl font-serif text-muted-foreground sm:size-24">
+          {initials(m.name)}
+        </div>
+      )}
+      <div className="mt-3 font-serif text-base font-semibold text-foreground leading-tight">{m.name || "[Name]"}</div>
+      <div className="mt-1 text-xs font-medium uppercase tracking-wider text-accent">
+        {m.committee_position || "[Position]"}
+      </div>
     </button>
   );
 }
