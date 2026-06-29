@@ -154,13 +154,13 @@ function Index() {
             <span className="text-xs font-semibold uppercase tracking-widest text-accent">
               About A-WIN
             </span>
-            <h2 className="mt-3 font-serif text-foreground">Who We Are</h2>
+            <h2 className="mt-3 font-serif text-foreground">Every Woman Belongs Here</h2>
             <p className="mt-5 text-muted-foreground leading-relaxed">
-              A-WIN is a movement of African women rewriting the rules of wealth.
-              Through education, mentorship and a powerful peer network, we help
-              members move from financial curiosity to confident, lifelong
-              investing. Every event, course and conversation is built around one
-              belief: when women invest, communities transform.
+              A-WIN welcomes every woman, regardless of profession, background,
+              or where she is starting from. The common thread is a commitment
+              to saving and investing over consumerism and debt. Together we
+              break the debt cycle, build collective wealth, and create
+              generational change for our families and communities.
             </p>
             <Link
               to="/about"
