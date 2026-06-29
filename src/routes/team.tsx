@@ -44,6 +44,9 @@ type Member = {
   linkedin_url: string | null;
   social_url: string | null;
   portfolio_images: string[] | null;
+  committee: string | null;
+  committee_position: string | null;
+  committee_order: number | null;
 };
 
 const CATEGORIES = [
@@ -57,7 +60,23 @@ const CATEGORIES = [
   "Medical Professionals",
   "Entrepreneurs",
   "Educators",
+  "Marketing & PR",
+  "Technology & Digital",
+  "Creatives & Designers",
+  "Consultants",
+  "Healthcare & Wellness",
+  "Hospitality & Events",
+  "Retail & Fashion",
+  "Construction & Trades",
+  "Non-Profit & Community",
+  "Students",
   "Other",
+] as const;
+
+const COMMITTEES = [
+  { key: "main", label: "Main Committee" },
+  { key: "property", label: "Property Investment Committee" },
+  { key: "website", label: "Website Committee" },
 ] as const;
 
 function initials(name: string) {
@@ -70,14 +89,16 @@ function initials(name: string) {
 }
 
 function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
+  // Lead with name; use bio (or title fallback) as the personal tagline.
+  const tagline = m.bio?.trim() || (m.committee_position ?? "");
   return (
     <button
       type="button"
       onClick={() => onOpen(m)}
-      className="block h-full w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-2xl"
+      className="group block h-full w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-2xl"
     >
-      <Card className="h-full border-border/60 bg-card shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)]">
-        <CardContent className="p-5">
+      <Card className="h-full border-border/60 bg-card shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)] flex flex-col">
+        <CardContent className="p-5 flex flex-col gap-4 h-full">
           <div className="flex gap-4">
             {m.photo_url ? (
               <div
@@ -90,22 +111,52 @@ function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
                 {initials(m.name)}
               </div>
             )}
-            <div className="min-w-0">
-              <h3 className="font-serif text-lg text-foreground leading-tight truncate">{m.name}</h3>
-              <div className="text-xs font-medium text-accent line-clamp-2">{m.title}</div>
-              {m.category && (
-                <Badge variant="outline" className="mt-2 border-primary/30 text-[10px] text-primary">
-                  {m.category}
-                </Badge>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-serif text-xl font-bold text-foreground leading-tight">{m.name}</h3>
+              {tagline && (
+                <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{tagline}</p>
               )}
             </div>
           </div>
-          {m.bio && <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{m.bio}</p>}
-          <div className="mt-4 inline-flex items-center text-sm font-semibold text-accent">
-            View Portfolio <ChevronRight className="ml-1 h-4 w-4" />
+          <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+            {m.category ? (
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Services offered</span>
+                <Badge className="self-start bg-accent text-accent-foreground text-[11px]">{m.category}</Badge>
+              </div>
+            ) : <span />}
+            <span className="inline-flex items-center text-xs font-semibold text-accent">
+              View <ChevronRight className="ml-0.5 h-3.5 w-3.5" />
+            </span>
           </div>
         </CardContent>
       </Card>
+    </button>
+  );
+}
+
+function CommitteeCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(m)}
+      className="flex w-44 shrink-0 flex-col items-center rounded-2xl border border-border/60 bg-card p-4 text-center shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-52"
+    >
+      {m.photo_url ? (
+        <div
+          className="size-20 rounded-full bg-cover bg-center ring-2 ring-accent/40 sm:size-24"
+          style={{ backgroundImage: `url(${m.photo_url})` }}
+          aria-hidden="true"
+        />
+      ) : (
+        <div className="size-20 rounded-full bg-muted flex items-center justify-center text-xl font-serif text-muted-foreground sm:size-24">
+          {initials(m.name)}
+        </div>
+      )}
+      <div className="mt-3 font-serif text-base font-semibold text-foreground leading-tight">{m.name || "[Name]"}</div>
+      <div className="mt-1 text-xs font-medium uppercase tracking-wider text-accent">
+        {m.committee_position || "[Position]"}
+      </div>
     </button>
   );
 }
@@ -119,21 +170,40 @@ export function MembersPage() {
   useEffect(() => {
     supabase
       .from("team_members")
-      .select("id, name, title, bio, photo_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images")
+      .select("id, name, title, bio, photo_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order" as any)
       .eq("published", true)
       .order("order_index")
-      .then(({ data }) => setTeam((data as Member[]) ?? []));
+      .then(({ data }) => setTeam(((data ?? []) as unknown) as Member[]));
   }, []);
+
+  // General (non-committee) members feed search + category filter + A–Z directory.
+  const generalMembers = useMemo(
+    () => (team ?? []).filter((m) => !m.committee),
+    [team],
+  );
+
+  const committeeMembers = useMemo(() => {
+    const map = new Map<string, Member[]>();
+    (team ?? []).forEach((m) => {
+      if (!m.committee) return;
+      if (!map.has(m.committee)) map.set(m.committee, []);
+      map.get(m.committee)!.push(m);
+    });
+    map.forEach((list) =>
+      list.sort((a, b) => (a.committee_order ?? 0) - (b.committee_order ?? 0)),
+    );
+    return map;
+  }, [team]);
 
   const filtered = useMemo(() => {
     if (!team) return null;
     const q = query.trim().toLowerCase();
-    return team.filter((m) => {
+    return generalMembers.filter((m) => {
       if (!q) return true;
       const hay = [m.name, m.title, m.bio ?? "", m.location ?? "", m.category ?? "", (m.expertise ?? []).join(" ")].join(" ").toLowerCase();
       return hay.includes(q);
     });
-  }, [team, query]);
+  }, [team, generalMembers, query]);
 
   const byCategory = useMemo(() => {
     const map = new Map<string, Member[]>();
@@ -174,14 +244,66 @@ export function MembersPage() {
           </nav>
           <h1 className="mt-5 font-serif text-white">Our Members</h1>
           <p className="mt-5 max-w-2xl text-white/95 md:text-lg">
-            Meet the women of A-WIN — investors, founders and trusted advisors. Search by name, browse by category, or jump to a letter.
+            A-WIN brings together women from all walks of life, united by one goal:
+            building wealth together. Whether you are a professional, an entrepreneur,
+            a student, or simply someone who wants to change their relationship with
+            money, you belong here.
           </p>
         </div>
       </section>
 
-      <section className="border-b border-border bg-background py-6">
+      {/* Pinned committee sections */}
+      <section className="border-b border-border bg-secondary/30 py-10">
+        <div className="mx-auto max-w-6xl space-y-10 px-4">
+          {COMMITTEES.map((c) => {
+            const list = committeeMembers.get(c.key) ?? [];
+            const cards = list.length > 0 ? list : Array.from({ length: 3 }).map((_, i) => ({
+              id: `placeholder-${c.key}-${i}`,
+              name: "",
+              title: "",
+              bio: null, photo_url: null, category: null, expertise: null, location: null,
+              contact_email: null, website: null, linkedin_url: null, social_url: null,
+              portfolio_images: null, committee: c.key, committee_position: "",
+              committee_order: i,
+            } as Member));
+            return (
+              <div key={c.key}>
+                <div className="mb-4 flex items-end justify-between gap-3">
+                  <h2 className="font-serif text-xl text-foreground md:text-2xl">{c.label}</h2>
+                  {list.length === 0 && (
+                    <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                      Placeholder · admin to confirm
+                    </span>
+                  )}
+                </div>
+                <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:thin]">
+                  {cards.map((m) =>
+                    list.length > 0 ? (
+                      <CommitteeCard key={m.id} m={m} onOpen={setActive} />
+                    ) : (
+                      <div key={m.id} className="flex w-44 shrink-0 flex-col items-center rounded-2xl border border-dashed border-border bg-card p-4 text-center sm:w-52">
+                        <div className="size-20 rounded-full bg-muted sm:size-24" aria-hidden="true" />
+                        <div className="mt-3 font-serif text-base text-muted-foreground">[Name]</div>
+                        <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">[Position]</div>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="border-b border-border bg-background py-8">
         <div className="mx-auto max-w-6xl px-4">
-          <div className="relative w-full">
+          <h2 className="font-serif text-2xl text-foreground">Our Members</h2>
+          <h3 className="mt-2 font-serif text-lg text-foreground">Find a Member by Service</h3>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Some of our members offer professional services. Use the filter below to connect with them.
+          </p>
+
+          <div className="relative mt-5 w-full">
             <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}

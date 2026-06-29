@@ -35,9 +35,10 @@ export const Route = createFileRoute("/")({
 });
 
 const DEFAULT_STATS = {
-  members: "50+ Members",
-  events: "Regular Events",
+  members: "50+ Women",
+  invested: "Growing Together",
   years: "Est. 2025",
+  supported: "Community First",
 };
 
 function useHomepageStats() {
@@ -51,11 +52,12 @@ function useHomepageStats() {
       .maybeSingle()
       .then(({ data }) => {
         if (cancelled || !data?.value) return;
-        const v = data.value as Partial<typeof DEFAULT_STATS>;
+        const v = data.value as Partial<typeof DEFAULT_STATS> & { events?: string };
         setStats({
           members: v.members || DEFAULT_STATS.members,
-          events: v.events || DEFAULT_STATS.events,
+          invested: v.invested || v.events || DEFAULT_STATS.invested,
           years: v.years || DEFAULT_STATS.years,
+          supported: v.supported || DEFAULT_STATS.supported,
         });
       });
     return () => { cancelled = true; };
@@ -113,8 +115,9 @@ function Index() {
   const liveStats = useHomepageStats();
   const statCards = [
     { label: "Members", value: liveStats.members },
-    { label: "Events", value: liveStats.events },
-    { label: "Founded", value: liveStats.years },
+    { label: "Total Invested", value: liveStats.invested },
+    { label: "Years Active", value: liveStats.years },
+    { label: "Women Supported", value: liveStats.supported },
   ];
   return (
     <>
@@ -122,17 +125,17 @@ function Index() {
       <LogoHero />
 
 
-      {/* MISSION STRIP */}
+      {/* COMMUNITY STATS STRIP */}
       <section id="mission" className="border-b border-border bg-card py-14">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 sm:grid-cols-4">
           {statCards.map((s) => (
             <Card
               key={s.label}
               className="border-border/60 text-center shadow-[var(--shadow-elegant)]"
             >
-              <CardContent className="p-8">
-                <div className="font-serif text-2xl md:text-3xl text-primary">{s.value}</div>
-                <div className="mt-2 text-sm uppercase tracking-wider text-muted-foreground">
+              <CardContent className="p-6">
+                <div className="font-serif text-xl md:text-2xl text-primary">{s.value}</div>
+                <div className="mt-2 text-xs uppercase tracking-wider text-muted-foreground">
                   {s.label}
                 </div>
               </CardContent>
@@ -140,7 +143,7 @@ function Index() {
           ))}
         </div>
         <p className="mx-auto mt-6 max-w-xl px-4 text-center text-xs italic text-muted-foreground">
-          Stats to be confirmed by A-WIN.
+          Numbers grow as our community grows. Updated by A-WIN.
         </p>
       </section>
 
@@ -151,13 +154,13 @@ function Index() {
             <span className="text-xs font-semibold uppercase tracking-widest text-accent">
               About A-WIN
             </span>
-            <h2 className="mt-3 font-serif text-foreground">Who We Are</h2>
+            <h2 className="mt-3 font-serif text-foreground">Every Woman Belongs Here</h2>
             <p className="mt-5 text-muted-foreground leading-relaxed">
-              A-WIN is a movement of African women rewriting the rules of wealth.
-              Through education, mentorship and a powerful peer network, we help
-              members move from financial curiosity to confident, lifelong
-              investing. Every event, course and conversation is built around one
-              belief: when women invest, communities transform.
+              A-WIN welcomes every woman, regardless of profession, background,
+              or where she is starting from. The common thread is a commitment
+              to saving and investing over consumerism and debt. Together we
+              break the debt cycle, build collective wealth, and create
+              generational change for our families and communities.
             </p>
             <Link
               to="/about"

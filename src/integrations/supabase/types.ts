@@ -600,6 +600,9 @@ export type Database = {
         Row: {
           bio: string | null
           category: string | null
+          committee: string | null
+          committee_order: number
+          committee_position: string | null
           contact_email: string | null
           created_at: string
           expertise: string[] | null
@@ -619,6 +622,9 @@ export type Database = {
         Insert: {
           bio?: string | null
           category?: string | null
+          committee?: string | null
+          committee_order?: number
+          committee_position?: string | null
           contact_email?: string | null
           created_at?: string
           expertise?: string[] | null
@@ -638,6 +644,9 @@ export type Database = {
         Update: {
           bio?: string | null
           category?: string | null
+          committee?: string | null
+          committee_order?: number
+          committee_position?: string | null
           contact_email?: string | null
           created_at?: string
           expertise?: string[] | null

@@ -171,7 +171,7 @@ export function LogoHero() {
         </motion.span>
 
         <WordsPullUp
-          text="Empowering Women Through Investment"
+          text="African Women Building Wealth Together"
           delay={0.2}
           className="mt-6 font-serif text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] text-hero-foreground drop-shadow-[0_3px_28px_rgba(0,0,0,0.72)]"
         />
@@ -182,8 +182,9 @@ export function LogoHero() {
           transition={{ duration: 0.8, delay: 0.9 }}
           className="mx-auto mt-6 max-w-2xl text-base md:text-lg text-hero-muted drop-shadow-[0_2px_16px_rgba(0,0,0,0.72)]"
         >
-          A-WIN is a community of women building wealth, knowledge and legacy
-          together through investment, education and a powerful peer network.
+          A-WIN is a stokvel and investment community born from the Women
+          Creating Wealth programme. We are ordinary South African women
+          choosing to save, invest, and grow, together. Every woman belongs here.
         </motion.p>
 
         <motion.div
@@ -194,13 +195,13 @@ export function LogoHero() {
         >
           <Link to="/membership">
             <GlassButton size="lg" className="border border-hero-border bg-hero-surface text-hero-foreground shadow-[var(--shadow-gold-glow)]">
-              Become a Member
+              Join A-WIN
               <ArrowRight className="ml-1 h-4 w-4" />
             </GlassButton>
           </Link>
-          <Link to="/about">
+          <Link to="/members">
             <GlassButton size="lg" className="border border-hero-border bg-hero-surface text-hero-foreground shadow-[var(--shadow-gold-glow)]">
-              Learn More
+              Meet Our Members
             </GlassButton>
           </Link>
         </motion.div>

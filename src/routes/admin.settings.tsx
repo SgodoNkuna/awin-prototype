@@ -33,6 +33,9 @@ type TeamMember = {
   linkedin_url: string | null;
   social_url: string | null;
   portfolio_images: string[] | null;
+  committee: string | null;
+  committee_position: string | null;
+  committee_order: number | null;
 };
 
 
@@ -71,9 +74,14 @@ function SettingsPage() {
     setSettings({ ...settings, [key]: value });
 
   const saveSetting = async (key: string) => {
+    // Show the admin what is currently public before confirming the change.
+    const { data: current } = await supabase.from("site_settings").select("value").eq("key", key).maybeSingle();
+    const currentText = current?.value ? JSON.stringify(current.value, null, 2) : "(nothing published yet)";
+    const nextText = JSON.stringify(settings[key] ?? {}, null, 2);
+    if (!confirm(`Publish changes to "${key}"?\n\nCurrently public:\n${currentText}\n\nNew:\n${nextText}`)) return;
     const { error } = await supabase.from("site_settings").upsert({ key, value: settings[key] as never });
     if (error) return toast.error(error.message);
-    toast.success("Saved");
+    toast.success("Published");
   };
 
   if (loading) {
@@ -134,29 +142,36 @@ function SettingsPage() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle className="text-base">Stats</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">Homepage Stats</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              <div className="grid grid-cols-3 gap-3">
+              <p className="text-xs text-muted-foreground">Shown as four cards on the homepage. Saving asks you to confirm against the values currently published.</p>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <Field label="Members">
                   <Input
                     value={(settings.stats?.members as string) ?? ""}
                     onChange={(e) => updateSetting("stats", { ...settings.stats, members: e.target.value })}
                   />
                 </Field>
-                <Field label="Events">
+                <Field label="Total Invested">
                   <Input
-                    value={(settings.stats?.events as string) ?? ""}
-                    onChange={(e) => updateSetting("stats", { ...settings.stats, events: e.target.value })}
+                    value={(settings.stats?.invested as string) ?? ""}
+                    onChange={(e) => updateSetting("stats", { ...settings.stats, invested: e.target.value })}
                   />
                 </Field>
-                <Field label="Years">
+                <Field label="Years Active">
                   <Input
                     value={(settings.stats?.years as string) ?? ""}
                     onChange={(e) => updateSetting("stats", { ...settings.stats, years: e.target.value })}
                   />
                 </Field>
+                <Field label="Women Supported">
+                  <Input
+                    value={(settings.stats?.supported as string) ?? ""}
+                    onChange={(e) => updateSetting("stats", { ...settings.stats, supported: e.target.value })}
+                  />
+                </Field>
               </div>
-              <Button onClick={() => saveSetting("stats")} size="sm"><Save className="size-4 mr-2" />Save</Button>
+              <Button onClick={() => saveSetting("stats")} size="sm"><Save className="size-4 mr-2" />Publish</Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -210,7 +225,7 @@ function SettingsPage() {
         <TabsContent value="team" className="space-y-3 mt-4">
           <Button
             size="sm"
-            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "", linkedin_url: "", social_url: "", portfolio_images: [] }])}
+            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "", linkedin_url: "", social_url: "", portfolio_images: [], committee: null, committee_position: null, committee_order: 0 }])}
           >
             <Plus className="size-4 mr-2" />Add Member
           </Button>
@@ -266,6 +281,30 @@ function SettingsPage() {
                     onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, portfolio_images: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) } : x))}
                   />
                 </Field>
+                <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-3">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-accent">Committee placement</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Field label="Committee">
+                      <select
+                        className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                        value={m.committee ?? ""}
+                        onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, committee: e.target.value || null } : x))}
+                      >
+                        <option value="">None (general member)</option>
+                        <option value="main">Main Committee</option>
+                        <option value="property">Property Investment Committee</option>
+                        <option value="website">Website Committee</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </Field>
+                    <Field label="Position">
+                      <Input value={m.committee_position ?? ""} placeholder="Chairman, Secretary…" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, committee_position: e.target.value } : x))} />
+                    </Field>
+                    <Field label="Order">
+                      <Input type="number" value={m.committee_order ?? 0} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, committee_order: Number(e.target.value) } : x))} />
+                    </Field>
+                  </div>
+                </div>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
@@ -287,7 +326,10 @@ function SettingsPage() {
                         linkedin_url: sanitizeUrl(m.linkedin_url),
                         social_url: sanitizeUrl(m.social_url),
                         portfolio_images: m.portfolio_images && m.portfolio_images.length ? m.portfolio_images.map((s) => sanitizeUrl(s)).filter((u): u is string => !!u) : [],
-                      };
+                        committee: m.committee ? sanitizeText(m.committee) : null,
+                        committee_position: sanitizeOptionalText(m.committee_position),
+                        committee_order: m.committee_order ?? 0,
+                      } as any;
                       const { error } = m.id
                         ? await supabase.from("team_members").update(payload).eq("id", m.id)
                         : await supabase.from("team_members").insert(payload);
