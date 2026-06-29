@@ -115,8 +115,9 @@ function Index() {
   const liveStats = useHomepageStats();
   const statCards = [
     { label: "Members", value: liveStats.members },
-    { label: "Events", value: liveStats.events },
-    { label: "Founded", value: liveStats.years },
+    { label: "Total Invested", value: liveStats.invested },
+    { label: "Years Active", value: liveStats.years },
+    { label: "Women Supported", value: liveStats.supported },
   ];
   return (
     <>
