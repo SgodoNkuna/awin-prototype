@@ -44,6 +44,9 @@ type Member = {
   linkedin_url: string | null;
   social_url: string | null;
   portfolio_images: string[] | null;
+  committee: string | null;
+  committee_position: string | null;
+  committee_order: number | null;
 };
 
 const CATEGORIES = [
@@ -57,7 +60,23 @@ const CATEGORIES = [
   "Medical Professionals",
   "Entrepreneurs",
   "Educators",
+  "Marketing & PR",
+  "Technology & Digital",
+  "Creatives & Designers",
+  "Consultants",
+  "Healthcare & Wellness",
+  "Hospitality & Events",
+  "Retail & Fashion",
+  "Construction & Trades",
+  "Non-Profit & Community",
+  "Students",
   "Other",
+] as const;
+
+const COMMITTEES = [
+  { key: "main", label: "Main Committee" },
+  { key: "property", label: "Property Investment Committee" },
+  { key: "website", label: "Website Committee" },
 ] as const;
 
 function initials(name: string) {
