@@ -269,6 +269,30 @@ function SettingsPage() {
                     onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, portfolio_images: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) } : x))}
                   />
                 </Field>
+                <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-3">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-accent">Committee placement</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Field label="Committee">
+                      <select
+                        className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                        value={m.committee ?? ""}
+                        onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, committee: e.target.value || null } : x))}
+                      >
+                        <option value="">None (general member)</option>
+                        <option value="main">Main Committee</option>
+                        <option value="property">Property Investment Committee</option>
+                        <option value="website">Website Committee</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </Field>
+                    <Field label="Position">
+                      <Input value={m.committee_position ?? ""} placeholder="Chairman, Secretary…" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, committee_position: e.target.value } : x))} />
+                    </Field>
+                    <Field label="Order">
+                      <Input type="number" value={m.committee_order ?? 0} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, committee_order: Number(e.target.value) } : x))} />
+                    </Field>
+                  </div>
+                </div>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
@@ -290,7 +314,10 @@ function SettingsPage() {
                         linkedin_url: sanitizeUrl(m.linkedin_url),
                         social_url: sanitizeUrl(m.social_url),
                         portfolio_images: m.portfolio_images && m.portfolio_images.length ? m.portfolio_images.map((s) => sanitizeUrl(s)).filter((u): u is string => !!u) : [],
-                      };
+                        committee: m.committee ? sanitizeText(m.committee) : null,
+                        committee_position: sanitizeOptionalText(m.committee_position),
+                        committee_order: m.committee_order ?? 0,
+                      } as any;
                       const { error } = m.id
                         ? await supabase.from("team_members").update(payload).eq("id", m.id)
                         : await supabase.from("team_members").insert(payload);
