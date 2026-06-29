@@ -33,6 +33,9 @@ type TeamMember = {
   linkedin_url: string | null;
   social_url: string | null;
   portfolio_images: string[] | null;
+  committee: string | null;
+  committee_position: string | null;
+  committee_order: number | null;
 };
 
 
