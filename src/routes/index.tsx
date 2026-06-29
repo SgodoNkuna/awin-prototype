@@ -125,17 +125,17 @@ function Index() {
       <LogoHero />
 
 
-      {/* MISSION STRIP */}
+      {/* COMMUNITY STATS STRIP */}
       <section id="mission" className="border-b border-border bg-card py-14">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 sm:grid-cols-4">
           {statCards.map((s) => (
             <Card
               key={s.label}
               className="border-border/60 text-center shadow-[var(--shadow-elegant)]"
             >
-              <CardContent className="p-8">
-                <div className="font-serif text-2xl md:text-3xl text-primary">{s.value}</div>
-                <div className="mt-2 text-sm uppercase tracking-wider text-muted-foreground">
+              <CardContent className="p-6">
+                <div className="font-serif text-xl md:text-2xl text-primary">{s.value}</div>
+                <div className="mt-2 text-xs uppercase tracking-wider text-muted-foreground">
                   {s.label}
                 </div>
               </CardContent>
@@ -143,7 +143,7 @@ function Index() {
           ))}
         </div>
         <p className="mx-auto mt-6 max-w-xl px-4 text-center text-xs italic text-muted-foreground">
-          Stats to be confirmed by A-WIN.
+          Numbers grow as our community grows. Updated by A-WIN.
         </p>
       </section>
 
