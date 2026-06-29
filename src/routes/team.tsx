@@ -244,14 +244,66 @@ export function MembersPage() {
           </nav>
           <h1 className="mt-5 font-serif text-white">Our Members</h1>
           <p className="mt-5 max-w-2xl text-white/95 md:text-lg">
-            Meet the women of A-WIN — investors, founders and trusted advisors. Search by name, browse by category, or jump to a letter.
+            A-WIN brings together women from all walks of life, united by one goal:
+            building wealth together. Whether you are a professional, an entrepreneur,
+            a student, or simply someone who wants to change their relationship with
+            money, you belong here.
           </p>
         </div>
       </section>
 
-      <section className="border-b border-border bg-background py-6">
+      {/* Pinned committee sections */}
+      <section className="border-b border-border bg-secondary/30 py-10">
+        <div className="mx-auto max-w-6xl space-y-10 px-4">
+          {COMMITTEES.map((c) => {
+            const list = committeeMembers.get(c.key) ?? [];
+            const cards = list.length > 0 ? list : Array.from({ length: 3 }).map((_, i) => ({
+              id: `placeholder-${c.key}-${i}`,
+              name: "",
+              title: "",
+              bio: null, photo_url: null, category: null, expertise: null, location: null,
+              contact_email: null, website: null, linkedin_url: null, social_url: null,
+              portfolio_images: null, committee: c.key, committee_position: "",
+              committee_order: i,
+            } as Member));
+            return (
+              <div key={c.key}>
+                <div className="mb-4 flex items-end justify-between gap-3">
+                  <h2 className="font-serif text-xl text-foreground md:text-2xl">{c.label}</h2>
+                  {list.length === 0 && (
+                    <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                      Placeholder · admin to confirm
+                    </span>
+                  )}
+                </div>
+                <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:thin]">
+                  {cards.map((m) =>
+                    list.length > 0 ? (
+                      <CommitteeCard key={m.id} m={m} onOpen={setActive} />
+                    ) : (
+                      <div key={m.id} className="flex w-44 shrink-0 flex-col items-center rounded-2xl border border-dashed border-border bg-card p-4 text-center sm:w-52">
+                        <div className="size-20 rounded-full bg-muted sm:size-24" aria-hidden="true" />
+                        <div className="mt-3 font-serif text-base text-muted-foreground">[Name]</div>
+                        <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">[Position]</div>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="border-b border-border bg-background py-8">
         <div className="mx-auto max-w-6xl px-4">
-          <div className="relative w-full">
+          <h2 className="font-serif text-2xl text-foreground">Our Members</h2>
+          <h3 className="mt-2 font-serif text-lg text-foreground">Find a Member by Service</h3>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Some of our members offer professional services. Use the filter below to connect with them.
+          </p>
+
+          <div className="relative mt-5 w-full">
             <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
