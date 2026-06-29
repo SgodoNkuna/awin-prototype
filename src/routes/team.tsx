@@ -170,21 +170,40 @@ export function MembersPage() {
   useEffect(() => {
     supabase
       .from("team_members")
-      .select("id, name, title, bio, photo_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images")
+      .select("id, name, title, bio, photo_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order" as any)
       .eq("published", true)
       .order("order_index")
-      .then(({ data }) => setTeam((data as Member[]) ?? []));
+      .then(({ data }) => setTeam(((data ?? []) as unknown) as Member[]));
   }, []);
+
+  // General (non-committee) members feed search + category filter + A–Z directory.
+  const generalMembers = useMemo(
+    () => (team ?? []).filter((m) => !m.committee),
+    [team],
+  );
+
+  const committeeMembers = useMemo(() => {
+    const map = new Map<string, Member[]>();
+    (team ?? []).forEach((m) => {
+      if (!m.committee) return;
+      if (!map.has(m.committee)) map.set(m.committee, []);
+      map.get(m.committee)!.push(m);
+    });
+    map.forEach((list) =>
+      list.sort((a, b) => (a.committee_order ?? 0) - (b.committee_order ?? 0)),
+    );
+    return map;
+  }, [team]);
 
   const filtered = useMemo(() => {
     if (!team) return null;
     const q = query.trim().toLowerCase();
-    return team.filter((m) => {
+    return generalMembers.filter((m) => {
       if (!q) return true;
       const hay = [m.name, m.title, m.bio ?? "", m.location ?? "", m.category ?? "", (m.expertise ?? []).join(" ")].join(" ").toLowerCase();
       return hay.includes(q);
     });
-  }, [team, query]);
+  }, [team, generalMembers, query]);
 
   const byCategory = useMemo(() => {
     const map = new Map<string, Member[]>();
