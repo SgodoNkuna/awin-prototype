@@ -35,9 +35,10 @@ export const Route = createFileRoute("/")({
 });
 
 const DEFAULT_STATS = {
-  members: "50+ Members",
-  events: "Regular Events",
+  members: "50+ Women",
+  invested: "Growing Together",
   years: "Est. 2025",
+  supported: "Community First",
 };
 
 function useHomepageStats() {
@@ -51,11 +52,12 @@ function useHomepageStats() {
       .maybeSingle()
       .then(({ data }) => {
         if (cancelled || !data?.value) return;
-        const v = data.value as Partial<typeof DEFAULT_STATS>;
+        const v = data.value as Partial<typeof DEFAULT_STATS> & { events?: string };
         setStats({
           members: v.members || DEFAULT_STATS.members,
-          events: v.events || DEFAULT_STATS.events,
+          invested: v.invested || v.events || DEFAULT_STATS.invested,
           years: v.years || DEFAULT_STATS.years,
+          supported: v.supported || DEFAULT_STATS.supported,
         });
       });
     return () => { cancelled = true; };
