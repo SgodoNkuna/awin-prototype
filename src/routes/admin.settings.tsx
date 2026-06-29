@@ -142,29 +142,36 @@ function SettingsPage() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle className="text-base">Stats</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">Homepage Stats</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              <div className="grid grid-cols-3 gap-3">
+              <p className="text-xs text-muted-foreground">Shown as four cards on the homepage. Saving asks you to confirm against the values currently published.</p>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <Field label="Members">
                   <Input
                     value={(settings.stats?.members as string) ?? ""}
                     onChange={(e) => updateSetting("stats", { ...settings.stats, members: e.target.value })}
                   />
                 </Field>
-                <Field label="Events">
+                <Field label="Total Invested">
                   <Input
-                    value={(settings.stats?.events as string) ?? ""}
-                    onChange={(e) => updateSetting("stats", { ...settings.stats, events: e.target.value })}
+                    value={(settings.stats?.invested as string) ?? ""}
+                    onChange={(e) => updateSetting("stats", { ...settings.stats, invested: e.target.value })}
                   />
                 </Field>
-                <Field label="Years">
+                <Field label="Years Active">
                   <Input
                     value={(settings.stats?.years as string) ?? ""}
                     onChange={(e) => updateSetting("stats", { ...settings.stats, years: e.target.value })}
                   />
                 </Field>
+                <Field label="Women Supported">
+                  <Input
+                    value={(settings.stats?.supported as string) ?? ""}
+                    onChange={(e) => updateSetting("stats", { ...settings.stats, supported: e.target.value })}
+                  />
+                </Field>
               </div>
-              <Button onClick={() => saveSetting("stats")} size="sm"><Save className="size-4 mr-2" />Save</Button>
+              <Button onClick={() => saveSetting("stats")} size="sm"><Save className="size-4 mr-2" />Publish</Button>
             </CardContent>
           </Card>
         </TabsContent>
