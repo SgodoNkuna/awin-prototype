@@ -74,9 +74,14 @@ function SettingsPage() {
     setSettings({ ...settings, [key]: value });
 
   const saveSetting = async (key: string) => {
+    // Show the admin what is currently public before confirming the change.
+    const { data: current } = await supabase.from("site_settings").select("value").eq("key", key).maybeSingle();
+    const currentText = current?.value ? JSON.stringify(current.value, null, 2) : "(nothing published yet)";
+    const nextText = JSON.stringify(settings[key] ?? {}, null, 2);
+    if (!confirm(`Publish changes to "${key}"?\n\nCurrently public:\n${currentText}\n\nNew:\n${nextText}`)) return;
     const { error } = await supabase.from("site_settings").upsert({ key, value: settings[key] as never });
     if (error) return toast.error(error.message);
-    toast.success("Saved");
+    toast.success("Published");
   };
 
   if (loading) {
