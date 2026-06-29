@@ -188,8 +188,10 @@ function MembershipPage() {
       <section className="relative bg-gradient-to-br from-primary via-primary to-primary/80 py-20 md:py-28 text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h1 className="font-bold mb-4">Join A-WIN</h1>
-          <p className="text-base md:text-xl max-w-2xl mx-auto opacity-90 leading-relaxed">
-            One transparent membership. A small annual fee plus a monthly investment commitment — building wealth, together, since {MEMBERSHIP_MODEL.foundedYear}.
+          <p className="text-base md:text-xl max-w-2xl mx-auto opacity-95 leading-relaxed">
+            You do not need a degree or a professional title to join A-WIN. You
+            need a commitment to saving, investing, and growing with a community
+            of women who have your back. If that sounds like you, you belong here.
           </p>
         </div>
       </section>
