@@ -27,6 +27,7 @@ type AdminPath =
   | "/admin/applications"
   | "/admin/events"
   | "/admin/portfolio"
+  | "/admin/products"
   | "/admin/messages"
   | "/admin/documents"
   | "/admin/billing"
