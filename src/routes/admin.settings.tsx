@@ -241,7 +241,10 @@ function SettingsPage() {
                     <Input value={m.title} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} />
                   </Field>
                 </div>
-                <Field label="Photo URL">
+                <Field label="Profile Card Image URL (full designed graphic — shown as the main image)">
+                  <Input value={m.profile_card_url ?? ""} placeholder="https://..." onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, profile_card_url: e.target.value } : x))} />
+                </Field>
+                <Field label="Headshot URL (optional fallback)">
                   <Input value={m.photo_url ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, photo_url: e.target.value } : x))} />
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
