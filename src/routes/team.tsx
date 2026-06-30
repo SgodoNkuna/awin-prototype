@@ -160,7 +160,7 @@ export function MembersPage() {
   useEffect(() => {
     supabase
       .from("team_members")
-      .select("id, name, title, bio, photo_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order" as any)
+      .select("id, name, title, bio, photo_url, profile_card_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order" as any)
       .eq("published", true)
       .order("order_index")
       .then(({ data }) => setTeam(((data ?? []) as unknown) as Member[]));
