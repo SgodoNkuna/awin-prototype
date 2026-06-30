@@ -320,6 +320,7 @@ function SettingsPage() {
                         title: sanitizeText(m.title),
                         bio: sanitizeOptionalText(m.bio),
                         photo_url: sanitizeUrl(m.photo_url),
+                        profile_card_url: sanitizeUrl(m.profile_card_url),
                         order_index: m.order_index,
                         published: m.published,
                         category: sanitizeOptionalText(m.category),
