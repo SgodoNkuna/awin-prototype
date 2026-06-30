@@ -532,6 +532,45 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          active: boolean
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          images: string[]
+          name: string
+          order_index: number
+          price: number | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[]
+          name: string
+          order_index?: number
+          price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[]
+          name?: string
+          order_index?: number
+          price?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -598,6 +637,7 @@ export type Database = {
       }
       team_members: {
         Row: {
+          active: boolean
           bio: string | null
           category: string | null
           committee: string | null
@@ -613,6 +653,7 @@ export type Database = {
           order_index: number
           photo_url: string | null
           portfolio_images: string[]
+          profile_card_url: string | null
           published: boolean
           social_url: string | null
           title: string
@@ -620,6 +661,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          active?: boolean
           bio?: string | null
           category?: string | null
           committee?: string | null
@@ -635,6 +677,7 @@ export type Database = {
           order_index?: number
           photo_url?: string | null
           portfolio_images?: string[]
+          profile_card_url?: string | null
           published?: boolean
           social_url?: string | null
           title: string
@@ -642,6 +685,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          active?: boolean
           bio?: string | null
           category?: string | null
           committee?: string | null
@@ -657,6 +701,7 @@ export type Database = {
           order_index?: number
           photo_url?: string | null
           portfolio_images?: string[]
+          profile_card_url?: string | null
           published?: boolean
           social_url?: string | null
           title?: string
