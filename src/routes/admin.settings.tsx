@@ -23,6 +23,7 @@ type TeamMember = {
   title: string;
   bio: string | null;
   photo_url: string | null;
+  profile_card_url: string | null;
   order_index: number;
   published: boolean;
   category: string | null;
