@@ -23,6 +23,7 @@ type TeamMember = {
   title: string;
   bio: string | null;
   photo_url: string | null;
+  profile_card_url: string | null;
   order_index: number;
   published: boolean;
   category: string | null;
@@ -225,7 +226,7 @@ function SettingsPage() {
         <TabsContent value="team" className="space-y-3 mt-4">
           <Button
             size="sm"
-            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "", linkedin_url: "", social_url: "", portfolio_images: [], committee: null, committee_position: null, committee_order: 0 }])}
+            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", profile_card_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "", linkedin_url: "", social_url: "", portfolio_images: [], committee: null, committee_position: null, committee_order: 0 }])}
           >
             <Plus className="size-4 mr-2" />Add Member
           </Button>
@@ -240,7 +241,10 @@ function SettingsPage() {
                     <Input value={m.title} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} />
                   </Field>
                 </div>
-                <Field label="Photo URL">
+                <Field label="Profile Card Image URL (full designed graphic — shown as the main image)">
+                  <Input value={m.profile_card_url ?? ""} placeholder="https://..." onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, profile_card_url: e.target.value } : x))} />
+                </Field>
+                <Field label="Headshot URL (optional fallback)">
                   <Input value={m.photo_url ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, photo_url: e.target.value } : x))} />
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
@@ -316,6 +320,7 @@ function SettingsPage() {
                         title: sanitizeText(m.title),
                         bio: sanitizeOptionalText(m.bio),
                         photo_url: sanitizeUrl(m.photo_url),
+                        profile_card_url: sanitizeUrl(m.profile_card_url),
                         order_index: m.order_index,
                         published: m.published,
                         category: sanitizeOptionalText(m.category),

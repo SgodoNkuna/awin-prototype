@@ -36,6 +36,7 @@ type Member = {
   title: string;
   bio: string | null;
   photo_url: string | null;
+  profile_card_url: string | null;
   category: string | null;
   expertise: string[] | null;
   location: string | null;
@@ -89,44 +90,33 @@ function initials(name: string) {
 }
 
 function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
-  // Lead with name; use bio (or title fallback) as the personal tagline.
-  const tagline = m.bio?.trim() || (m.committee_position ?? "");
+  const previewSrc = m.profile_card_url || m.photo_url;
   return (
     <button
       type="button"
       onClick={() => onOpen(m)}
       className="group block h-full w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-2xl"
     >
-      <Card className="h-full border-border/60 bg-card shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)] flex flex-col">
-        <CardContent className="p-5 flex flex-col gap-4 h-full">
-          <div className="flex gap-4">
-            {m.photo_url ? (
-              <div
-                className="size-20 shrink-0 rounded-full bg-cover bg-center ring-2 ring-accent/30"
-                style={{ backgroundImage: `url(${m.photo_url})` }}
-                aria-hidden="true"
-              />
-            ) : (
-              <div className="size-20 shrink-0 rounded-full bg-muted flex items-center justify-center text-xl font-serif text-muted-foreground">
-                {initials(m.name)}
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <h3 className="font-serif text-xl font-bold text-foreground leading-tight">{m.name}</h3>
-              {tagline && (
-                <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{tagline}</p>
-              )}
-            </div>
+      <Card className="h-full overflow-hidden border-border/60 bg-card shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)] flex flex-col">
+        {previewSrc ? (
+          <div
+            className="aspect-[3/4] w-full bg-cover bg-center bg-secondary"
+            style={{ backgroundImage: `url(${previewSrc})` }}
+            aria-hidden="true"
+          />
+        ) : (
+          <div className="aspect-[3/4] w-full bg-accent/15 flex items-center justify-center">
+            <span className="font-serif text-5xl text-accent-deep">{initials(m.name)}</span>
           </div>
-          <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-            {m.category ? (
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Services offered</span>
-                <Badge className="self-start bg-accent text-accent-foreground text-[11px]">{m.category}</Badge>
-              </div>
-            ) : <span />}
-            <span className="inline-flex items-center text-xs font-semibold text-accent">
-              View <ChevronRight className="ml-0.5 h-3.5 w-3.5" />
+        )}
+        <CardContent className="p-4 flex flex-col gap-2 flex-1">
+          <h3 className="font-serif text-lg font-bold text-foreground leading-tight">{m.name}</h3>
+          {m.category && (
+            <Badge className="self-start bg-accent text-accent-foreground text-[11px]">{m.category}</Badge>
+          )}
+          <div className="mt-auto pt-2">
+            <span className="inline-flex items-center text-xs font-semibold text-accent-deep">
+              View Profile <ChevronRight className="ml-0.5 h-3.5 w-3.5" />
             </span>
           </div>
         </CardContent>
@@ -170,7 +160,7 @@ export function MembersPage() {
   useEffect(() => {
     supabase
       .from("team_members")
-      .select("id, name, title, bio, photo_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order" as any)
+      .select("id, name, title, bio, photo_url, profile_card_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order" as any)
       .eq("published", true)
       .order("order_index")
       .then(({ data }) => setTeam(((data ?? []) as unknown) as Member[]));
@@ -261,7 +251,7 @@ export function MembersPage() {
               id: `placeholder-${c.key}-${i}`,
               name: "",
               title: "",
-              bio: null, photo_url: null, category: null, expertise: null, location: null,
+              bio: null, photo_url: null, profile_card_url: null, category: null, expertise: null, location: null,
               contact_email: null, website: null, linkedin_url: null, social_url: null,
               portfolio_images: null, committee: c.key, committee_position: "",
               committee_order: i,
@@ -430,44 +420,46 @@ export function MembersPage() {
           {active && (
             <>
               <div className="sticky top-0 z-10 mx-auto mt-2 h-1.5 w-12 rounded-full bg-muted sm:hidden" aria-hidden="true" />
-              <div className="px-6 pb-6 pt-4 sm:pt-6">
-                <DialogHeader>
-                  <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
-                    {active.photo_url ? (
-                      <div
-                        className="size-28 shrink-0 rounded-full bg-cover bg-center ring-4 ring-accent/30"
-                        style={{ backgroundImage: `url(${active.photo_url})` }}
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <div className="size-28 shrink-0 rounded-full bg-muted flex items-center justify-center text-3xl font-serif text-muted-foreground">
-                        {initials(active.name)}
-                      </div>
+              <div className="px-4 pb-6 pt-4 sm:px-6 sm:pt-6">
+                <DialogHeader className="text-left">
+                  <DialogTitle className="font-serif text-2xl text-foreground">{active.name}</DialogTitle>
+                  <DialogDescription className="flex flex-wrap gap-2 pt-2">
+                    {active.category && (
+                      <Badge className="bg-accent text-accent-foreground">{active.category}</Badge>
                     )}
-                    <div className="min-w-0">
-                      <DialogTitle className="font-serif text-2xl text-foreground">{active.name}</DialogTitle>
-                      <DialogDescription className="text-accent font-semibold">{active.title}</DialogDescription>
-                      <div className="mt-2 flex flex-wrap justify-center gap-2 sm:justify-start">
-                        {active.category && (
-                          <Badge className="bg-primary text-white">{active.category}</Badge>
-                        )}
-                        {active.location && (
-                          <Badge variant="outline" className="border-border">
-                            <MapPin className="mr-1 size-3" /> {active.location}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                    {active.committee_position && (
+                      <Badge variant="outline">{active.committee_position}</Badge>
+                    )}
+                  </DialogDescription>
                 </DialogHeader>
 
-                {active.expertise && active.expertise.length > 0 && (
-                  <div className="mt-5 flex flex-wrap gap-1.5">
-                    {active.expertise.map((e) => (
-                      <span key={e} className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent-deep">
-                        {e}
-                      </span>
-                    ))}
+                {/* IMAGE-FIRST: full profile card if uploaded */}
+                {active.profile_card_url ? (
+                  <div className="mt-4 overflow-hidden rounded-xl border border-border bg-secondary">
+                    <img
+                      src={active.profile_card_url}
+                      alt={`${active.name} profile card`}
+                      className="block w-full h-auto"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : active.photo_url ? (
+                  <div className="mt-4 overflow-hidden rounded-xl border border-border bg-secondary">
+                    <img
+                      src={active.photo_url}
+                      alt={active.name}
+                      className="block w-full h-auto max-h-[70vh] object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 p-8 text-center">
+                    <div className="mx-auto size-24 rounded-full bg-accent/15 flex items-center justify-center font-serif text-3xl text-accent-deep">
+                      {initials(active.name)}
+                    </div>
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      This member has not yet uploaded a profile card.
+                    </p>
                   </div>
                 )}
 
@@ -475,25 +467,6 @@ export function MembersPage() {
                   <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-foreground/90">{active.bio}</p>
                 )}
 
-                {active.portfolio_images && active.portfolio_images.length > 0 && (
-                  <div className="mt-6">
-                    <h4 className="font-serif text-base text-foreground">Portfolio</h4>
-                    <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                      {active.portfolio_images.map((src, i) => (
-                        <a
-                          key={`${src}-${i}`}
-                          href={src}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group relative block aspect-square overflow-hidden rounded-lg border border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          aria-label={`Open portfolio image ${i + 1}`}
-                        >
-                          <img src={src} alt="" className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-4">
                   {active.linkedin_url && (
