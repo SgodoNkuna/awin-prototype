@@ -14,6 +14,7 @@ import {
   CreditCard,
   FileDown,
   Menu,
+  ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
