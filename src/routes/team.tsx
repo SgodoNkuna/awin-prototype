@@ -90,44 +90,33 @@ function initials(name: string) {
 }
 
 function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
-  // Lead with name; use bio (or title fallback) as the personal tagline.
-  const tagline = m.bio?.trim() || (m.committee_position ?? "");
+  const previewSrc = m.profile_card_url || m.photo_url;
   return (
     <button
       type="button"
       onClick={() => onOpen(m)}
       className="group block h-full w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-2xl"
     >
-      <Card className="h-full border-border/60 bg-card shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)] flex flex-col">
-        <CardContent className="p-5 flex flex-col gap-4 h-full">
-          <div className="flex gap-4">
-            {m.photo_url ? (
-              <div
-                className="size-20 shrink-0 rounded-full bg-cover bg-center ring-2 ring-accent/30"
-                style={{ backgroundImage: `url(${m.photo_url})` }}
-                aria-hidden="true"
-              />
-            ) : (
-              <div className="size-20 shrink-0 rounded-full bg-muted flex items-center justify-center text-xl font-serif text-muted-foreground">
-                {initials(m.name)}
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <h3 className="font-serif text-xl font-bold text-foreground leading-tight">{m.name}</h3>
-              {tagline && (
-                <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{tagline}</p>
-              )}
-            </div>
+      <Card className="h-full overflow-hidden border-border/60 bg-card shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)] flex flex-col">
+        {previewSrc ? (
+          <div
+            className="aspect-[3/4] w-full bg-cover bg-center bg-secondary"
+            style={{ backgroundImage: `url(${previewSrc})` }}
+            aria-hidden="true"
+          />
+        ) : (
+          <div className="aspect-[3/4] w-full bg-accent/15 flex items-center justify-center">
+            <span className="font-serif text-5xl text-accent-deep">{initials(m.name)}</span>
           </div>
-          <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-            {m.category ? (
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Services offered</span>
-                <Badge className="self-start bg-accent text-accent-foreground text-[11px]">{m.category}</Badge>
-              </div>
-            ) : <span />}
-            <span className="inline-flex items-center text-xs font-semibold text-accent">
-              View <ChevronRight className="ml-0.5 h-3.5 w-3.5" />
+        )}
+        <CardContent className="p-4 flex flex-col gap-2 flex-1">
+          <h3 className="font-serif text-lg font-bold text-foreground leading-tight">{m.name}</h3>
+          {m.category && (
+            <Badge className="self-start bg-accent text-accent-foreground text-[11px]">{m.category}</Badge>
+          )}
+          <div className="mt-auto pt-2">
+            <span className="inline-flex items-center text-xs font-semibold text-accent-deep">
+              View Profile <ChevronRight className="ml-0.5 h-3.5 w-3.5" />
             </span>
           </div>
         </CardContent>
