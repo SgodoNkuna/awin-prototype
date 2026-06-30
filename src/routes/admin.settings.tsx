@@ -226,7 +226,7 @@ function SettingsPage() {
         <TabsContent value="team" className="space-y-3 mt-4">
           <Button
             size="sm"
-            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "", linkedin_url: "", social_url: "", portfolio_images: [], committee: null, committee_position: null, committee_order: 0 }])}
+            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", profile_card_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "", linkedin_url: "", social_url: "", portfolio_images: [], committee: null, committee_position: null, committee_order: 0 }])}
           >
             <Plus className="size-4 mr-2" />Add Member
           </Button>
