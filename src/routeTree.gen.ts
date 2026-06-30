@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeamRouteImport } from './routes/team'
+import { Route as ProductsRouteImport } from './routes/products'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as NewsRouteImport } from './routes/news'
@@ -38,6 +39,11 @@ import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/pay
 const TeamRoute = TeamRouteImport.update({
   id: '/team',
   path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsRoute = ProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortfolioRoute = PortfolioRouteImport.update({
@@ -174,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
+  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByTo {
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
+  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
@@ -228,6 +236,7 @@ export interface FileRoutesById {
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
+  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/portfolio'
+    | '/products'
     | '/team'
     | '/admin/applications'
     | '/admin/billing'
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/portfolio'
+    | '/products'
     | '/team'
     | '/admin/applications'
     | '/admin/billing'
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/portfolio'
+    | '/products'
     | '/team'
     | '/admin/applications'
     | '/admin/billing'
@@ -338,6 +350,7 @@ export interface RootRouteChildren {
   NewsRoute: typeof NewsRoute
   PortalRoute: typeof PortalRoute
   PortfolioRoute: typeof PortfolioRoute
+  ProductsRoute: typeof ProductsRoute
   TeamRoute: typeof TeamRoute
   DebugRoutesRoute: typeof DebugRoutesRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -350,6 +363,13 @@ declare module '@tanstack/react-router' {
       path: '/team'
       fullPath: '/team'
       preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products': {
+      id: '/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portfolio': {
@@ -564,6 +584,7 @@ const rootRouteChildren: RootRouteChildren = {
   NewsRoute: NewsRoute,
   PortalRoute: PortalRoute,
   PortfolioRoute: PortfolioRoute,
+  ProductsRoute: ProductsRoute,
   TeamRoute: TeamRoute,
   DebugRoutesRoute: DebugRoutesRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
