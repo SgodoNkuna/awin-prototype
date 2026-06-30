@@ -420,44 +420,46 @@ export function MembersPage() {
           {active && (
             <>
               <div className="sticky top-0 z-10 mx-auto mt-2 h-1.5 w-12 rounded-full bg-muted sm:hidden" aria-hidden="true" />
-              <div className="px-6 pb-6 pt-4 sm:pt-6">
-                <DialogHeader>
-                  <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
-                    {active.photo_url ? (
-                      <div
-                        className="size-28 shrink-0 rounded-full bg-cover bg-center ring-4 ring-accent/30"
-                        style={{ backgroundImage: `url(${active.photo_url})` }}
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <div className="size-28 shrink-0 rounded-full bg-muted flex items-center justify-center text-3xl font-serif text-muted-foreground">
-                        {initials(active.name)}
-                      </div>
+              <div className="px-4 pb-6 pt-4 sm:px-6 sm:pt-6">
+                <DialogHeader className="text-left">
+                  <DialogTitle className="font-serif text-2xl text-foreground">{active.name}</DialogTitle>
+                  <DialogDescription className="flex flex-wrap gap-2 pt-2">
+                    {active.category && (
+                      <Badge className="bg-accent text-accent-foreground">{active.category}</Badge>
                     )}
-                    <div className="min-w-0">
-                      <DialogTitle className="font-serif text-2xl text-foreground">{active.name}</DialogTitle>
-                      <DialogDescription className="text-accent font-semibold">{active.title}</DialogDescription>
-                      <div className="mt-2 flex flex-wrap justify-center gap-2 sm:justify-start">
-                        {active.category && (
-                          <Badge className="bg-primary text-white">{active.category}</Badge>
-                        )}
-                        {active.location && (
-                          <Badge variant="outline" className="border-border">
-                            <MapPin className="mr-1 size-3" /> {active.location}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                    {active.committee_position && (
+                      <Badge variant="outline">{active.committee_position}</Badge>
+                    )}
+                  </DialogDescription>
                 </DialogHeader>
 
-                {active.expertise && active.expertise.length > 0 && (
-                  <div className="mt-5 flex flex-wrap gap-1.5">
-                    {active.expertise.map((e) => (
-                      <span key={e} className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent-deep">
-                        {e}
-                      </span>
-                    ))}
+                {/* IMAGE-FIRST: full profile card if uploaded */}
+                {active.profile_card_url ? (
+                  <div className="mt-4 overflow-hidden rounded-xl border border-border bg-secondary">
+                    <img
+                      src={active.profile_card_url}
+                      alt={`${active.name} profile card`}
+                      className="block w-full h-auto"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : active.photo_url ? (
+                  <div className="mt-4 overflow-hidden rounded-xl border border-border bg-secondary">
+                    <img
+                      src={active.photo_url}
+                      alt={active.name}
+                      className="block w-full h-auto max-h-[70vh] object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 p-8 text-center">
+                    <div className="mx-auto size-24 rounded-full bg-accent/15 flex items-center justify-center font-serif text-3xl text-accent-deep">
+                      {initials(active.name)}
+                    </div>
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      This member has not yet uploaded a profile card.
+                    </p>
                   </div>
                 )}
 
@@ -465,25 +467,6 @@ export function MembersPage() {
                   <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-foreground/90">{active.bio}</p>
                 )}
 
-                {active.portfolio_images && active.portfolio_images.length > 0 && (
-                  <div className="mt-6">
-                    <h4 className="font-serif text-base text-foreground">Portfolio</h4>
-                    <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                      {active.portfolio_images.map((src, i) => (
-                        <a
-                          key={`${src}-${i}`}
-                          href={src}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group relative block aspect-square overflow-hidden rounded-lg border border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          aria-label={`Open portfolio image ${i + 1}`}
-                        >
-                          <img src={src} alt="" className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-4">
                   {active.linkedin_url && (
