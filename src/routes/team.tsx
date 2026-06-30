@@ -251,7 +251,7 @@ export function MembersPage() {
               id: `placeholder-${c.key}-${i}`,
               name: "",
               title: "",
-              bio: null, photo_url: null, category: null, expertise: null, location: null,
+              bio: null, photo_url: null, profile_card_url: null, category: null, expertise: null, location: null,
               contact_email: null, website: null, linkedin_url: null, social_url: null,
               portfolio_images: null, committee: c.key, committee_position: "",
               committee_order: i,
