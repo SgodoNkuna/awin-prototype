@@ -60,6 +60,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/admin/events", label: "Events", icon: Calendar },
       { to: "/admin/portfolio", label: "Portfolio", icon: Briefcase },
+      { to: "/admin/products", label: "Products", icon: ShoppingBag },
       { to: "/admin/documents", label: "Documents", icon: FolderOpen },
     ],
   },
