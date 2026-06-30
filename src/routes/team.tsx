@@ -36,6 +36,7 @@ type Member = {
   title: string;
   bio: string | null;
   photo_url: string | null;
+  profile_card_url: string | null;
   category: string | null;
   expertise: string[] | null;
   location: string | null;
