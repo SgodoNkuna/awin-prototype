@@ -89,11 +89,12 @@
   --hero-surface: rgba(255, 255, 255, 0.14);
   --hero-border: rgba(255, 255, 255, 0.38);
 
-  /* Accent — dominant amber orange (WIN) */
-  --accent: #E8960A;
-  --accent-foreground: #FFFFFF;
-  --accent-soft: #FEF6E4;
-  --accent-deep: #C97D08;
+  /* Accent — bright warm orange (WIN) — matches the original A-WIN flyer */
+  --accent: #F5A623;
+  --accent-foreground: #1A1A1A;
+  --accent-soft: #FFF1D6;
+  --accent-deep: #D98910;
+  --accent-bright: #FFA500;
 
   --secondary: #F0F7ED;
   --secondary-foreground: #2A6020;
