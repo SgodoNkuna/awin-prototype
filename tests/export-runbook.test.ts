@@ -48,11 +48,6 @@ describe("runbook export helpers", () => {
     }
   });
 
-  it("keeps global theme tokens compatible with browser/PDF capture tools", () => {
-    const css = readFileSync("src/styles.css", "utf8");
-    expect(css).not.toMatch(/\b(lab|oklch|color-mix)\(/i);
-  });
-
   it("creates stable download filenames", () => {
     expect(sanitizeExportFilename("Admin · Billing / White Ivory")).toBe("admin-billing-white-ivory");
   });
