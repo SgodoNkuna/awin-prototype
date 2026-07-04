@@ -35,10 +35,10 @@ export const Route = createFileRoute("/")({
 });
 
 const DEFAULT_STATS = {
-  members: "50+ Women",
-  invested: "Growing Together",
+  members: "50+",
+  invested: "",
   years: "Est. 2025",
-  supported: "Community First",
+  supported: "",
 };
 
 function useHomepageStats() {
@@ -52,17 +52,43 @@ function useHomepageStats() {
       .maybeSingle()
       .then(({ data }) => {
         if (cancelled || !data?.value) return;
-        const v = data.value as Partial<typeof DEFAULT_STATS> & { events?: string };
+        const v = data.value as Partial<typeof DEFAULT_STATS>;
         setStats({
-          members: v.members || DEFAULT_STATS.members,
-          invested: v.invested || v.events || DEFAULT_STATS.invested,
-          years: v.years || DEFAULT_STATS.years,
-          supported: v.supported || DEFAULT_STATS.supported,
+          members: v.members ?? DEFAULT_STATS.members,
+          invested: v.invested ?? DEFAULT_STATS.invested,
+          years: v.years ?? DEFAULT_STATS.years,
+          supported: v.supported ?? DEFAULT_STATS.supported,
         });
       });
     return () => { cancelled = true; };
   }, []);
   return stats;
+}
+
+type UpcomingEvent = {
+  id: string;
+  title: string;
+  event_date: string;
+  location: string;
+};
+
+function useUpcomingEvents() {
+  const [events, setEvents] = useState<UpcomingEvent[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("events")
+      .select("id, title, event_date, location")
+      .eq("published", true)
+      .gte("event_date", new Date().toISOString().slice(0, 10))
+      .order("event_date", { ascending: true })
+      .limit(5)
+      .then(({ data }) => {
+        if (!cancelled && data) setEvents(data as UpcomingEvent[]);
+      });
+    return () => { cancelled = true; };
+  }, []);
+  return events;
 }
 
 // A-WIN follows a single membership model (not multi-tier):
@@ -79,34 +105,6 @@ const membership = {
     "Business collaboration, crowdfunding and referrals",
   ],
 };
-
-const events = [
-  {
-    title: "Investment 101 Masterclass",
-    date: { d: "12", m: "JUN" },
-    location: "Johannesburg",
-  },
-  {
-    title: "Women in Wealth Summit",
-    date: { d: "24", m: "JUN" },
-    location: "Cape Town",
-  },
-  {
-    title: "Property Portfolio Workshop",
-    date: { d: "08", m: "JUL" },
-    location: "Durban",
-  },
-  {
-    title: "Stock Market Bootcamp",
-    date: { d: "22", m: "JUL" },
-    location: "Online",
-  },
-  {
-    title: "Annual A-WIN Gala",
-    date: { d: "15", m: "AUG" },
-    location: "Sandton",
-  },
-];
 
 // Articles removed — Portfolio carousel replaces News section
 
