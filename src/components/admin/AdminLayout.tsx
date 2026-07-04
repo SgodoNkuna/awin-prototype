@@ -14,7 +14,7 @@ import {
   CreditCard,
   FileDown,
   Menu,
-  ShoppingBag,
+  
 } from "lucide-react";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,6 @@ type AdminPath =
   | "/admin/applications"
   | "/admin/events"
   | "/admin/portfolio"
-  | "/admin/products"
   | "/admin/messages"
   | "/admin/documents"
   | "/admin/billing"
@@ -60,7 +59,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/admin/events", label: "Events", icon: Calendar },
       { to: "/admin/portfolio", label: "Portfolio", icon: Briefcase },
-      { to: "/admin/products", label: "Products", icon: ShoppingBag },
       { to: "/admin/documents", label: "Documents", icon: FolderOpen },
     ],
   },
