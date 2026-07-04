@@ -1,10 +1,9 @@
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { useLogoTheme } from "@/lib/logo-theme";
 import { GlassButton } from "@/components/ui/glass-button";
-
 
 /** Words pull up from the bottom with stagger */
 function WordsPullUp({
@@ -42,103 +41,27 @@ function WordsPullUp({
   );
 }
 
-/** A single floating logo that drifts across the hero */
-function FloatingLogo({
-  src,
-  filter,
-  index,
-  total,
-}: {
-  src: string;
-  filter?: string;
-  index: number;
-  total: number;
-}) {
-  // Stable deterministic random per index
-  const { startX, startY, scale, duration, rotateRange } = useMemo(() => {
-    const seed = (index + 1) * 9301 + 49297;
-    const r = (n: number) => ((Math.sin(seed * (n + 1)) + 1) / 2);
-    return {
-      startX: r(1) * 100,
-      startY: r(2) * 100,
-      scale: 0.35 + r(3) * 0.9,
-      duration: 18 + r(4) * 14,
-      rotateRange: -20 + r(5) * 40,
-    };
-  }, [index]);
-
-  return (
-    <motion.img
-      src={src}
-      alt=""
-      aria-hidden="true"
-      className="pointer-events-none absolute will-change-transform select-none"
-      draggable={false}
-      style={{
-        left: `${startX}%`,
-        top: `${startY}%`,
-        width: `${110 * scale}px`,
-        height: "auto",
-        filter: filter ?? "none",
-        opacity: 0.4 + (index / total) * 0.4,
-      }}
-      animate={{
-        x: [0, 40, -30, 20, 0],
-        y: [0, -50, 30, -20, 0],
-        rotate: [0, rotateRange, -rotateRange / 2, rotateRange / 3, 0],
-        scale: [1, 1.08, 0.95, 1.04, 1],
-      }}
-      transition={{
-        duration,
-        repeat: Infinity,
-        ease: "easeInOut",
-        delay: index * 0.4,
-      }}
-    />
-  );
-}
-
 export function LogoHero() {
   const { src, filter } = useLogoTheme();
-  const logoCount = 14;
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollY } = useScroll();
   const contentY = useTransform(scrollY, [0, 500], [0, 120]);
   const contentOpacity = useTransform(scrollY, [0, 400], [1, 0]);
-  const bgY = useTransform(scrollY, [0, 800], [0, -200]);
 
   return (
     <section
       ref={sectionRef}
       className="relative isolate flex min-h-[calc(100vh-7rem)] items-center justify-center overflow-hidden px-4 py-20 text-hero-foreground md:min-h-[calc(100vh-8rem)] md:py-24"
     >
-
       {/* Brand gradient backdrop */}
       <div
         className="absolute inset-0 -z-30"
         style={{ background: "var(--gradient-hero)" }}
       />
-      {/* Warm radial wash — subtler so it doesn't clash with non-warm themes */}
+      {/* Warm radial wash */}
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-20" />
 
-      {/* Animated floating logos with parallax */}
-      <motion.div
-        style={{ y: bgY }}
-        className="absolute inset-0 -z-10 overflow-hidden"
-      >
-        {Array.from({ length: logoCount }).map((_, i) => (
-          <FloatingLogo
-            key={i}
-            src={src}
-            filter={filter}
-            index={i}
-            total={logoCount}
-          />
-        ))}
-      </motion.div>
-
-
-      {/* Hero feature logo, slow pulse */}
+      {/* Single hero feature logo — slow pulse, watermark opacity */}
       <motion.img
         src={src}
         alt=""
@@ -152,6 +75,7 @@ export function LogoHero() {
 
       {/* Vignette for legibility */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/30 via-black/45 to-black/60" />
+
 
       {/* Content */}
       <motion.div
