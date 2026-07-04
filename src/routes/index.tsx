@@ -111,12 +111,14 @@ const membership = {
 
 function Index() {
   const liveStats = useHomepageStats();
+  const upcomingEvents = useUpcomingEvents();
   const statCards = [
     { label: "Members", value: liveStats.members },
     { label: "Total Invested", value: liveStats.invested },
     { label: "Years Active", value: liveStats.years },
     { label: "Women Supported", value: liveStats.supported },
-  ];
+  ].filter((s) => s.value && s.value.trim().length > 0);
+
   return (
     <>
       {/* HERO with animated A-WIN logos */}
@@ -268,44 +270,50 @@ function Index() {
             </Link>
           </div>
 
-          <div className="mt-10 -mx-4 overflow-x-auto px-4 pb-4">
-            <div className="flex gap-5 snap-x snap-mandatory">
-              {events.map((e) => (
-                <Card
-                  key={e.title}
-                  className="w-72 shrink-0 snap-start overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale"
-                >
-                  <div
-                    className="relative h-40 w-full"
-                    style={{ background: "var(--gradient-hero)" }}
-                  >
-                    <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
-                      <div className="font-serif text-xl leading-none">
-                        {e.date.d}
-                      </div>
-                      <div className="text-[10px] font-semibold tracking-widest">
-                        {e.date.m}
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="p-5">
-                    <h3 className="font-serif text-lg text-foreground">
-                      {e.title}
-                    </h3>
-                    <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5" /> {e.location}
-                    </div>
-                    <Link
-                      to="/contact"
-                      className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
+          {upcomingEvents.length === 0 ? (
+            <p className="mt-8 text-center text-sm text-muted-foreground">
+              No upcoming events published yet — check back soon or contact us to be notified.
+            </p>
+          ) : (
+            <div className="mt-10 -mx-4 overflow-x-auto px-4 pb-4">
+              <div className="flex gap-5 snap-x snap-mandatory">
+                {upcomingEvents.map((e) => {
+                  const d = new Date(e.event_date);
+                  const day = d.toLocaleDateString("en-ZA", { day: "2-digit" });
+                  const month = d.toLocaleDateString("en-ZA", { month: "short" }).toUpperCase();
+                  return (
+                    <Card
+                      key={e.id}
+                      className="w-72 shrink-0 snap-start overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale"
                     >
-                      View Details <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
+                      <div
+                        className="relative h-40 w-full"
+                        style={{ background: "var(--gradient-hero)" }}
+                      >
+                        <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
+                          <div className="font-serif text-xl leading-none">{day}</div>
+                          <div className="text-[10px] font-semibold tracking-widest">{month}</div>
+                        </div>
+                      </div>
+                      <CardContent className="p-5">
+                        <h3 className="font-serif text-lg text-foreground">{e.title}</h3>
+                        <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5" /> {e.location}
+                        </div>
+                        <Link
+                          to="/events"
+                          className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
+                        >
+                          View Details <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
+
         </div>
       </section>
 
