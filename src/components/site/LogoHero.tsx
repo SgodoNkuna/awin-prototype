@@ -59,7 +59,9 @@ export function LogoHero() {
         style={{ background: "var(--gradient-hero)" }}
       />
       {/* Warm radial wash */}
-      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_30%_20%,var(--accent),transparent_55%)] opacity-20" />
+      {/* Warm orange sunrise wash (flyer accent) */}
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_85%_10%,var(--accent),transparent_55%)] opacity-45" />
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_10%_90%,var(--accent-bright),transparent_60%)] opacity-30" />
 
       {/* Single hero feature logo — slow pulse, watermark opacity */}
       <motion.img
@@ -73,8 +75,8 @@ export function LogoHero() {
         draggable={false}
       />
 
-      {/* Vignette for legibility */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/30 via-black/45 to-black/60" />
+      {/* Subtle vignette — keeps green visible while text stays legible */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/10 via-black/20 to-black/35" />
 
 
       {/* Content */}
