@@ -166,10 +166,10 @@ export function AdminLayout() {
       {/* Desktop sidebar */}
       <aside
         className="hidden md:flex w-64 flex-col border-r sticky top-20 self-start h-[calc(100vh-5rem)]"
-        style={{ background: "#2A6020", color: "#FFFFFF" }}
+        style={{ background: "var(--primary-deep)", color: "#FFFFFF" }}
       >
         <div className="px-5 py-4 border-b border-white/10">
-          <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-WIN</div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">A-WIN</div>
           <div className="text-sm font-medium text-white">Admin Console</div>
           <div className="text-xs text-white/70 truncate mt-0.5">{user.email}</div>
         </div>
@@ -185,7 +185,7 @@ export function AdminLayout() {
               <Button
                 size="sm"
                 className="gap-2 min-h-11 text-white font-semibold"
-                style={{ background: "#E8960A" }}
+                style={{ background: "var(--accent)" }}
                 aria-label="Open admin menu"
               >
                 <Menu className="size-4" />
@@ -195,11 +195,11 @@ export function AdminLayout() {
             <SheetContent
               side="left"
               className="w-72 p-0 flex flex-col border-0"
-              style={{ background: "#2A6020", color: "#FFFFFF" }}
+              style={{ background: "var(--primary-deep)", color: "#FFFFFF" }}
             >
               <SheetTitle className="sr-only">Admin navigation</SheetTitle>
               <div className="px-5 py-4 border-b border-white/10">
-                <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-WIN</div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">A-WIN</div>
                 <div className="text-sm font-medium text-white">{currentLabel}</div>
                 <div className="text-xs text-white/70 truncate mt-0.5">{user.email}</div>
               </div>
