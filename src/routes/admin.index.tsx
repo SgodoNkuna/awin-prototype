@@ -257,7 +257,7 @@ function Stat({
   label: string;
   value: number | undefined;
   accent: string;
-  to: "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/messages" | "/admin/portfolio" | "/admin/documents";
+  to: "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/messages" | "/admin/portfolio" | "/admin/documents" | "/admin/settings";
 }) {
   return (
     <Link to={to} className="block transition-transform hover:-translate-y-0.5">
