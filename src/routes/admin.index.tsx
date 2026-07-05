@@ -33,6 +33,8 @@ type Stats = {
   unread: number;
   portfolio: number;
   documents: number;
+  committee: number;
+  news: number;
 };
 
 type Activity = { type: string; title: string; when: string };
