@@ -64,6 +64,8 @@ function OverviewPage() {
         unread,
         portfolio,
         documents,
+        committee,
+        news,
         recentApps,
         recentMsgs,
         latestPortfolio,
@@ -80,6 +82,8 @@ function OverviewPage() {
         supabase.from("contact_messages").select("*", { count: "exact", head: true }).eq("is_read", false),
         supabase.from("portfolio_items").select("*", { count: "exact", head: true }),
         supabase.from("documents").select("*", { count: "exact", head: true }),
+        supabase.from("team_members").select("*", { count: "exact", head: true }).not("committee", "is", null),
+        supabase.from("news_articles").select("*", { count: "exact", head: true }),
         supabase.from("applications").select("full_name, created_at").order("created_at", { ascending: false }).limit(3),
         supabase.from("contact_messages").select("name, subject, created_at").order("created_at", { ascending: false }).limit(3),
         supabase.from("portfolio_items").select("updated_at").order("updated_at", { ascending: false }).limit(1),
@@ -95,6 +99,8 @@ function OverviewPage() {
         unread: unread.count ?? 0,
         portfolio: portfolio.count ?? 0,
         documents: documents.count ?? 0,
+        committee: committee.count ?? 0,
+        news: news.count ?? 0,
       });
 
       const a: Activity[] = [
