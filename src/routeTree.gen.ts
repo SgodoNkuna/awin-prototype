@@ -34,6 +34,7 @@ import { Route as AdminDocumentsRouteImport } from './routes/admin.documents'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast.itn'
+import { Route as ApiPublicDevSeedUsersRouteImport } from './routes/api/public/dev.seed-users'
 
 const TeamRoute = TeamRouteImport.update({
   id: '/team',
@@ -160,6 +161,11 @@ const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
   path: '/api/public/payfast/itn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDevSeedUsersRoute = ApiPublicDevSeedUsersRouteImport.update({
+  id: '/api/public/dev/seed-users',
+  path: '/api/public/dev/seed-users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/dev/seed-users': typeof ApiPublicDevSeedUsersRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
 }
 export interface FileRoutesByTo {
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/dev/seed-users': typeof ApiPublicDevSeedUsersRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
 }
 export interface FileRoutesById {
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/dev/seed-users': typeof ApiPublicDevSeedUsersRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
 }
 export interface FileRouteTypes {
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/debug/routes'
     | '/admin/'
+    | '/api/public/dev/seed-users'
     | '/api/public/payfast/itn'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/debug/routes'
     | '/admin'
+    | '/api/public/dev/seed-users'
     | '/api/public/payfast/itn'
   id:
     | '__root__'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/debug/routes'
     | '/admin/'
+    | '/api/public/dev/seed-users'
     | '/api/public/payfast/itn'
   fileRoutesById: FileRoutesById
 }
@@ -340,6 +352,7 @@ export interface RootRouteChildren {
   PortfolioRoute: typeof PortfolioRoute
   TeamRoute: typeof TeamRoute
   DebugRoutesRoute: typeof DebugRoutesRoute
+  ApiPublicDevSeedUsersRoute: typeof ApiPublicDevSeedUsersRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
 }
 
@@ -520,6 +533,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPayfastItnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/dev/seed-users': {
+      id: '/api/public/dev/seed-users'
+      path: '/api/public/dev/seed-users'
+      fullPath: '/api/public/dev/seed-users'
+      preLoaderRoute: typeof ApiPublicDevSeedUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -566,6 +586,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortfolioRoute: PortfolioRoute,
   TeamRoute: TeamRoute,
   DebugRoutesRoute: DebugRoutesRoute,
+  ApiPublicDevSeedUsersRoute: ApiPublicDevSeedUsersRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
 }
 export const routeTree = rootRouteImport
