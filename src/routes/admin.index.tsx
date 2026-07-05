@@ -134,22 +134,30 @@ function OverviewPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-2xl md:text-3xl">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Welcome back{user?.email ? `, ${user.email.split("@")[0]}` : ""}. Here's what's happening today.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/" target="_blank">View Site</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link to="/admin/exports">
-              <Camera className="size-4 mr-2" /> Snapshot Site
-            </Link>
-          </Button>
+      <div
+        className="rounded-2xl px-6 py-6 text-white shadow-[var(--shadow-elegant)]"
+        style={{ background: "var(--gradient-hero)" }}
+      >
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">A-WIN Admin</p>
+            <h1 className="font-serif text-2xl md:text-3xl mt-1">
+              Welcome back{user?.email ? `, ${user.email.split("@")[0]}` : ""}
+            </h1>
+            <p className="text-sm text-white/85 mt-1">
+              Manage members, content and community all in one place.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button asChild variant="secondary" size="sm">
+              <Link to="/" target="_blank">View Site</Link>
+            </Button>
+            <Button asChild size="sm" className="bg-[var(--accent)] text-white hover:bg-[var(--accent-deep)]">
+              <Link to="/admin/exports">
+                <Camera className="size-4 mr-2" /> Snapshot Site
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 
