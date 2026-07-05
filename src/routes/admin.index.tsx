@@ -33,6 +33,8 @@ type Stats = {
   unread: number;
   portfolio: number;
   documents: number;
+  committee: number;
+  news: number;
 };
 
 type Activity = { type: string; title: string; when: string };
@@ -62,6 +64,8 @@ function OverviewPage() {
         unread,
         portfolio,
         documents,
+        committee,
+        news,
         recentApps,
         recentMsgs,
         latestPortfolio,
@@ -78,6 +82,8 @@ function OverviewPage() {
         supabase.from("contact_messages").select("*", { count: "exact", head: true }).eq("is_read", false),
         supabase.from("portfolio_items").select("*", { count: "exact", head: true }),
         supabase.from("documents").select("*", { count: "exact", head: true }),
+        supabase.from("team_members").select("*", { count: "exact", head: true }).not("committee", "is", null),
+        supabase.from("news_articles").select("*", { count: "exact", head: true }),
         supabase.from("applications").select("full_name, created_at").order("created_at", { ascending: false }).limit(3),
         supabase.from("contact_messages").select("name, subject, created_at").order("created_at", { ascending: false }).limit(3),
         supabase.from("portfolio_items").select("updated_at").order("updated_at", { ascending: false }).limit(1),
@@ -93,6 +99,8 @@ function OverviewPage() {
         unread: unread.count ?? 0,
         portfolio: portfolio.count ?? 0,
         documents: documents.count ?? 0,
+        committee: committee.count ?? 0,
+        news: news.count ?? 0,
       });
 
       const a: Activity[] = [
@@ -126,22 +134,30 @@ function OverviewPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-2xl md:text-3xl">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Welcome back{user?.email ? `, ${user.email.split("@")[0]}` : ""}. Here's what's happening today.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/" target="_blank">View Site</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link to="/admin/exports">
-              <Camera className="size-4 mr-2" /> Snapshot Site
-            </Link>
-          </Button>
+      <div
+        className="rounded-2xl px-6 py-6 text-white shadow-[var(--shadow-elegant)]"
+        style={{ background: "var(--gradient-hero)" }}
+      >
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">A-WIN Admin</p>
+            <h1 className="font-serif text-2xl md:text-3xl mt-1">
+              Welcome back{user?.email ? `, ${user.email.split("@")[0]}` : ""}
+            </h1>
+            <p className="text-sm text-white/85 mt-1">
+              Manage members, content and community all in one place.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button asChild variant="secondary" size="sm">
+              <Link to="/" target="_blank">View Site</Link>
+            </Button>
+            <Button asChild size="sm" className="bg-[var(--accent)] text-white hover:bg-[var(--accent-deep)]">
+              <Link to="/admin/exports">
+                <Camera className="size-4 mr-2" /> Snapshot Site
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -181,12 +197,14 @@ function OverviewPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <Stat icon={Users} label="Members" value={stats?.members} to="/admin/members" accent="text-blue-600" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Stat icon={Users} label="Members" value={stats?.members} to="/admin/members" accent="text-[var(--primary)]" />
+        <Stat icon={Briefcase} label="Committee" value={stats?.committee} to="/admin/members" accent="text-[var(--accent)]" />
         <Stat icon={ClipboardList} label="Pending Apps" value={stats?.pending} to="/admin/applications" accent="text-amber-600" />
-        <Stat icon={Calendar} label="Upcoming Events" value={stats?.upcoming} to="/admin/events" accent="text-green-600" />
+        <Stat icon={Calendar} label="Upcoming Events" value={stats?.upcoming} to="/admin/events" accent="text-[var(--primary)]" />
         <Stat icon={Mail} label="Unread Msgs" value={stats?.unread} to="/admin/messages" accent="text-rose-600" />
-        <Stat icon={Briefcase} label="Portfolio Items" value={stats?.portfolio} to="/admin/portfolio" accent="text-purple-600" />
+        <Stat icon={FileText} label="News Articles" value={stats?.news} to="/admin/settings" accent="text-sky-600" />
+        <Stat icon={Briefcase} label="Portfolio" value={stats?.portfolio} to="/admin/portfolio" accent="text-purple-600" />
         <Stat icon={FolderOpen} label="Documents" value={stats?.documents} to="/admin/documents" accent="text-cyan-600" />
       </div>
 
@@ -247,7 +265,7 @@ function Stat({
   label: string;
   value: number | undefined;
   accent: string;
-  to: "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/messages" | "/admin/portfolio" | "/admin/documents";
+  to: "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/messages" | "/admin/portfolio" | "/admin/documents" | "/admin/settings";
 }) {
   return (
     <Link to={to} className="block transition-transform hover:-translate-y-0.5">
