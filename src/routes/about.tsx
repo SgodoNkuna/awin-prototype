@@ -253,7 +253,7 @@ function AboutPage() {
                       style={{
                         background: m.photo_url
                           ? `url(${m.photo_url}) center/cover`
-                          : "var(--gradient-hero)",
+                          : "var(--gradient-placeholder)",
                       }}
                       aria-hidden="true"
                     />

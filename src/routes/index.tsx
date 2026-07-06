@@ -172,10 +172,12 @@ function Index() {
           </div>
 
           <div
-            className="aspect-[4/3] w-full rounded-2xl shadow-[var(--shadow-elegant)]"
-            style={{ background: "var(--gradient-hero)" }}
+            className="aspect-[4/3] w-full rounded-2xl border border-primary/20 shadow-[var(--shadow-elegant)] flex items-center justify-center"
+            style={{ background: "var(--gradient-placeholder)" }}
             aria-hidden="true"
-          />
+          >
+            <span className="font-serif text-6xl text-primary-deep/40">A-WIN</span>
+          </div>
         </div>
       </section>
 
@@ -280,7 +282,7 @@ function Index() {
                 >
                   <div
                     className="relative h-40 w-full"
-                    style={{ background: "var(--gradient-hero)" }}
+                    style={{ background: "var(--gradient-placeholder)" }}
                   >
                     <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
                       <div className="font-serif text-xl leading-none">

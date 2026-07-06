@@ -248,7 +248,7 @@ function EventsPage() {
                 const isPast = new Date(e.event_date).getTime() < now;
                 return (
                   <Card key={e.id} className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale">
-                    <div className="relative h-44 w-full bg-cover bg-center" style={{ background: e.image_url ? `url(${e.image_url}) center/cover` : "var(--gradient-hero)" }}>
+                    <div className="relative h-44 w-full bg-cover bg-center" style={{ background: e.image_url ? `url(${e.image_url}) center/cover` : "var(--gradient-placeholder)" }}>
                       <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
                         <div className="font-serif text-xl leading-none">{db.d}</div>
                         <div className="text-[10px] font-semibold tracking-widest">{db.m}</div>

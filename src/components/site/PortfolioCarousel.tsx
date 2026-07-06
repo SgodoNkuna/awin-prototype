@@ -119,7 +119,7 @@ export function PortfolioCarousel() {
                       style={{
                         background: item.cover_image
                           ? `center/cover no-repeat url(${item.cover_image})`
-                          : "var(--gradient-hero)",
+                          : "var(--gradient-placeholder)",
                       }}
                       aria-hidden="true"
                     />

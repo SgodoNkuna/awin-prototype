@@ -362,7 +362,7 @@ export function MembersPage() {
                     >
                       <CarouselContent className="-ml-4">
                         {list.map((m) => (
-                          <CarouselItem key={m.id} className="basis-[85%] pl-4 sm:basis-1/2 lg:basis-1/3">
+                          <CarouselItem key={m.id} className="basis-[85%] pl-4 sm:basis-1/2 lg:basis-1/2 xl:basis-[40%]">
                             <MemberCard m={m} onOpen={setActive} />
                           </CarouselItem>
                         ))}
