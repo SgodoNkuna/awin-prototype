@@ -69,7 +69,7 @@ const CATEGORIES = [
   "Hospitality & Events",
   "Retail & Fashion",
   "Construction & Trades",
-  "Non-Profit & Community",
+  "Non Profit & Community",
   "Students",
   "Other",
 ] as const;
@@ -154,7 +154,7 @@ function CommitteeCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }
 export function MembersPage() {
   const [team, setTeam] = useState<Member[] | null>(null);
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<string>("All");
+  const [category, setCategory] = useState<string>("Available");
   const [active, setActive] = useState<Member | null>(null);
 
   useEffect(() => {
@@ -166,11 +166,17 @@ export function MembersPage() {
       .then(({ data }) => setTeam(((data ?? []) as unknown) as Member[]));
   }, []);
 
-  // General (non-committee) members feed search + category filter + A–Z directory.
   const generalMembers = useMemo(
     () => (team ?? []).filter((m) => !m.committee),
     [team],
   );
+
+  // "Available now" = current talent: a real profile with photo/card AND at least one contact/expertise signal.
+  const isAvailable = (m: Member) =>
+    Boolean(
+      (m.profile_card_url || m.photo_url) &&
+        (m.contact_email || m.website || m.linkedin_url || m.social_url || (m.expertise && m.expertise.length > 0)),
+    );
 
   const committeeMembers = useMemo(() => {
     const map = new Map<string, Member[]>();
@@ -195,6 +201,11 @@ export function MembersPage() {
     });
   }, [team, generalMembers, query]);
 
+  const availableCount = useMemo(
+    () => (filtered ?? []).filter(isAvailable).length,
+    [filtered],
+  );
+
   const byCategory = useMemo(() => {
     const map = new Map<string, Member[]>();
     (filtered ?? []).forEach((m) => {
@@ -216,9 +227,6 @@ export function MembersPage() {
     return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
 
-  // Build category list dynamically from members that actually have entries.
-  // Categories with members first (ordered by count desc, then alphabetically),
-  // then any preset categories with no members appended after.
   const dynamicCategories = useMemo(() => {
     const counts = new Map<string, number>();
     generalMembers.forEach((m) => {
@@ -231,15 +239,18 @@ export function MembersPage() {
     const empty = (CATEGORIES as readonly string[]).filter(
       (c) => c !== "All" && !counts.has(c),
     );
-    return ["All", ...populated, ...empty];
+    // "Available" first (current talent), then "All", then populated categories, then empties.
+    return ["Available", "All", ...populated, ...empty];
   }, [generalMembers]);
 
   const populatedCategories = useMemo(
-    () => dynamicCategories.filter((c) => c !== "All" && byCategory.has(c)),
+    () => dynamicCategories.filter((c) => c !== "All" && c !== "Available" && byCategory.has(c)),
     [dynamicCategories, byCategory],
   );
 
-  const activeCategories = category === "All" ? populatedCategories : [category];
+  const activeCategories =
+    category === "All" || category === "Available" ? populatedCategories : [category];
+
 
   return (
     <>
@@ -328,8 +339,14 @@ export function MembersPage() {
           </div>
           <div className="mt-4 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {dynamicCategories.map((c) => {
-              const count = c === "All" ? generalMembers.length : (byCategory.get(c)?.length ?? 0);
+              const count =
+                c === "Available"
+                  ? availableCount
+                  : c === "All"
+                    ? generalMembers.length
+                    : (byCategory.get(c)?.length ?? 0);
               const hasMembers = count > 0;
+              const isAvail = c === "Available";
               return (
                 <button
                   key={c}
@@ -339,12 +356,15 @@ export function MembersPage() {
                     "shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition-colors",
                     category === c
                       ? "border-primary bg-primary text-white"
-                      : hasMembers
-                        ? "border-border bg-background text-foreground hover:bg-secondary"
-                        : "border-border bg-background text-muted-foreground hover:bg-secondary",
+                      : isAvail && hasMembers
+                        ? "border-accent bg-accent/10 text-accent-deep hover:bg-accent/20"
+                        : hasMembers
+                          ? "border-border bg-background text-foreground hover:bg-secondary"
+                          : "border-border bg-background text-muted-foreground hover:bg-secondary",
                   )}
                 >
-                  {c}
+                  {isAvail && <span className="mr-1 inline-block size-1.5 rounded-full bg-accent align-middle" aria-hidden="true" />}
+                  {isAvail ? "Available now" : c}
                   {hasMembers && <span className="ml-1.5 text-[10px] opacity-75">{count}</span>}
                 </button>
               );
@@ -374,12 +394,21 @@ export function MembersPage() {
           ) : (
             <div className="space-y-14">
               {activeCategories.map((cat) => {
-                const list = byCategory.get(cat);
-                if (!list || list.length === 0) return null;
+                const raw = byCategory.get(cat);
+                if (!raw || raw.length === 0) return null;
+                const list = category === "Available" ? raw.filter(isAvailable) : raw;
+                if (list.length === 0) return null;
                 return (
                   <div key={cat}>
                     <div className="mb-4 flex items-end justify-between gap-4">
-                      <h2 className="font-serif text-2xl text-foreground">{cat}</h2>
+                      <h2 className="font-serif text-2xl text-foreground">
+                        {cat}
+                        {category === "Available" && (
+                          <span className="ml-2 align-middle text-[11px] font-semibold uppercase tracking-widest text-accent-deep">
+                            Available now
+                          </span>
+                        )}
+                      </h2>
                       <span className="text-xs uppercase tracking-widest text-muted-foreground">
                         {list.length} member{list.length === 1 ? "" : "s"}
                       </span>
@@ -406,6 +435,7 @@ export function MembersPage() {
           )}
         </div>
       </section>
+
 
       {filtered && filtered.length > 0 && (
         <section className="border-t border-border bg-secondary/40 py-12">

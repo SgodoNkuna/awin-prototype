@@ -72,7 +72,7 @@ function useHomepageStats() {
   return stats;
 }
 
-// A-WIN follows a single membership model (not multi-tier):
+// A-WIN follows a single membership model (not multi tier):
 //   R200 / year nominal membership fee + R500 / month collective investment contribution.
 const membership = {
   fee: "R200",
@@ -80,7 +80,7 @@ const membership = {
   contribution: "R500",
   contributionCadence: "/ month",
   benefits: [
-    "Offshore tax-free and curated investment opportunities",
+    "Offshore tax free and curated investment opportunities",
     "Consultation with a qualified financial advisor",
     "Workshops, mentorship and a supportive sisterhood",
     "Business collaboration, crowdfunding and referrals",
@@ -237,7 +237,7 @@ function Index() {
             <span className="text-xs font-semibold uppercase tracking-widest text-accent">
               Membership
             </span>
-            <h2 className="mt-3 font-serif">One Membership · Built for Long-Term Wealth</h2>
+            <h2 className="mt-3 font-serif">One Membership · Built for Long Term Wealth</h2>
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
               A-WIN follows a single, transparent membership model. A small annual
               fee plus a monthly contribution toward collective investments, reviewed
@@ -316,16 +316,16 @@ function Index() {
             </div>
             <Link
               to="/events"
-              className="hidden text-sm font-medium text-primary story-link sm:inline-flex items-center gap-1"
+              className="inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
             >
-              All events <ArrowRight className="h-4 w-4" />
+              View all events <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
           {upcomingEvents.length === 0 ? (
             <div className="mt-10 rounded-2xl border border-dashed border-border bg-secondary/40 p-10 text-center text-muted-foreground">
               <Calendar className="mx-auto h-8 w-8 opacity-60" aria-hidden="true" />
-              <p className="mt-3 text-sm">No upcoming events yet — check back soon or view the full calendar.</p>
+              <p className="mt-3 text-sm">No upcoming events yet. Check back soon or view the full calendar.</p>
               <Button asChild variant="outline" className="mt-4">
                 <Link to="/events">Open events page</Link>
               </Button>
@@ -337,18 +337,24 @@ function Index() {
                   const d = new Date(e.event_date);
                   const day = String(d.getDate()).padStart(2, "0");
                   const month = d.toLocaleString("en-ZA", { month: "short" }).toUpperCase();
+                  const weekday = d.toLocaleString("en-ZA", { weekday: "long" });
+                  const fullDate = d.toLocaleString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
                   const cover = e.image_url || EVENT_FALLBACK_IMAGES[i % EVENT_FALLBACK_IMAGES.length];
                   return (
                     <Card
                       key={e.id}
                       className="w-72 shrink-0 snap-start overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale"
                     >
-                      <div className="relative h-40 w-full overflow-hidden">
+                      <div className="relative h-40 w-full overflow-hidden bg-secondary">
                         <img
                           src={cover}
                           alt={e.title}
                           className="h-full w-full object-cover"
                           loading="lazy"
+                          onError={(ev) => {
+                            const fallback = EVENT_FALLBACK_IMAGES[i % EVENT_FALLBACK_IMAGES.length];
+                            if (ev.currentTarget.src !== fallback) ev.currentTarget.src = fallback;
+                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                         <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
@@ -357,7 +363,10 @@ function Index() {
                         </div>
                       </div>
                       <CardContent className="p-5">
-                        <h3 className="font-serif text-lg text-foreground">{e.title}</h3>
+                        <div className="text-[11px] font-semibold uppercase tracking-widest text-accent">
+                          {weekday} · {fullDate}
+                        </div>
+                        <h3 className="mt-1 font-serif text-lg text-foreground">{e.title}</h3>
                         <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
                           <MapPin className="h-3.5 w-3.5" /> {e.location}
                         </div>
@@ -374,6 +383,7 @@ function Index() {
               </div>
             </div>
           )}
+
         </div>
       </section>
 
