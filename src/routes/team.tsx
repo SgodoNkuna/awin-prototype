@@ -183,14 +183,48 @@ export function MembersPage() {
   const [category, setCategory] = useState<string>("Available");
   const [active, setActive] = useState<Member | null>(null);
 
+  const sign = useServerFn(signPortfolioUrls);
+
   useEffect(() => {
-    supabase
-      .from("team_members")
-      .select("id, name, title, bio, photo_url, profile_card_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order" as any)
-      .eq("published", true)
-      .order("order_index")
-      .then(({ data }) => setTeam(((data ?? []) as unknown) as Member[]));
-  }, []);
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("team_members")
+        .select("id, name, title, bio, photo_url, profile_card_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order" as any)
+        .eq("published", true)
+        .order("order_index");
+      const rows = ((data ?? []) as unknown) as Member[];
+
+      // Collect every image reference; signPortfolioUrls passes http(s) URLs through unchanged
+      // and returns fresh signed URLs for storage keys in the private bucket.
+      const keys = new Set<string>();
+      for (const m of rows) {
+        if (m.photo_url) keys.add(m.photo_url);
+        if (m.profile_card_url) keys.add(m.profile_card_url);
+        for (const p of m.portfolio_images ?? []) if (p) keys.add(p);
+      }
+      let urlMap: Record<string, string> = {};
+      if (keys.size > 0) {
+        try {
+          const res = await sign({ data: { keys: [...keys] } });
+          urlMap = res.urls;
+        } catch (e) {
+          console.error("signPortfolioUrls failed", e);
+        }
+      }
+      const swap = (v: string | null) => (v && urlMap[v]) || v;
+      const resolved = rows.map((m) => ({
+        ...m,
+        photo_url: swap(m.photo_url),
+        profile_card_url: swap(m.profile_card_url),
+        portfolio_images: (m.portfolio_images ?? []).map((p) => swap(p) as string),
+      }));
+      if (!cancelled) setTeam(resolved);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sign]);
 
   const generalMembers = useMemo(
     () => (team ?? []).filter((m) => !m.committee),
