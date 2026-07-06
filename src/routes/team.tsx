@@ -339,8 +339,14 @@ export function MembersPage() {
           </div>
           <div className="mt-4 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {dynamicCategories.map((c) => {
-              const count = c === "All" ? generalMembers.length : (byCategory.get(c)?.length ?? 0);
+              const count =
+                c === "Available"
+                  ? availableCount
+                  : c === "All"
+                    ? generalMembers.length
+                    : (byCategory.get(c)?.length ?? 0);
               const hasMembers = count > 0;
+              const isAvail = c === "Available";
               return (
                 <button
                   key={c}
@@ -350,12 +356,15 @@ export function MembersPage() {
                     "shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition-colors",
                     category === c
                       ? "border-primary bg-primary text-white"
-                      : hasMembers
-                        ? "border-border bg-background text-foreground hover:bg-secondary"
-                        : "border-border bg-background text-muted-foreground hover:bg-secondary",
+                      : isAvail && hasMembers
+                        ? "border-accent bg-accent/10 text-accent-deep hover:bg-accent/20"
+                        : hasMembers
+                          ? "border-border bg-background text-foreground hover:bg-secondary"
+                          : "border-border bg-background text-muted-foreground hover:bg-secondary",
                   )}
                 >
-                  {c}
+                  {isAvail && <span className="mr-1 inline-block size-1.5 rounded-full bg-accent align-middle" aria-hidden="true" />}
+                  {isAvail ? "Available now" : c}
                   {hasMembers && <span className="ml-1.5 text-[10px] opacity-75">{count}</span>}
                 </button>
               );
@@ -385,12 +394,21 @@ export function MembersPage() {
           ) : (
             <div className="space-y-14">
               {activeCategories.map((cat) => {
-                const list = byCategory.get(cat);
-                if (!list || list.length === 0) return null;
+                const raw = byCategory.get(cat);
+                if (!raw || raw.length === 0) return null;
+                const list = category === "Available" ? raw.filter(isAvailable) : raw;
+                if (list.length === 0) return null;
                 return (
                   <div key={cat}>
                     <div className="mb-4 flex items-end justify-between gap-4">
-                      <h2 className="font-serif text-2xl text-foreground">{cat}</h2>
+                      <h2 className="font-serif text-2xl text-foreground">
+                        {cat}
+                        {category === "Available" && (
+                          <span className="ml-2 align-middle text-[11px] font-semibold uppercase tracking-widest text-accent-deep">
+                            Available now
+                          </span>
+                        )}
+                      </h2>
                       <span className="text-xs uppercase tracking-widest text-muted-foreground">
                         {list.length} member{list.length === 1 ? "" : "s"}
                       </span>
@@ -417,6 +435,7 @@ export function MembersPage() {
           )}
         </div>
       </section>
+
 
       {filtered && filtered.length > 0 && (
         <section className="border-t border-border bg-secondary/40 py-12">
