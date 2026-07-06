@@ -532,45 +532,6 @@ export type Database = {
           },
         ]
       }
-      products: {
-        Row: {
-          active: boolean
-          category: string | null
-          created_at: string
-          description: string | null
-          id: string
-          images: string[]
-          name: string
-          order_index: number
-          price: number | null
-          updated_at: string
-        }
-        Insert: {
-          active?: boolean
-          category?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          images?: string[]
-          name: string
-          order_index?: number
-          price?: number | null
-          updated_at?: string
-        }
-        Update: {
-          active?: boolean
-          category?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          images?: string[]
-          name?: string
-          order_index?: number
-          price?: number | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           created_at: string
