@@ -72,7 +72,7 @@ function useHomepageStats() {
   return stats;
 }
 
-// A-WIN follows a single membership model (not multi-tier):
+// A-WIN follows a single membership model (not multi tier):
 //   R200 / year nominal membership fee + R500 / month collective investment contribution.
 const membership = {
   fee: "R200",
@@ -80,7 +80,7 @@ const membership = {
   contribution: "R500",
   contributionCadence: "/ month",
   benefits: [
-    "Offshore tax-free and curated investment opportunities",
+    "Offshore tax free and curated investment opportunities",
     "Consultation with a qualified financial advisor",
     "Workshops, mentorship and a supportive sisterhood",
     "Business collaboration, crowdfunding and referrals",
@@ -237,7 +237,7 @@ function Index() {
             <span className="text-xs font-semibold uppercase tracking-widest text-accent">
               Membership
             </span>
-            <h2 className="mt-3 font-serif">One Membership · Built for Long-Term Wealth</h2>
+            <h2 className="mt-3 font-serif">One Membership · Built for Long Term Wealth</h2>
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
               A-WIN follows a single, transparent membership model. A small annual
               fee plus a monthly contribution toward collective investments, reviewed

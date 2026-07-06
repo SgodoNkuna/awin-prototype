@@ -69,7 +69,7 @@ const CATEGORIES = [
   "Hospitality & Events",
   "Retail & Fashion",
   "Construction & Trades",
-  "Non-Profit & Community",
+  "Non Profit & Community",
   "Students",
   "Other",
 ] as const;

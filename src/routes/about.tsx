@@ -103,7 +103,7 @@ function AboutPage() {
               businesswomen. What began as a small, passionate group has grown to{" "}
               <strong className="text-foreground">over fifty members and counting</strong>. Our
               mission is to empower women to grow their wealth, strengthen their businesses, and
-              access investment opportunities that drive long-term financial independence.
+              access investment opportunities that drive long term financial independence.
             </p>
           </div>
         </div>
@@ -132,7 +132,7 @@ function AboutPage() {
                 non-essential spending while saving and investing remain an afterthought. A-WIN
                 exists to change that mindset — to build a generation of women who think about
                 investing first and <em>consumer spending</em> second. We are cultivating a movement
-                that replaces short-term consumption with medium-to-long-term wealth creation.
+                that replaces short term consumption with medium-to-long term wealth creation.
               </p>
             </div>
           </div>
@@ -171,7 +171,7 @@ function AboutPage() {
               <h2 className="mt-3 font-serif">A-WIN is open to any woman who…</h2>
               <ul className="mt-6 space-y-3 text-muted-foreground">
                 {[
-                  "Shares our vision of financial empowerment, collaboration and long-term wealth creation.",
+                  "Shares our vision of financial empowerment, collaboration and long term wealth creation.",
                   "Can pay the nominal annual membership fee (currently R200/year, reviewed annually).",
                   "Can contribute a minimum of R500/month toward collective investment opportunities.",
                   "Is a business owner, aspiring entrepreneur, professional, side-hustler — or simply ready to take control of her financial future.",
@@ -191,7 +191,7 @@ function AboutPage() {
               <h2 className="mt-3 font-serif">What you gain</h2>
               <div className="mt-6 space-y-4">
                 {[
-                  { t: "Investment Opportunities", b: "Exposure to offshore tax-free investments and other carefully selected growth opportunities tailored for women investors." },
+                  { t: "Investment Opportunities", b: "Exposure to offshore tax free investments and other carefully selected growth opportunities tailored for women investors." },
                   { t: "Financial Advisory Support", b: "Consultation with a qualified financial advisor who assesses your risk appetite and recommends a portfolio aligned with your goals." },
                   { t: "Business Support & Collaboration", b: "Connect with like-minded women; support each other's businesses through crowdfunding and referrals." },
                   { t: "Community & Learning", b: "Workshops, networking and mentorship that strengthen your financial knowledge, money mindset and leadership capacity." },
@@ -219,7 +219,7 @@ function AboutPage() {
           <p className="mt-4 text-primary-foreground/85 leading-relaxed">
             By joining A-WIN, you become part of a growing movement of African women creating wealth
             with purpose — women choosing investment over consumer spending, collaboration over
-            competition, and long-term freedom over short-term gratification. Together, we are
+            competition, and long term freedom over short term gratification. Together, we are
             transforming Africa's economic landscape, one investment and one woman at a time.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">

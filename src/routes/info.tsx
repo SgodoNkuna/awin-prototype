@@ -30,11 +30,11 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "How much does it cost?",
-    a: "Annual membership is R200, reviewed each year in line with our needs. Members also commit R500/month toward collective investment opportunities — this is yours, invested in tax-free offshore vehicles and other carefully selected instruments.",
+    a: "Annual membership is R200, reviewed each year in line with our needs. Members also commit R500/month toward collective investment opportunities — this is yours, invested in tax free offshore vehicles and other carefully selected instruments.",
   },
   {
     q: "What kind of investments does A-WIN access?",
-    a: "Offshore tax-free investments and other carefully selected growth opportunities tailored for women investors, with a focus on medium-to-long-term wealth building. Each member receives a consultation with a qualified financial advisor who recommends a portfolio aligned with her risk appetite and goals.",
+    a: "Offshore tax free investments and other carefully selected growth opportunities tailored for women investors, with a focus on medium-to-long term wealth building. Each member receives a consultation with a qualified financial advisor who recommends a portfolio aligned with her risk appetite and goals.",
   },
   {
     q: "I've never invested before — is A-WIN right for me?",

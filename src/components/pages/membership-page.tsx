@@ -37,7 +37,7 @@ export const MEMBERSHIP_MODEL = {
   contributionCadence: "/ month",
   foundedYear: "2025",
   benefits: [
-    "Offshore tax-free and curated investment opportunities",
+    "Offshore tax free and curated investment opportunities",
     "Consultation with a qualified financial advisor",
     "Workshops, mentorship and a supportive sisterhood",
     "Business collaboration, crowdfunding and referrals",
@@ -201,7 +201,7 @@ function MembershipPage() {
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="text-center mb-10">
             <span className="text-xs font-semibold uppercase tracking-widest text-accent">Fees &amp; Commitment</span>
-            <h2 className="font-bold mt-2">One Membership · Built for Long-Term Wealth</h2>
+            <h2 className="font-bold mt-2">One Membership · Built for Long Term Wealth</h2>
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
               A-WIN follows a single, transparent membership model. Reviewed annually by the community.
             </p>
