@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeamRouteImport } from './routes/team'
-import { Route as ProductsRouteImport } from './routes/products'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as NewsRouteImport } from './routes/news'
@@ -26,13 +25,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as DebugRoutesRouteImport } from './routes/debug.routes'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
-import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminPortfolioRouteImport } from './routes/admin.portfolio'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
 import { Route as AdminExportsRouteImport } from './routes/admin.exports'
 import { Route as AdminEventsRouteImport } from './routes/admin.events'
 import { Route as AdminDocumentsRouteImport } from './routes/admin.documents'
+import { Route as AdminCommitteesRouteImport } from './routes/admin.committees'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast.itn'
@@ -40,11 +39,6 @@ import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/pay
 const TeamRoute = TeamRouteImport.update({
   id: '/team',
   path: '/team',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductsRoute = ProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortfolioRoute = PortfolioRouteImport.update({
@@ -122,11 +116,6 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminProductsRoute = AdminProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminPortfolioRoute = AdminPortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
@@ -155,6 +144,11 @@ const AdminEventsRoute = AdminEventsRouteImport.update({
 const AdminDocumentsRoute = AdminDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCommitteesRoute = AdminCommitteesRouteImport.update({
+  id: '/committees',
+  path: '/committees',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminBillingRoute = AdminBillingRouteImport.update({
@@ -186,17 +180,16 @@ export interface FileRoutesByFullPath {
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
-  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/committees': typeof AdminCommitteesRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/exports': typeof AdminExportsRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
-  '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
@@ -214,17 +207,16 @@ export interface FileRoutesByTo {
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
-  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/committees': typeof AdminCommitteesRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/exports': typeof AdminExportsRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
-  '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin': typeof AdminIndexRoute
@@ -244,17 +236,16 @@ export interface FileRoutesById {
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
-  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/committees': typeof AdminCommitteesRoute
   '/admin/documents': typeof AdminDocumentsRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/exports': typeof AdminExportsRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
-  '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
@@ -275,17 +266,16 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/portfolio'
-    | '/products'
     | '/team'
     | '/admin/applications'
     | '/admin/billing'
+    | '/admin/committees'
     | '/admin/documents'
     | '/admin/events'
     | '/admin/exports'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
-    | '/admin/products'
     | '/admin/settings'
     | '/debug/routes'
     | '/admin/'
@@ -303,17 +293,16 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/portfolio'
-    | '/products'
     | '/team'
     | '/admin/applications'
     | '/admin/billing'
+    | '/admin/committees'
     | '/admin/documents'
     | '/admin/events'
     | '/admin/exports'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
-    | '/admin/products'
     | '/admin/settings'
     | '/debug/routes'
     | '/admin'
@@ -332,17 +321,16 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/portfolio'
-    | '/products'
     | '/team'
     | '/admin/applications'
     | '/admin/billing'
+    | '/admin/committees'
     | '/admin/documents'
     | '/admin/events'
     | '/admin/exports'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
-    | '/admin/products'
     | '/admin/settings'
     | '/debug/routes'
     | '/admin/'
@@ -362,7 +350,6 @@ export interface RootRouteChildren {
   NewsRoute: typeof NewsRoute
   PortalRoute: typeof PortalRoute
   PortfolioRoute: typeof PortfolioRoute
-  ProductsRoute: typeof ProductsRoute
   TeamRoute: typeof TeamRoute
   DebugRoutesRoute: typeof DebugRoutesRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -375,13 +362,6 @@ declare module '@tanstack/react-router' {
       path: '/team'
       fullPath: '/team'
       preLoaderRoute: typeof TeamRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/products': {
-      id: '/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof ProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portfolio': {
@@ -489,13 +469,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/products': {
-      id: '/admin/products'
-      path: '/products'
-      fullPath: '/admin/products'
-      preLoaderRoute: typeof AdminProductsRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/portfolio': {
       id: '/admin/portfolio'
       path: '/portfolio'
@@ -538,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDocumentsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/committees': {
+      id: '/admin/committees'
+      path: '/committees'
+      fullPath: '/admin/committees'
+      preLoaderRoute: typeof AdminCommitteesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/billing': {
       id: '/admin/billing'
       path: '/billing'
@@ -565,13 +545,13 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminApplicationsRoute: typeof AdminApplicationsRoute
   AdminBillingRoute: typeof AdminBillingRoute
+  AdminCommitteesRoute: typeof AdminCommitteesRoute
   AdminDocumentsRoute: typeof AdminDocumentsRoute
   AdminEventsRoute: typeof AdminEventsRoute
   AdminExportsRoute: typeof AdminExportsRoute
   AdminMembersRoute: typeof AdminMembersRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminPortfolioRoute: typeof AdminPortfolioRoute
-  AdminProductsRoute: typeof AdminProductsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -579,13 +559,13 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminApplicationsRoute: AdminApplicationsRoute,
   AdminBillingRoute: AdminBillingRoute,
+  AdminCommitteesRoute: AdminCommitteesRoute,
   AdminDocumentsRoute: AdminDocumentsRoute,
   AdminEventsRoute: AdminEventsRoute,
   AdminExportsRoute: AdminExportsRoute,
   AdminMembersRoute: AdminMembersRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminPortfolioRoute: AdminPortfolioRoute,
-  AdminProductsRoute: AdminProductsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
@@ -605,7 +585,6 @@ const rootRouteChildren: RootRouteChildren = {
   NewsRoute: NewsRoute,
   PortalRoute: PortalRoute,
   PortfolioRoute: PortfolioRoute,
-  ProductsRoute: ProductsRoute,
   TeamRoute: TeamRoute,
   DebugRoutesRoute: DebugRoutesRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,

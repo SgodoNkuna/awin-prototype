@@ -71,44 +71,44 @@
 :root {
   --radius: 0.75rem;
 
-  /* Surfaces — light, neutral */
-  --background: #FAFAFA;
-  --foreground: #1A1A1A;
+  /* Surfaces — airy, light neutrals (lightened site-wide palette) */
+  --background: #FFFFFF;
+  --foreground: #24261F;
   --card: #FFFFFF;
-  --card-foreground: #1A1A1A;
+  --card-foreground: #24261F;
   --popover: #FFFFFF;
-  --popover-foreground: #1A1A1A;
+  --popover-foreground: #24261F;
 
   /* Brand — warm olive green (A symbol) */
   --primary: #3D8B2F;
   --primary-foreground: #FFFFFF;
   --primary-deep: #2A6020;
-  --primary-light: #F0F7ED;
+  --primary-light: #F4FAF0;
   --hero-foreground: #FFFFFF;
-  --hero-muted: rgba(255, 255, 255, 0.9);
-  --hero-surface: rgba(255, 255, 255, 0.14);
-  --hero-border: rgba(255, 255, 255, 0.38);
+  --hero-muted: rgba(255, 255, 255, 0.92);
+  --hero-surface: rgba(255, 255, 255, 0.16);
+  --hero-border: rgba(255, 255, 255, 0.42);
 
-  /* Accent — bright warm orange (WIN) — matches the original A-WIN flyer */
+  /* Accent — bright warm orange (WIN) */
   --accent: #F5A623;
-  --accent-foreground: #1A1A1A;
-  --accent-soft: #FFF1D6;
+  --accent-foreground: #24261F;
+  --accent-soft: #FFF6E1;
   --accent-deep: #D98910;
   --accent-bright: #FFA500;
 
-  --secondary: #F0F7ED;
+  --secondary: #F4FAF0;
   --secondary-foreground: #2A6020;
 
-  --muted: #F4F4F4;
-  --muted-foreground: #6B6B6B;
+  --muted: #F7F7F5;
+  --muted-foreground: #6E7268;
 
   --destructive: #C0392B;
   --destructive-foreground: #FFFFFF;
   --success: #3D8B2F;
   --success-foreground: #FFFFFF;
 
-  --border: #D0D0D0;
-  --input: #D0D0D0;
+  --border: #E6E6E1;
+  --input: #E6E6E1;
   --ring: #3D8B2F;
 
   --chart-1: #3D8B2F;
