@@ -439,3 +439,32 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
+
+function DangerAction({
+  title, description, confirmText, onConfirm,
+}: { title: string; description: string; confirmText: string; onConfirm: () => Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="font-medium">{title}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      <Button
+        variant="destructive"
+        size="sm"
+        disabled={busy}
+        onClick={async () => {
+          const entered = window.prompt(`Type ${confirmText} to confirm. This cannot be undone.`);
+          if (entered !== confirmText) return;
+          setBusy(true);
+          try { await onConfirm(); toast.success("Done"); }
+          catch (e: any) { toast.error(e.message ?? "Failed"); }
+          finally { setBusy(false); }
+        }}
+      >
+        {busy ? <Loader2 className="size-4 animate-spin" /> : "Run"}
+      </Button>
+    </div>
+  );
+}
