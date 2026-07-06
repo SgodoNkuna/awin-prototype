@@ -14,7 +14,8 @@ import {
   CreditCard,
   FileDown,
   Menu,
-  ShoppingBag,
+  Award,
+  Newspaper,
 } from "lucide-react";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
@@ -24,10 +25,10 @@ import { cn } from "@/lib/utils";
 type AdminPath =
   | "/admin"
   | "/admin/members"
+  | "/admin/committees"
   | "/admin/applications"
   | "/admin/events"
   | "/admin/portfolio"
-  | "/admin/products"
   | "/admin/messages"
   | "/admin/documents"
   | "/admin/billing"
@@ -46,12 +47,13 @@ type NavGroup = { label: string; items: NavItem[] };
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
-    items: [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true }],
+    items: [{ to: "/admin", label: "Overview", icon: LayoutDashboard, exact: true }],
   },
   {
     label: "People",
     items: [
       { to: "/admin/members", label: "Members", icon: Users },
+      { to: "/admin/committees", label: "Committees", icon: Award },
       { to: "/admin/applications", label: "Applications", icon: ClipboardList },
     ],
   },
@@ -59,8 +61,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Content",
     items: [
       { to: "/admin/events", label: "Events", icon: Calendar },
-      { to: "/admin/portfolio", label: "Portfolio", icon: Briefcase },
-      { to: "/admin/products", label: "Products", icon: ShoppingBag },
+      { to: "/admin/portfolio", label: "News & Gallery", icon: Newspaper },
       { to: "/admin/documents", label: "Documents", icon: FolderOpen },
     ],
   },
@@ -79,6 +80,7 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
+
 
 const FLAT_NAV: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
 
