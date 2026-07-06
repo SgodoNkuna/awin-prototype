@@ -97,11 +97,12 @@ function SettingsPage() {
       </div>
 
       <Tabs defaultValue="content">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="content">Content</TabsTrigger>
           <TabsTrigger value="tiers">Membership Tiers</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="danger" className="text-destructive">Danger Zone</TabsTrigger>
         </TabsList>
 
         <TabsContent value="content" className="space-y-4 mt-4">
@@ -385,7 +386,47 @@ function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="danger" className="space-y-4 mt-4">
+          <Card className="border-destructive/40">
+            <CardHeader>
+              <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <DangerAction
+                title="Clear all contact messages"
+                description="Permanently delete every message submitted through the contact form."
+                confirmText="DELETE MESSAGES"
+                onConfirm={async () => {
+                  const { error } = await supabase.from("contact_messages").delete().gte("created_at", "1970-01-01");
+                  if (error) throw error;
+                }}
+              />
+              <DangerAction
+                title="Reset all site settings to defaults"
+                description="Removes every key in site_settings. Public copy will fall back to hard-coded defaults until you republish."
+                confirmText="RESET SETTINGS"
+                onConfirm={async () => {
+                  const { error } = await supabase.from("site_settings").delete().gte("key", "");
+                  if (error) throw error;
+                  await load();
+                }}
+              />
+              <DangerAction
+                title="Delete all draft (unpublished) team profiles"
+                description="Removes team_members rows where published = false. Live members are untouched."
+                confirmText="DELETE DRAFTS"
+                onConfirm={async () => {
+                  const { error } = await supabase.from("team_members").delete().eq("published", false);
+                  if (error) throw error;
+                  await load();
+                }}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
     </div>
   );
 }
@@ -395,6 +436,35 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div className="grid gap-1.5">
       <Label className="text-xs">{label}</Label>
       {children}
+    </div>
+  );
+}
+
+function DangerAction({
+  title, description, confirmText, onConfirm,
+}: { title: string; description: string; confirmText: string; onConfirm: () => Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="font-medium">{title}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      <Button
+        variant="destructive"
+        size="sm"
+        disabled={busy}
+        onClick={async () => {
+          const entered = window.prompt(`Type ${confirmText} to confirm. This cannot be undone.`);
+          if (entered !== confirmText) return;
+          setBusy(true);
+          try { await onConfirm(); toast.success("Done"); }
+          catch (e: any) { toast.error(e.message ?? "Failed"); }
+          finally { setBusy(false); }
+        }}
+      >
+        {busy ? <Loader2 className="size-4 animate-spin" /> : "Run"}
+      </Button>
     </div>
   );
 }
