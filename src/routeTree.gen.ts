@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PortalRouteImport } from './routes/portal'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as MembershipRouteImport } from './routes/membership'
 import { Route as MembersRouteImport } from './routes/members'
@@ -49,6 +50,11 @@ const PortfolioRoute = PortfolioRouteImport.update({
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NewsRoute = NewsRouteImport.update({
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRoute
+  '/onboarding': typeof OnboardingRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/team': typeof TeamRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRoute
+  '/onboarding': typeof OnboardingRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/team': typeof TeamRoute
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRoute
+  '/onboarding': typeof OnboardingRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/team': typeof TeamRoute
@@ -264,6 +273,7 @@ export interface FileRouteTypes {
     | '/members'
     | '/membership'
     | '/news'
+    | '/onboarding'
     | '/portal'
     | '/portfolio'
     | '/team'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/members'
     | '/membership'
     | '/news'
+    | '/onboarding'
     | '/portal'
     | '/portfolio'
     | '/team'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/members'
     | '/membership'
     | '/news'
+    | '/onboarding'
     | '/portal'
     | '/portfolio'
     | '/team'
@@ -348,6 +360,7 @@ export interface RootRouteChildren {
   MembersRoute: typeof MembersRoute
   MembershipRoute: typeof MembershipRoute
   NewsRoute: typeof NewsRoute
+  OnboardingRoute: typeof OnboardingRoute
   PortalRoute: typeof PortalRoute
   PortfolioRoute: typeof PortfolioRoute
   TeamRoute: typeof TeamRoute
@@ -376,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/portal'
       fullPath: '/portal'
       preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/news': {
@@ -583,6 +603,7 @@ const rootRouteChildren: RootRouteChildren = {
   MembersRoute: MembersRoute,
   MembershipRoute: MembershipRoute,
   NewsRoute: NewsRoute,
+  OnboardingRoute: OnboardingRoute,
   PortalRoute: PortalRoute,
   PortfolioRoute: PortfolioRoute,
   TeamRoute: TeamRoute,
