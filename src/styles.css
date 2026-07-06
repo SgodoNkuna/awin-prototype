@@ -80,10 +80,10 @@
   --popover-foreground: #24261F;
 
   /* Brand — warm olive green (A symbol) */
-  --primary: #3D8B2F;
+  --primary: #5CB335;
   --primary-foreground: #FFFFFF;
-  --primary-deep: #2A6020;
-  --primary-light: #F4FAF0;
+  --primary-deep: #3D8B2F;
+  --primary-light: #EEF9E6;
   --hero-foreground: #FFFFFF;
   --hero-muted: rgba(255, 255, 255, 0.92);
   --hero-surface: rgba(255, 255, 255, 0.16);
