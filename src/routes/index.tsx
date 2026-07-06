@@ -4,6 +4,7 @@ import {
   ArrowRight,
   MapPin,
   Check,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,11 @@ import { PortfolioCarousel } from "@/components/site/PortfolioCarousel";
 import { WCWGallery } from "@/components/site/WCWGallery";
 import { HikeGallery } from "@/components/site/HikeGallery";
 import { supabase } from "@/integrations/supabase/client";
+import wcwHero from "@/assets/wcw/wcw-5.jpeg.asset.json";
+import hikeImg1 from "@/assets/hike-2026/hike-00.44.593.jpeg.asset.json";
+import hikeImg2 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
+import hikeImg3 from "@/assets/hike-2026/hike-00.44.5966.jpeg.asset.json";
+import hikeImg4 from "@/assets/hike-2026/hike-00.45.001.jpeg.asset.json";
 
 
 export const Route = createFileRoute("/")({
@@ -81,39 +87,75 @@ const membership = {
   ],
 };
 
-const events = [
-  {
-    title: "Investment 101 Masterclass",
-    date: { d: "12", m: "JUN" },
-    location: "Johannesburg",
-  },
-  {
-    title: "Women in Wealth Summit",
-    date: { d: "24", m: "JUN" },
-    location: "Cape Town",
-  },
-  {
-    title: "Property Portfolio Workshop",
-    date: { d: "08", m: "JUL" },
-    location: "Durban",
-  },
-  {
-    title: "Stock Market Bootcamp",
-    date: { d: "22", m: "JUL" },
-    location: "Online",
-  },
-  {
-    title: "Annual A-WIN Gala",
-    date: { d: "15", m: "AUG" },
-    location: "Sandton",
-  },
-];
+type HomeEvent = {
+  id: string;
+  title: string;
+  event_date: string;
+  location: string;
+  image_url: string | null;
+};
+
+type HomeMember = {
+  id: string;
+  name: string;
+  title: string | null;
+  category: string | null;
+  photo_url: string | null;
+  profile_card_url: string | null;
+};
+
+const EVENT_FALLBACK_IMAGES = [hikeImg1.url, hikeImg2.url, hikeImg3.url, hikeImg4.url];
+
+function useUpcomingEvents(limit = 4) {
+  const [events, setEvents] = useState<HomeEvent[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    const today = new Date().toISOString().slice(0, 10);
+    supabase
+      .from("events")
+      .select("id, title, event_date, location, image_url")
+      .eq("published", true)
+      .gte("event_date", today)
+      .order("event_date", { ascending: true })
+      .limit(limit)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setEvents(((data ?? []) as HomeEvent[]));
+      });
+    return () => { cancelled = true; };
+  }, [limit]);
+  return events;
+}
+
+function useFeaturedMembers(limit = 6) {
+  const [members, setMembers] = useState<HomeMember[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("team_members")
+      .select("id, name, title, category, photo_url, profile_card_url" as any)
+      .eq("published", true)
+      .order("order_index", { ascending: true })
+      .limit(limit * 2)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const rows = ((data ?? []) as unknown) as HomeMember[];
+        // Prefer members with an image
+        const withImg = rows.filter((m) => m.profile_card_url || m.photo_url);
+        setMembers((withImg.length ? withImg : rows).slice(0, limit));
+      });
+    return () => { cancelled = true; };
+  }, [limit]);
+  return members;
+}
 
 // Articles removed — Portfolio carousel replaces News section
 
 
 function Index() {
   const liveStats = useHomepageStats();
+  const upcomingEvents = useUpcomingEvents(4);
+  const featuredMembers = useFeaturedMembers(6);
   const statCards = [
     { label: "Members", value: liveStats.members },
     { label: "Total Invested", value: liveStats.invested },
@@ -171,12 +213,19 @@ function Index() {
             </Link>
           </div>
 
-          <div
-            className="aspect-[4/3] w-full rounded-2xl border border-primary/20 shadow-[var(--shadow-elegant)] flex items-center justify-center"
-            style={{ background: "var(--gradient-placeholder)" }}
-            aria-hidden="true"
-          >
-            <span className="font-serif text-6xl text-primary-deep/40">A-WIN</span>
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-primary/20 shadow-[var(--shadow-elegant)]">
+            <img
+              src={wcwHero.url}
+              alt="A-WIN women together at a community gathering"
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 via-black/25 to-transparent p-5">
+              <div className="text-xs font-semibold uppercase tracking-widest text-white/85">
+                Women Creating Wealth
+              </div>
+              <div className="font-serif text-lg text-white">Sisterhood in action</div>
+            </div>
           </div>
         </div>
       </section>
@@ -273,46 +322,140 @@ function Index() {
             </Link>
           </div>
 
-          <div className="mt-10 -mx-4 overflow-x-auto px-4 pb-4">
-            <div className="flex gap-5 snap-x snap-mandatory">
-              {events.map((e) => (
-                <Card
-                  key={e.title}
-                  className="w-72 shrink-0 snap-start overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale"
-                >
-                  <div
-                    className="relative h-40 w-full"
-                    style={{ background: "var(--gradient-placeholder)" }}
-                  >
-                    <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
-                      <div className="font-serif text-xl leading-none">
-                        {e.date.d}
-                      </div>
-                      <div className="text-[10px] font-semibold tracking-widest">
-                        {e.date.m}
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="p-5">
-                    <h3 className="font-serif text-lg text-foreground">
-                      {e.title}
-                    </h3>
-                    <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5" /> {e.location}
-                    </div>
-                    <Link
-                      to="/contact"
-                      className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
-                    >
-                      View Details <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
+          {upcomingEvents.length === 0 ? (
+            <div className="mt-10 rounded-2xl border border-dashed border-border bg-secondary/40 p-10 text-center text-muted-foreground">
+              <Calendar className="mx-auto h-8 w-8 opacity-60" aria-hidden="true" />
+              <p className="mt-3 text-sm">No upcoming events yet — check back soon or view the full calendar.</p>
+              <Button asChild variant="outline" className="mt-4">
+                <Link to="/events">Open events page</Link>
+              </Button>
             </div>
-          </div>
+          ) : (
+            <div className="mt-10 -mx-4 overflow-x-auto px-4 pb-4">
+              <div className="flex gap-5 snap-x snap-mandatory">
+                {upcomingEvents.map((e, i) => {
+                  const d = new Date(e.event_date);
+                  const day = String(d.getDate()).padStart(2, "0");
+                  const month = d.toLocaleString("en-ZA", { month: "short" }).toUpperCase();
+                  const cover = e.image_url || EVENT_FALLBACK_IMAGES[i % EVENT_FALLBACK_IMAGES.length];
+                  return (
+                    <Card
+                      key={e.id}
+                      className="w-72 shrink-0 snap-start overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale"
+                    >
+                      <div className="relative h-40 w-full overflow-hidden">
+                        <img
+                          src={cover}
+                          alt={e.title}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                        <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
+                          <div className="font-serif text-xl leading-none">{day}</div>
+                          <div className="text-[10px] font-semibold tracking-widest">{month}</div>
+                        </div>
+                      </div>
+                      <CardContent className="p-5">
+                        <h3 className="font-serif text-lg text-foreground">{e.title}</h3>
+                        <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5" /> {e.location}
+                        </div>
+                        <Link
+                          to="/events"
+                          className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary story-link"
+                        >
+                          View Details <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </section>
+
+      {/* MEMBERS PREVIEW — real profile cards from the directory */}
+      {featuredMembers.length > 0 && (
+        <section className="bg-secondary/40 py-20">
+          <div className="mx-auto max-w-6xl px-4">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-widest text-accent">
+                  Meet the Sisterhood
+                </span>
+                <h2 className="mt-3 font-serif">Our Members</h2>
+                <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+                  Real women, real stories. Explore the professionals, entrepreneurs and everyday builders shaping A-WIN.
+                </p>
+              </div>
+              <Link
+                to="/members"
+                className="hidden text-sm font-medium text-primary story-link sm:inline-flex items-center gap-1"
+              >
+                View all members <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="mt-10 -mx-4 overflow-x-auto px-4 pb-4">
+              <div className="flex gap-5 snap-x snap-mandatory">
+                {featuredMembers.map((m) => {
+                  const img = m.profile_card_url || m.photo_url;
+                  return (
+                    <Link
+                      key={m.id}
+                      to="/members"
+                      className="group w-64 shrink-0 snap-start"
+                    >
+                      <Card className="h-full overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)]">
+                        <div className="aspect-[3/4] w-full bg-secondary">
+                          {img ? (
+                            <img
+                              src={img}
+                              alt={m.name}
+                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div
+                              className="flex h-full w-full items-center justify-center font-serif text-5xl text-primary-deep/40"
+                              style={{ background: "var(--gradient-placeholder)" }}
+                            >
+                              {m.name
+                                .split(/\s+/)
+                                .slice(0, 2)
+                                .map((p) => p[0])
+                                .join("")}
+                            </div>
+                          )}
+                        </div>
+                        <CardContent className="p-4">
+                          <h3 className="font-serif text-base font-bold leading-tight text-foreground">
+                            {m.name}
+                          </h3>
+                          {m.category && (
+                            <Badge className="mt-2 bg-accent text-accent-foreground text-[11px]">
+                              {m.category}
+                            </Badge>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-center sm:hidden">
+              <Button asChild variant="outline">
+                <Link to="/members">View all members</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* WCW SUMMIT GALLERY */}
       <WCWGallery />

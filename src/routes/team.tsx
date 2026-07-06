@@ -198,8 +198,7 @@ export function MembersPage() {
   const byCategory = useMemo(() => {
     const map = new Map<string, Member[]>();
     (filtered ?? []).forEach((m) => {
-      const c = m.category || "Other";
-      const key = (CATEGORIES as readonly string[]).includes(c) ? c : "Other";
+      const key = (m.category || "Other").trim();
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(m);
     });
@@ -217,7 +216,30 @@ export function MembersPage() {
     return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
 
-  const activeCategories = category === "All" ? CATEGORIES.filter((c) => c !== "All" && byCategory.has(c)) : [category];
+  // Build category list dynamically from members that actually have entries.
+  // Categories with members first (ordered by count desc, then alphabetically),
+  // then any preset categories with no members appended after.
+  const dynamicCategories = useMemo(() => {
+    const counts = new Map<string, number>();
+    generalMembers.forEach((m) => {
+      const c = (m.category || "Other").trim();
+      counts.set(c, (counts.get(c) ?? 0) + 1);
+    });
+    const populated = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([c]) => c);
+    const empty = (CATEGORIES as readonly string[]).filter(
+      (c) => c !== "All" && !counts.has(c),
+    );
+    return ["All", ...populated, ...empty];
+  }, [generalMembers]);
+
+  const populatedCategories = useMemo(
+    () => dynamicCategories.filter((c) => c !== "All" && byCategory.has(c)),
+    [dynamicCategories, byCategory],
+  );
+
+  const activeCategories = category === "All" ? populatedCategories : [category];
 
   return (
     <>
@@ -225,7 +247,7 @@ export function MembersPage() {
         className="relative overflow-hidden px-4 py-20 text-primary-foreground md:py-24"
         style={{ background: "var(--gradient-hero)" }}
       >
-        <div className="absolute inset-0 bg-black/35" />
+        <div className="absolute inset-0 bg-primary-deep/10" />
         <div className="relative mx-auto max-w-5xl">
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-white/90">
             <Link to="/" className="hover:text-accent">Home</Link>
@@ -305,21 +327,28 @@ export function MembersPage() {
             />
           </div>
           <div className="mt-4 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCategory(c)}
-                className={cn(
-                  "shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition-colors",
-                  category === c
-                    ? "border-primary bg-primary text-white"
-                    : "border-border bg-background text-foreground hover:bg-secondary",
-                )}
-              >
-                {c}
-              </button>
-            ))}
+            {dynamicCategories.map((c) => {
+              const count = c === "All" ? generalMembers.length : (byCategory.get(c)?.length ?? 0);
+              const hasMembers = count > 0;
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCategory(c)}
+                  className={cn(
+                    "shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition-colors",
+                    category === c
+                      ? "border-primary bg-primary text-white"
+                      : hasMembers
+                        ? "border-border bg-background text-foreground hover:bg-secondary"
+                        : "border-border bg-background text-muted-foreground hover:bg-secondary",
+                  )}
+                >
+                  {c}
+                  {hasMembers && <span className="ml-1.5 text-[10px] opacity-75">{count}</span>}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -412,94 +441,155 @@ export function MembersPage() {
 
       <Dialog open={!!active} onOpenChange={(o) => !o && setActive(null)}>
         <DialogContent
-          className="max-w-2xl max-h-[92vh] overflow-y-auto p-0 sm:rounded-2xl
-                     data-[state=open]:bottom-0 data-[state=open]:top-auto sm:data-[state=open]:top-1/2
-                     data-[state=open]:translate-y-0 sm:data-[state=open]:-translate-y-1/2
-                     data-[state=open]:rounded-t-2xl sm:data-[state=open]:rounded-2xl"
+          className="w-[100vw] max-w-[100vw] h-[100vh] max-h-[100vh] p-0 gap-0 rounded-none border-0
+                     sm:w-[95vw] sm:max-w-5xl sm:h-[92vh] sm:max-h-[92vh] sm:rounded-2xl
+                     flex flex-col overflow-hidden"
         >
           {active && (
             <>
-              <div className="sticky top-0 z-10 mx-auto mt-2 h-1.5 w-12 rounded-full bg-muted sm:hidden" aria-hidden="true" />
-              <div className="px-4 pb-6 pt-4 sm:px-6 sm:pt-6">
-                <DialogHeader className="text-left">
-                  <DialogTitle className="font-serif text-2xl text-foreground">{active.name}</DialogTitle>
-                  <DialogDescription className="flex flex-wrap gap-2 pt-2">
-                    {active.category && (
-                      <Badge className="bg-accent text-accent-foreground">{active.category}</Badge>
-                    )}
-                    {active.committee_position && (
-                      <Badge variant="outline">{active.committee_position}</Badge>
-                    )}
-                  </DialogDescription>
-                </DialogHeader>
+              {/* Sticky header — always visible so users can close/scan while scrolling */}
+              <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-border bg-background/95 px-5 py-4 backdrop-blur-md sm:px-8">
+                <div className="min-w-0 flex-1">
+                  <DialogHeader className="text-left">
+                    <DialogTitle className="font-serif text-2xl leading-tight text-foreground sm:text-3xl">
+                      {active.name}
+                    </DialogTitle>
+                    <DialogDescription className="mt-2 flex flex-wrap items-center gap-2">
+                      {active.category && (
+                        <Badge className="bg-accent text-accent-foreground">{active.category}</Badge>
+                      )}
+                      {active.committee_position && (
+                        <Badge variant="outline">{active.committee_position}</Badge>
+                      )}
+                      {active.location && (
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="size-3.5" /> {active.location}
+                        </span>
+                      )}
+                    </DialogDescription>
+                  </DialogHeader>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActive(null)}
+                  aria-label="Close profile"
+                  className="shrink-0 rounded-full border border-border bg-background p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
 
-                {/* IMAGE-FIRST: full profile card if uploaded */}
-                {active.profile_card_url ? (
-                  <div className="mt-4 overflow-hidden rounded-xl border border-border bg-secondary">
-                    <img
-                      src={active.profile_card_url}
-                      alt={`${active.name} profile card`}
-                      className="block w-full h-auto"
-                      loading="lazy"
-                    />
-                  </div>
-                ) : active.photo_url ? (
-                  <div className="mt-4 overflow-hidden rounded-xl border border-border bg-secondary">
-                    <img
-                      src={active.photo_url}
-                      alt={active.name}
-                      className="block w-full h-auto max-h-[70vh] object-contain"
-                      loading="lazy"
-                    />
-                  </div>
-                ) : (
-                  <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 p-8 text-center">
-                    <div className="mx-auto size-24 rounded-full bg-accent/15 flex items-center justify-center font-serif text-3xl text-accent-deep">
-                      {initials(active.name)}
+              {/* Scrollable page-like body */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="mx-auto max-w-4xl px-5 py-6 sm:px-8 sm:py-8">
+                  {/* Profile image */}
+                  {active.profile_card_url ? (
+                    <div className="overflow-hidden rounded-2xl border border-border bg-secondary shadow-[var(--shadow-elegant)]">
+                      <img
+                        src={active.profile_card_url}
+                        alt={`${active.name} profile card`}
+                        className="block w-full h-auto"
+                      />
                     </div>
-                    <p className="mt-4 text-sm text-muted-foreground">
-                      This member has not yet uploaded a profile card.
-                    </p>
-                  </div>
-                )}
+                  ) : active.photo_url ? (
+                    <div className="mx-auto max-w-md overflow-hidden rounded-2xl border border-border bg-secondary shadow-[var(--shadow-elegant)]">
+                      <img
+                        src={active.photo_url}
+                        alt={active.name}
+                        className="block w-full h-auto object-cover aspect-[3/4]"
+                      />
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-border bg-secondary/40 p-12 text-center">
+                      <div className="mx-auto size-28 rounded-full bg-accent/15 flex items-center justify-center font-serif text-4xl text-accent-deep">
+                        {initials(active.name)}
+                      </div>
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        This member has not yet uploaded a profile card.
+                      </p>
+                    </div>
+                  )}
 
-                {active.bio && (
-                  <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-foreground/90">{active.bio}</p>
-                )}
+                  {/* Title */}
+                  {active.title && (
+                    <div className="mt-6 text-lg font-medium text-foreground">{active.title}</div>
+                  )}
 
+                  {/* Bio */}
+                  {active.bio && (
+                    <div className="mt-4 whitespace-pre-line text-base leading-relaxed text-foreground/90">
+                      {active.bio}
+                    </div>
+                  )}
 
-                <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-4">
+                  {/* Expertise chips */}
+                  {active.expertise && active.expertise.length > 0 && (
+                    <div className="mt-6">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+                        Expertise
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {active.expertise.map((e) => (
+                          <Badge key={e} variant="outline" className="text-xs">
+                            {e}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Portfolio grid */}
+                  {active.portfolio_images && active.portfolio_images.length > 0 && (
+                    <div className="mt-8">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+                        Portfolio
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {active.portfolio_images.map((src, i) => (
+                          <img
+                            key={i}
+                            src={src}
+                            alt={`${active.name} portfolio ${i + 1}`}
+                            className="aspect-square w-full rounded-lg border border-border object-cover"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Sticky footer with actions */}
+              <div className="sticky bottom-0 z-10 border-t border-border bg-background/95 px-5 py-3 backdrop-blur-md sm:px-8">
+                <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-2">
                   {active.linkedin_url && (
-                    <Button asChild className="bg-[#0A66C2] text-white hover:bg-[#0a5dab]">
+                    <Button asChild size="sm" className="bg-[#0A66C2] text-white hover:bg-[#0a5dab]">
                       <a href={active.linkedin_url} target="_blank" rel="noopener noreferrer">
                         <Linkedin className="size-4 mr-1.5" /> LinkedIn
                       </a>
                     </Button>
                   )}
                   {active.social_url && (
-                    <Button asChild variant="outline">
+                    <Button asChild size="sm" variant="outline">
                       <a href={active.social_url} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="size-4 mr-1.5" /> Social
                       </a>
                     </Button>
                   )}
                   {active.contact_email && (
-                    <Button asChild variant="outline">
-                      <a href={`mailto:${active.contact_email}`}><Mail className="size-4 mr-1.5" /> Email</a>
+                    <Button asChild size="sm" variant="outline">
+                      <a href={`mailto:${active.contact_email}`}>
+                        <Mail className="size-4 mr-1.5" /> Email
+                      </a>
                     </Button>
                   )}
                   {active.website && (
-                    <Button asChild variant="outline">
-                      <a href={active.website} target="_blank" rel="noopener noreferrer"><Globe className="size-4 mr-1.5" /> Website</a>
+                    <Button asChild size="sm" variant="outline">
+                      <a href={active.website} target="_blank" rel="noopener noreferrer">
+                        <Globe className="size-4 mr-1.5" /> Website
+                      </a>
                     </Button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => setActive(null)}
-                    className="ml-auto inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="size-4" /> Close
-                  </button>
                 </div>
               </div>
             </>

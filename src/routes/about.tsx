@@ -70,7 +70,7 @@ function AboutPage() {
         style={{ background: "var(--gradient-hero)" }}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,var(--accent),transparent_55%)] opacity-25" />
-        <div className="absolute inset-0 bg-black/30" />
+
         <div className="relative mx-auto max-w-5xl animate-fade-in">
           <nav
             aria-label="Breadcrumb"
@@ -212,7 +212,7 @@ function AboutPage() {
         className="relative overflow-hidden px-4 py-20 text-primary-foreground"
         style={{ background: "var(--gradient-hero)" }}
       >
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-primary-deep/10" />
         <div className="relative mx-auto max-w-3xl text-center">
           <Globe2 className="mx-auto h-10 w-10 text-accent" />
           <h2 className="mt-4 font-serif text-primary-foreground">Join the movement</h2>
