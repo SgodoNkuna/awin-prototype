@@ -127,8 +127,8 @@
   --sidebar-ring: #E8960A;
 
   /* Gradients & shadows */
-  --gradient-hero: linear-gradient(135deg, #7BC950 0%, #5CB335 100%);
-  --gradient-placeholder: linear-gradient(135deg, #EEF9E6 0%, #C7E8B0 100%);
+  --gradient-hero: linear-gradient(135deg, #9BDA76 0%, #6BBF3F 100%);
+  --gradient-placeholder: linear-gradient(135deg, #F2FCEA 0%, #D3EFBA 100%);
   --gradient-gold: linear-gradient(135deg, #F5A623 0%, #D98910 100%);
   --shadow-elegant: 0 10px 30px -10px rgba(61, 139, 47, 0.28);
   --shadow-gold-glow: 0 0 0 1px rgba(232, 150, 10, 0.42), 0 10px 30px -10px rgba(232, 150, 10, 0.48);

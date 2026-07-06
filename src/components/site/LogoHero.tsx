@@ -150,8 +150,8 @@ export function LogoHero() {
         draggable={false}
       />
 
-      {/* Vignette for legibility */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/30 via-black/45 to-black/60" />
+      {/* Very light vignette for legibility (no dark wash) */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-transparent to-primary-deep/25" />
 
       {/* Content */}
       <motion.div

@@ -50,7 +50,7 @@ function NewsAndGalleryPage() {
         className="relative overflow-hidden px-4 py-20 text-primary-foreground md:py-24"
         style={{ background: "var(--gradient-hero)" }}
       >
-        <div className="absolute inset-0 bg-black/35" />
+        <div className="absolute inset-0 bg-primary-deep/10" />
         <div className="relative mx-auto max-w-5xl">
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-white/90">
             <Link to="/" className="hover:text-accent">Home</Link>

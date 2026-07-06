@@ -172,7 +172,7 @@ function EventsPage() {
     <>
       <section className="relative overflow-hidden px-4 py-24 text-primary-foreground" style={{ background: "var(--gradient-hero)" }}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,var(--accent),transparent_55%)] opacity-25" />
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-primary-deep/10" />
         <div className="relative mx-auto max-w-5xl animate-fade-in">
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
