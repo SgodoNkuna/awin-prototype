@@ -592,24 +592,31 @@ export function MembersPage() {
                     </div>
                   )}
 
-                  {/* Portfolio grid */}
-                  {active.portfolio_images && active.portfolio_images.length > 0 && (
-                    <div className="mt-8">
-                      <div className="text-xs font-semibold uppercase tracking-widest text-accent">
-                        Portfolio
+                  {/* Portfolio grid — falls back to curated A-WIN gallery when the member has no images */}
+                  {(() => {
+                    const imgs =
+                      active.portfolio_images && active.portfolio_images.length > 0
+                        ? active.portfolio_images
+                        : fallbackImagesFor(active.id);
+                    return (
+                      <div className="mt-8">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+                          Portfolio
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                          {imgs.map((src, i) => (
+                            <img
+                              key={i}
+                              src={src}
+                              alt={`${active.name} portfolio ${i + 1}`}
+                              className="aspect-square w-full rounded-lg border border-border object-cover"
+                              loading="lazy"
+                            />
+                          ))}
+                        </div>
                       </div>
-                      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        {active.portfolio_images.map((src, i) => (
-                          <img
-                            key={i}
-                            src={src}
-                            alt={`${active.name} portfolio ${i + 1}`}
-                            className="aspect-square w-full rounded-lg border border-border object-cover"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
 
