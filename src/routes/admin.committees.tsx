@@ -54,8 +54,8 @@ function CommitteesPage() {
     const b = peers[swapIdx];
     setSaving(m.id);
     await Promise.all([
-      supabase.from("team_members").update({ committee_order: b.committee_order }).eq("id", a.id),
-      supabase.from("team_members").update({ committee_order: a.committee_order }).eq("id", b.id),
+      supabase.from("team_members").update({ committee_order: b.committee_order ?? 0 }).eq("id", a.id),
+      supabase.from("team_members").update({ committee_order: a.committee_order ?? 0 }).eq("id", b.id),
     ]);
     setSaving(null);
     load();
