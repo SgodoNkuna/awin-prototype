@@ -386,7 +386,47 @@ function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="danger" className="space-y-4 mt-4">
+          <Card className="border-destructive/40">
+            <CardHeader>
+              <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <DangerAction
+                title="Clear all contact messages"
+                description="Permanently delete every message submitted through the contact form."
+                confirmText="DELETE MESSAGES"
+                onConfirm={async () => {
+                  const { error } = await supabase.from("contact_messages").delete().gte("created_at", "1970-01-01");
+                  if (error) throw error;
+                }}
+              />
+              <DangerAction
+                title="Reset all site settings to defaults"
+                description="Removes every key in site_settings. Public copy will fall back to hard-coded defaults until you republish."
+                confirmText="RESET SETTINGS"
+                onConfirm={async () => {
+                  const { error } = await supabase.from("site_settings").delete().gte("key", "");
+                  if (error) throw error;
+                  await load();
+                }}
+              />
+              <DangerAction
+                title="Delete all draft (unpublished) team profiles"
+                description="Removes team_members rows where published = false. Live members are untouched."
+                confirmText="DELETE DRAFTS"
+                onConfirm={async () => {
+                  const { error } = await supabase.from("team_members").delete().eq("published", false);
+                  if (error) throw error;
+                  await load();
+                }}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
     </div>
   );
 }
