@@ -154,7 +154,7 @@ function CommitteeCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }
 export function MembersPage() {
   const [team, setTeam] = useState<Member[] | null>(null);
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<string>("All");
+  const [category, setCategory] = useState<string>("Available");
   const [active, setActive] = useState<Member | null>(null);
 
   useEffect(() => {
@@ -166,11 +166,17 @@ export function MembersPage() {
       .then(({ data }) => setTeam(((data ?? []) as unknown) as Member[]));
   }, []);
 
-  // General (non-committee) members feed search + category filter + A–Z directory.
   const generalMembers = useMemo(
     () => (team ?? []).filter((m) => !m.committee),
     [team],
   );
+
+  // "Available now" = current talent: a real profile with photo/card AND at least one contact/expertise signal.
+  const isAvailable = (m: Member) =>
+    Boolean(
+      (m.profile_card_url || m.photo_url) &&
+        (m.contact_email || m.website || m.linkedin_url || m.social_url || (m.expertise && m.expertise.length > 0)),
+    );
 
   const committeeMembers = useMemo(() => {
     const map = new Map<string, Member[]>();
@@ -195,6 +201,11 @@ export function MembersPage() {
     });
   }, [team, generalMembers, query]);
 
+  const availableCount = useMemo(
+    () => (filtered ?? []).filter(isAvailable).length,
+    [filtered],
+  );
+
   const byCategory = useMemo(() => {
     const map = new Map<string, Member[]>();
     (filtered ?? []).forEach((m) => {
@@ -216,9 +227,6 @@ export function MembersPage() {
     return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
 
-  // Build category list dynamically from members that actually have entries.
-  // Categories with members first (ordered by count desc, then alphabetically),
-  // then any preset categories with no members appended after.
   const dynamicCategories = useMemo(() => {
     const counts = new Map<string, number>();
     generalMembers.forEach((m) => {
@@ -231,15 +239,18 @@ export function MembersPage() {
     const empty = (CATEGORIES as readonly string[]).filter(
       (c) => c !== "All" && !counts.has(c),
     );
-    return ["All", ...populated, ...empty];
+    // "Available" first (current talent), then "All", then populated categories, then empties.
+    return ["Available", "All", ...populated, ...empty];
   }, [generalMembers]);
 
   const populatedCategories = useMemo(
-    () => dynamicCategories.filter((c) => c !== "All" && byCategory.has(c)),
+    () => dynamicCategories.filter((c) => c !== "All" && c !== "Available" && byCategory.has(c)),
     [dynamicCategories, byCategory],
   );
 
-  const activeCategories = category === "All" ? populatedCategories : [category];
+  const activeCategories =
+    category === "All" || category === "Available" ? populatedCategories : [category];
+
 
   return (
     <>
