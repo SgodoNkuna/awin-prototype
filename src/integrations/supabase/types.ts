@@ -17,6 +17,8 @@ export type Database = {
       applications: {
         Row: {
           admin_notes: string | null
+          agreement_accepted_at: string | null
+          agreement_version: string | null
           created_at: string
           decided_at: string | null
           email: string
@@ -27,10 +29,19 @@ export type Database = {
           id_number: string
           motivation: string
           occupation: string
+          payment_reference: string | null
           phone: string
+          popia_consent: boolean
+          popia_consent_at: string | null
+          proof_of_payment_path: string | null
+          proof_of_payment_uploaded_at: string | null
           referral: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          signature_doc_hash: string | null
+          signature_ip: unknown
+          signature_typed_name: string | null
+          signature_user_agent: string | null
           status: Database["public"]["Enums"]["application_status"]
           status_updated_at: string
           submitted_at: string
@@ -39,6 +50,8 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          agreement_accepted_at?: string | null
+          agreement_version?: string | null
           created_at?: string
           decided_at?: string | null
           email: string
@@ -49,10 +62,19 @@ export type Database = {
           id_number: string
           motivation: string
           occupation: string
+          payment_reference?: string | null
           phone: string
+          popia_consent?: boolean
+          popia_consent_at?: string | null
+          proof_of_payment_path?: string | null
+          proof_of_payment_uploaded_at?: string | null
           referral?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          signature_doc_hash?: string | null
+          signature_ip?: unknown
+          signature_typed_name?: string | null
+          signature_user_agent?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           status_updated_at?: string
           submitted_at?: string
@@ -61,6 +83,8 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          agreement_accepted_at?: string | null
+          agreement_version?: string | null
           created_at?: string
           decided_at?: string | null
           email?: string
@@ -71,10 +95,19 @@ export type Database = {
           id_number?: string
           motivation?: string
           occupation?: string
+          payment_reference?: string | null
           phone?: string
+          popia_consent?: boolean
+          popia_consent_at?: string | null
+          proof_of_payment_path?: string | null
+          proof_of_payment_uploaded_at?: string | null
           referral?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          signature_doc_hash?: string | null
+          signature_ip?: unknown
+          signature_typed_name?: string | null
+          signature_user_agent?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           status_updated_at?: string
           submitted_at?: string
