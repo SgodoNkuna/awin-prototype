@@ -275,7 +275,7 @@
   --sidebar-primary-foreground: #1b1d26;
   --chart-1: #444750;
   --chart-2: #777b86;
-  --gradient-hero: linear-gradient(135deg, #262833 0%, #0d0e13 100%);
+  --gradient-hero: linear-gradient(135deg, #6A6E7A 0%, #3B3E48 100%);
   --gradient-gold: linear-gradient(135deg, #666a73 0%, #2f323a 100%);
   --shadow-elegant: 0 10px 30px -10px rgba(0, 0, 0, 0.45);
   --shadow-gold-glow: 0 0 0 1px rgba(83, 87, 97, 0.5), 0 10px 30px -10px rgba(0, 0, 0, 0.4);
