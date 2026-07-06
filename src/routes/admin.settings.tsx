@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Loader2, Save } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Plus, Trash2, Loader2, Save, CloudUpload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { mirrorPortfolioAssets } from "@/lib/portfolio-storage.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -225,6 +227,7 @@ function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="team" className="space-y-3 mt-4">
+          <MirrorStorageCard />
           <Button
             size="sm"
             onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", profile_card_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "", linkedin_url: "", social_url: "", portfolio_images: [], committee: null, committee_position: null, committee_order: 0 }])}
@@ -466,5 +469,54 @@ function DangerAction({
         {busy ? <Loader2 className="size-4 animate-spin" /> : "Run"}
       </Button>
     </div>
+  );
+}
+
+function MirrorStorageCard() {
+  const mirror = useServerFn(mirrorPortfolioAssets);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<null | { members: number; uploaded: number; skipped: number; failed: number; updated: number }>(null);
+  return (
+    <Card className="border-accent/40 bg-accent/5">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <CloudUpload className="size-4" /> Mirror portfolio images to Supabase Storage
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Downloads every remote member photo, card and portfolio image and uploads it to the private <code>member-portfolios</code> bucket, then rewrites the database to reference storage keys. The site then renders via short-lived signed URLs so Vercel and Supabase stay in sync. Safe to run repeatedly.
+        </p>
+        <Button
+          size="sm"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setResult(null);
+            try {
+              const r = await mirror();
+              setResult(r);
+              toast.success(`Mirror complete: ${r.uploaded} uploaded, ${r.updated} members updated`);
+            } catch (e: any) {
+              toast.error(e.message ?? "Mirror failed");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {busy ? <Loader2 className="size-4 animate-spin mr-2" /> : <CloudUpload className="size-4 mr-2" />}
+          Run mirror now
+        </Button>
+        {result && (
+          <div className="text-xs text-muted-foreground grid grid-cols-2 gap-1 sm:grid-cols-5">
+            <div><strong>{result.members}</strong> members</div>
+            <div><strong>{result.uploaded}</strong> uploaded</div>
+            <div><strong>{result.skipped}</strong> skipped</div>
+            <div><strong>{result.updated}</strong> rows updated</div>
+            <div><strong>{result.failed}</strong> failed</div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
