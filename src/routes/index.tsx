@@ -292,7 +292,7 @@ function Index() {
               </ul>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-                  <Link to="/membership">Apply for Membership</Link>
+                  <Link to="/onboarding">Start Onboarding</Link>
                 </Button>
                 <Button asChild variant="outline">
                   <Link to="/about">Read Our Story</Link>
