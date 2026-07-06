@@ -31,16 +31,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       if (s?.user) {
-        setTimeout(() => void loadRole(s.user.id), 0);
+        // Keep loading true until the role check resolves so admin gates don't flash-redirect.
+        setLoading(true);
+        void loadRole(s.user.id).finally(() => setLoading(false));
       } else {
         setIsAdmin(false);
+        setLoading(false);
       }
     });
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      setLoading(false);
-      if (data.session?.user) void loadRole(data.session.user.id);
+      if (data.session?.user) {
+        void loadRole(data.session.user.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();

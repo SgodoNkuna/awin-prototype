@@ -17,6 +17,30 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import wcw1 from "@/assets/wcw/wcw-1.jpeg.asset.json";
+import wcw2 from "@/assets/wcw/wcw-2.jpeg.asset.json";
+import wcw3 from "@/assets/wcw/wcw-3.jpeg.asset.json";
+import wcw4 from "@/assets/wcw/wcw-4.jpeg.asset.json";
+import wcw5 from "@/assets/wcw/wcw-5.jpeg.asset.json";
+import wcw6 from "@/assets/wcw/wcw-6.jpeg.asset.json";
+import hike1 from "@/assets/hike-2026/hike-00.44.5844.jpeg.asset.json";
+import hike2 from "@/assets/hike-2026/hike-00.44.5911.jpeg.asset.json";
+import hike3 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
+import coach1 from "@/assets/wcw-coaching/coaching-1.jpeg.asset.json";
+import coach2 from "@/assets/wcw-coaching/coaching-2.jpeg.asset.json";
+
+const FALLBACK_POOL: string[] = [wcw1, wcw2, wcw3, wcw4, wcw5, wcw6, hike1, hike2, hike3, coach1, coach2].map(
+  (a) => (a as { url: string }).url,
+);
+
+// Deterministic per-id pick so a member's fallback gallery is stable across renders.
+function fallbackImagesFor(id: string, n = 3): string[] {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  const out: string[] = [];
+  for (let i = 0; i < n; i++) out.push(FALLBACK_POOL[(hash + i * 7) % FALLBACK_POOL.length]);
+  return out;
+}
 
 export const Route = createFileRoute("/team")({
   head: () => ({
@@ -568,24 +592,31 @@ export function MembersPage() {
                     </div>
                   )}
 
-                  {/* Portfolio grid */}
-                  {active.portfolio_images && active.portfolio_images.length > 0 && (
-                    <div className="mt-8">
-                      <div className="text-xs font-semibold uppercase tracking-widest text-accent">
-                        Portfolio
+                  {/* Portfolio grid — falls back to curated A-WIN gallery when the member has no images */}
+                  {(() => {
+                    const imgs =
+                      active.portfolio_images && active.portfolio_images.length > 0
+                        ? active.portfolio_images
+                        : fallbackImagesFor(active.id);
+                    return (
+                      <div className="mt-8">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+                          Portfolio
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                          {imgs.map((src, i) => (
+                            <img
+                              key={i}
+                              src={src}
+                              alt={`${active.name} portfolio ${i + 1}`}
+                              className="aspect-square w-full rounded-lg border border-border object-cover"
+                              loading="lazy"
+                            />
+                          ))}
+                        </div>
                       </div>
-                      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        {active.portfolio_images.map((src, i) => (
-                          <img
-                            key={i}
-                            src={src}
-                            alt={`${active.name} portfolio ${i + 1}`}
-                            className="aspect-square w-full rounded-lg border border-border object-cover"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
 
