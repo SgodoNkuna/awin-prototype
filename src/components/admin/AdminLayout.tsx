@@ -14,7 +14,7 @@ import {
   CreditCard,
   FileDown,
   Menu,
-  
+  ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ type AdminPath =
   | "/admin/applications"
   | "/admin/events"
   | "/admin/portfolio"
+  | "/admin/products"
   | "/admin/messages"
   | "/admin/documents"
   | "/admin/billing"
@@ -59,6 +60,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/admin/events", label: "Events", icon: Calendar },
       { to: "/admin/portfolio", label: "Portfolio", icon: Briefcase },
+      { to: "/admin/products", label: "Products", icon: ShoppingBag },
       { to: "/admin/documents", label: "Documents", icon: FolderOpen },
     ],
   },
@@ -128,7 +130,7 @@ export function AdminLayout() {
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-11",
                     active
-                      ? "bg-[var(--accent)] text-white shadow-[var(--shadow-gold-glow)]"
+                      ? "bg-[#E8960A] text-white"
                       : "text-white/85 hover:bg-white/10 hover:text-white",
                   )}
                 >
@@ -166,10 +168,10 @@ export function AdminLayout() {
       {/* Desktop sidebar */}
       <aside
         className="hidden md:flex w-64 flex-col border-r sticky top-20 self-start h-[calc(100vh-5rem)]"
-        style={{ background: "var(--primary-deep)", color: "#FFFFFF" }}
+        style={{ background: "#2A6020", color: "#FFFFFF" }}
       >
         <div className="px-5 py-4 border-b border-white/10">
-          <div className="text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">A-WIN</div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-WIN</div>
           <div className="text-sm font-medium text-white">Admin Console</div>
           <div className="text-xs text-white/70 truncate mt-0.5">{user.email}</div>
         </div>
@@ -185,7 +187,7 @@ export function AdminLayout() {
               <Button
                 size="sm"
                 className="gap-2 min-h-11 text-white font-semibold"
-                style={{ background: "var(--accent)" }}
+                style={{ background: "#E8960A" }}
                 aria-label="Open admin menu"
               >
                 <Menu className="size-4" />
@@ -195,11 +197,11 @@ export function AdminLayout() {
             <SheetContent
               side="left"
               className="w-72 p-0 flex flex-col border-0"
-              style={{ background: "var(--primary-deep)", color: "#FFFFFF" }}
+              style={{ background: "#2A6020", color: "#FFFFFF" }}
             >
               <SheetTitle className="sr-only">Admin navigation</SheetTitle>
               <div className="px-5 py-4 border-b border-white/10">
-                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">A-WIN</div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-WIN</div>
                 <div className="text-sm font-medium text-white">{currentLabel}</div>
                 <div className="text-xs text-white/70 truncate mt-0.5">{user.email}</div>
               </div>

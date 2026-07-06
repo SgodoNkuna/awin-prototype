@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeamRouteImport } from './routes/team'
+import { Route as ProductsRouteImport } from './routes/products'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as NewsRouteImport } from './routes/news'
@@ -25,6 +26,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as DebugRoutesRouteImport } from './routes/debug.routes'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminPortfolioRouteImport } from './routes/admin.portfolio'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
@@ -38,6 +40,11 @@ import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/pay
 const TeamRoute = TeamRouteImport.update({
   id: '/team',
   path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsRoute = ProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortfolioRoute = PortfolioRouteImport.update({
@@ -115,6 +122,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPortfolioRoute = AdminPortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
@@ -174,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
+  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
@@ -183,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
+  '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
@@ -200,6 +214,7 @@ export interface FileRoutesByTo {
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
+  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
@@ -209,6 +224,7 @@ export interface FileRoutesByTo {
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
+  '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin': typeof AdminIndexRoute
@@ -228,6 +244,7 @@ export interface FileRoutesById {
   '/news': typeof NewsRoute
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
+  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
@@ -237,6 +254,7 @@ export interface FileRoutesById {
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
+  '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
@@ -257,6 +275,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/portfolio'
+    | '/products'
     | '/team'
     | '/admin/applications'
     | '/admin/billing'
@@ -266,6 +285,7 @@ export interface FileRouteTypes {
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
+    | '/admin/products'
     | '/admin/settings'
     | '/debug/routes'
     | '/admin/'
@@ -283,6 +303,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/portfolio'
+    | '/products'
     | '/team'
     | '/admin/applications'
     | '/admin/billing'
@@ -292,6 +313,7 @@ export interface FileRouteTypes {
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
+    | '/admin/products'
     | '/admin/settings'
     | '/debug/routes'
     | '/admin'
@@ -310,6 +332,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/portal'
     | '/portfolio'
+    | '/products'
     | '/team'
     | '/admin/applications'
     | '/admin/billing'
@@ -319,6 +342,7 @@ export interface FileRouteTypes {
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
+    | '/admin/products'
     | '/admin/settings'
     | '/debug/routes'
     | '/admin/'
@@ -338,6 +362,7 @@ export interface RootRouteChildren {
   NewsRoute: typeof NewsRoute
   PortalRoute: typeof PortalRoute
   PortfolioRoute: typeof PortfolioRoute
+  ProductsRoute: typeof ProductsRoute
   TeamRoute: typeof TeamRoute
   DebugRoutesRoute: typeof DebugRoutesRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -350,6 +375,13 @@ declare module '@tanstack/react-router' {
       path: '/team'
       fullPath: '/team'
       preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products': {
+      id: '/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portfolio': {
@@ -457,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/portfolio': {
       id: '/admin/portfolio'
       path: '/portfolio'
@@ -532,6 +571,7 @@ interface AdminRouteChildren {
   AdminMembersRoute: typeof AdminMembersRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminPortfolioRoute: typeof AdminPortfolioRoute
+  AdminProductsRoute: typeof AdminProductsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -545,6 +585,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMembersRoute: AdminMembersRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminPortfolioRoute: AdminPortfolioRoute,
+  AdminProductsRoute: AdminProductsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
@@ -564,6 +605,7 @@ const rootRouteChildren: RootRouteChildren = {
   NewsRoute: NewsRoute,
   PortalRoute: PortalRoute,
   PortfolioRoute: PortfolioRoute,
+  ProductsRoute: ProductsRoute,
   TeamRoute: TeamRoute,
   DebugRoutesRoute: DebugRoutesRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
@@ -571,13 +613,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

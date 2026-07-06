@@ -79,22 +79,22 @@
   --popover: #FFFFFF;
   --popover-foreground: #1A1A1A;
 
-  /* Brand — vivid A-WIN green (A symbol on flyer) */
-  --primary: #4CA53A;
+  /* Brand — warm olive green (A symbol) */
+  --primary: #3D8B2F;
   --primary-foreground: #FFFFFF;
-  --primary-deep: #2F7A22;
-  --primary-light: #EDF7EA;
+  --primary-deep: #2A6020;
+  --primary-light: #F0F7ED;
   --hero-foreground: #FFFFFF;
-  --hero-muted: rgba(255, 255, 255, 0.92);
+  --hero-muted: rgba(255, 255, 255, 0.9);
   --hero-surface: rgba(255, 255, 255, 0.14);
   --hero-border: rgba(255, 255, 255, 0.38);
 
-  /* Accent — bright warm orange (WIN on flyer) */
-  --accent: #F58220;
-  --accent-foreground: #FFFFFF;
-  --accent-soft: #FFE7CB;
-  --accent-deep: #D96A0D;
-  --accent-bright: #FF8C1A;
+  /* Accent — bright warm orange (WIN) — matches the original A-WIN flyer */
+  --accent: #F5A623;
+  --accent-foreground: #1A1A1A;
+  --accent-soft: #FFF1D6;
+  --accent-deep: #D98910;
+  --accent-bright: #FFA500;
 
   --secondary: #F0F7ED;
   --secondary-foreground: #2A6020;
@@ -104,12 +104,12 @@
 
   --destructive: #C0392B;
   --destructive-foreground: #FFFFFF;
-  --success: #4CA53A;
+  --success: #3D8B2F;
   --success-foreground: #FFFFFF;
 
   --border: #D0D0D0;
   --input: #D0D0D0;
-  --ring: #4CA53A;
+  --ring: #3D8B2F;
 
   --chart-1: #3D8B2F;
   --chart-2: #E8960A;
@@ -127,8 +127,8 @@
   --sidebar-ring: #E8960A;
 
   /* Gradients & shadows */
-  --gradient-hero: linear-gradient(135deg, #4CA53A 0%, #2F7A22 55%, #1E5216 100%);
-  --gradient-gold: linear-gradient(135deg, #FF8C1A 0%, #D96A0D 100%);
+  --gradient-hero: linear-gradient(135deg, #3D8B2F 0%, #2A6020 100%);
+  --gradient-gold: linear-gradient(135deg, #E8960A 0%, #C97D08 100%);
   --shadow-elegant: 0 10px 30px -10px rgba(42, 96, 32, 0.32);
   --shadow-gold-glow: 0 0 0 1px rgba(232, 150, 10, 0.42), 0 10px 30px -10px rgba(232, 150, 10, 0.48);
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
