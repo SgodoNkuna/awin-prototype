@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { setUserRole } from "@/lib/admin-roles.functions";
 
@@ -35,7 +36,10 @@ function MembersPage() {
   const [members, setMembers] = useState<Member[] | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [tierFilter, setTierFilter] = useState<string>("all");
+  const [suspendedFilter, setSuspendedFilter] = useState<string>("all");
   const [editing, setEditing] = useState<Member | null>(null);
+  const [detail, setDetail] = useState<Member | null>(null);
   const [promoting, setPromoting] = useState<Member | null>(null);
   const [promoteReason, setPromoteReason] = useState("");
   const [promoteBusy, setPromoteBusy] = useState(false);
@@ -59,7 +63,11 @@ function MembersPage() {
     const matchesSearch =
       !s || m.email?.toLowerCase().includes(s) || m.full_name?.toLowerCase().includes(s);
     const matchesStatus = statusFilter === "all" || m.membership_status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesTier = tierFilter === "all" || (m.membership_tier ?? "none") === tierFilter;
+    const matchesSuspended =
+      suspendedFilter === "all" ||
+      (suspendedFilter === "yes" ? m.suspended : !m.suspended);
+    return matchesSearch && matchesStatus && matchesTier && matchesSuspended;
   });
 
   const updateMember = async (id: string, patch: Partial<Member>) => {
@@ -105,13 +113,13 @@ function MembersPage() {
 
       <Card>
         <CardContent className="pt-6 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
+          <div className="grid gap-3 sm:grid-cols-4">
+            <div className="relative sm:col-span-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input placeholder="Search name or email…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
@@ -119,6 +127,27 @@ function MembersPage() {
                 <SelectItem value="expired">Expired</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={tierFilter} onValueChange={setTierFilter}>
+              <SelectTrigger><SelectValue placeholder="Tier" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All tiers</SelectItem>
+                <SelectItem value="none">No tier</SelectItem>
+                {TIERS.map((t) => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={suspendedFilter} onValueChange={setSuspendedFilter}>
+              <SelectTrigger className="sm:col-start-3"><SelectValue placeholder="Suspended" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All (active & suspended)</SelectItem>
+                <SelectItem value="no">Not suspended</SelectItem>
+                <SelectItem value="yes">Suspended only</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="ghost"
+              onClick={() => { setSearch(""); setStatusFilter("all"); setTierFilter("all"); setSuspendedFilter("all"); }}
+              className="sm:col-start-4"
+            >Clear filters</Button>
           </div>
 
           {members === null ? (
@@ -140,15 +169,19 @@ function MembersPage() {
                 </thead>
                 <tbody>
                   {filtered.map((m) => (
-                    <tr key={m.id} className="border-b last:border-0">
-                      <td className="py-3 pr-3">{m.full_name || "—"}</td>
+                    <tr
+                      key={m.id}
+                      className="border-b last:border-0 cursor-pointer hover:bg-muted/40"
+                      onClick={() => setDetail(m)}
+                    >
+                      <td className="py-3 pr-3 font-medium">{m.full_name || "—"}</td>
                       <td className="py-3 pr-3 text-muted-foreground">{m.email}</td>
                       <td className="py-3 pr-3 capitalize">{m.membership_tier ?? "—"}</td>
                       <td className="py-3 pr-3"><StatusPill status={m.membership_status} suspended={m.suspended} /></td>
                       <td className="py-3 pr-3 text-muted-foreground">
                         {m.joined_at ? new Date(m.joined_at).toLocaleDateString() : "—"}
                       </td>
-                      <td className="py-3">
+                      <td className="py-3" onClick={(e) => e.stopPropagation()}>
                         <div className="flex gap-1">
                           <Button size="sm" variant="ghost" onClick={() => setEditing(m)}>Edit</Button>
                           <Button
@@ -171,6 +204,40 @@ function MembersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Slide-in member detail */}
+      <Sheet open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
+        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{detail?.full_name || "(no name)"}</SheetTitle>
+            <SheetDescription>{detail?.email}</SheetDescription>
+          </SheetHeader>
+          {detail && (
+            <div className="mt-6 space-y-4 px-4 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <Info label="Tier" value={detail.membership_tier ?? "—"} />
+                <Info label="Status" value={detail.membership_status} />
+                <Info label="Suspended" value={detail.suspended ? "Yes" : "No"} />
+                <Info label="Joined" value={detail.joined_at ? new Date(detail.joined_at).toLocaleDateString() : "—"} />
+                <Info label="Created" value={new Date(detail.created_at).toLocaleDateString()} />
+              </div>
+              <div className="flex flex-col gap-2 pt-4 border-t">
+                <Button onClick={() => { setEditing(detail); setDetail(null); }}>Edit membership</Button>
+                <Button variant="outline" onClick={() => updateMember(detail.id, { suspended: !detail.suspended })}>
+                  {detail.suspended ? "Unsuspend member" : "Suspend member"}
+                </Button>
+                <Button variant="outline" onClick={() => { setPromoting(detail); setPromoteReason(""); setDetail(null); }}>
+                  <Shield className="size-4 mr-2" /> Manage admin role
+                </Button>
+              </div>
+            </div>
+          )}
+          <SheetFooter className="mt-6">
+            <Button variant="ghost" onClick={() => setDetail(null)}>Close</Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
@@ -289,4 +356,13 @@ function StatusPill({ status, suspended }: { status: string; suspended: boolean 
     expired: "bg-destructive/15 text-destructive",
   };
   return <Badge variant="outline" className={map[status] ?? ""}>{status}</Badge>;
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mt-0.5 font-medium capitalize">{value}</div>
+    </div>
+  );
 }

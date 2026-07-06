@@ -97,11 +97,12 @@ function SettingsPage() {
       </div>
 
       <Tabs defaultValue="content">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="content">Content</TabsTrigger>
           <TabsTrigger value="tiers">Membership Tiers</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="danger" className="text-destructive">Danger Zone</TabsTrigger>
         </TabsList>
 
         <TabsContent value="content" className="space-y-4 mt-4">

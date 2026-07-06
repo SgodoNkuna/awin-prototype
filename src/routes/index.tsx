@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { LogoHero } from "@/components/site/LogoHero";
 import { PortfolioCarousel } from "@/components/site/PortfolioCarousel";
 import { WCWGallery } from "@/components/site/WCWGallery";
+import { HikeGallery } from "@/components/site/HikeGallery";
 import { supabase } from "@/integrations/supabase/client";
 
 
@@ -313,6 +314,9 @@ function Index() {
 
       {/* WCW SUMMIT GALLERY */}
       <WCWGallery />
+
+      {/* A-WIN HIKE APRIL 2026 */}
+      <HikeGallery />
 
       {/* PORTFOLIO CAROUSEL */}
       <PortfolioCarousel />

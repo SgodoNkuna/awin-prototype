@@ -7,7 +7,7 @@ export function SiteFooter() {
   return (
     <footer
       className="mt-24 border-t-4 border-[#E8960A]"
-      style={{ background: "#2A6020", color: "#FFFFFF" }}
+      style={{ background: "#3D8B2F", color: "#FFFFFF" }}
     >
       <div className="container mx-auto grid gap-10 px-4 py-14 text-center md:grid-cols-4 md:gap-8 md:text-left md:py-16 md:px-8">
         <div className="flex flex-col items-center md:items-start">
