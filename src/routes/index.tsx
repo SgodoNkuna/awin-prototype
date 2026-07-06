@@ -282,7 +282,7 @@ function Index() {
                 >
                   <div
                     className="relative h-40 w-full"
-                    style={{ background: "var(--gradient-hero)" }}
+                    style={{ background: "var(--gradient-placeholder)" }}
                   >
                     <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
                       <div className="font-serif text-xl leading-none">
