@@ -109,7 +109,7 @@ export const mirrorPortfolioAssets = createServerFn({ method: "POST" })
         if (k) portfolio.push(k);
       }
 
-      const patch: Record<string, unknown> = {};
+      const patch: Partial<{ photo_url: string; profile_card_url: string; portfolio_images: string[] }> = {};
       if (newPhoto && newPhoto !== m.photo_url) patch.photo_url = newPhoto;
       if (newCard && newCard !== m.profile_card_url) patch.profile_card_url = newCard;
       if (portfolio.length > 0) patch.portfolio_images = portfolio;
@@ -117,7 +117,7 @@ export const mirrorPortfolioAssets = createServerFn({ method: "POST" })
       if (Object.keys(patch).length > 0) {
         const { error: updErr } = await supabaseAdmin
           .from("team_members")
-          .update(patch)
+          .update(patch as never)
           .eq("id", m.id);
         if (updErr) {
           summary.failed += 1;
