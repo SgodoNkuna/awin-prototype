@@ -1,10 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus, Trash2, Loader2, Save, CloudUpload } from "lucide-react";
+import { Plus, Trash2, Loader2, Save, CloudUpload, Eye, Trash } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { mirrorPortfolioAssets } from "@/lib/portfolio-storage.functions";
+import {
+  mirrorPortfolioAssets,
+  purgeOrphanPortfolioObjects,
+  getPortfolioMirrorStatus,
+} from "@/lib/portfolio-storage.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -474,47 +478,158 @@ function DangerAction({
 
 function MirrorStorageCard() {
   const mirror = useServerFn(mirrorPortfolioAssets);
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<null | { members: number; uploaded: number; skipped: number; failed: number; updated: number }>(null);
+  const purge = useServerFn(purgeOrphanPortfolioObjects);
+  const loadStatus = useServerFn(getPortfolioMirrorStatus);
+  const [busy, setBusy] = useState<null | "mirror" | "dry" | "purge" | "purge-dry">(null);
+  const [status, setStatus] = useState<any>(null);
+  const [preview, setPreview] = useState<any>(null);
+
+  const refresh = async () => {
+    try { setStatus(await loadStatus()); } catch { /* ignore */ }
+  };
+  useEffect(() => { refresh(); }, []);
+
+  const fmt = (iso?: string) => (iso ? new Date(iso).toLocaleString() : "—");
+
+  const run = async (mode: "mirror" | "dry" | "purge" | "purge-dry") => {
+    setBusy(mode);
+    setPreview(null);
+    try {
+      let r: any;
+      if (mode === "mirror") r = await mirror({ data: { dry_run: false } });
+      else if (mode === "dry") r = await mirror({ data: { dry_run: true } });
+      else if (mode === "purge") {
+        if (!confirm("Delete every storage object in member-portfolios that is not referenced by team_members? This cannot be undone.")) { setBusy(null); return; }
+        r = await purge({ data: { dry_run: false } });
+      } else r = await purge({ data: { dry_run: true } });
+
+      if (mode === "dry" || mode === "purge-dry") setPreview({ mode, ...r });
+      else toast.success(mode === "mirror" ? `Mirror complete: ${r.uploaded} uploaded, ${r.updated} updated` : `Purge complete: ${r.deleted} deleted`);
+      await refresh();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const mirrorStatus = status?.mirror;
+  const purgeStatus = status?.purge;
+
   return (
     <Card className="border-accent/40 bg-accent/5">
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <CloudUpload className="size-4" /> Mirror portfolio images to Supabase Storage
+          <CloudUpload className="size-4" /> Portfolio storage sync
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Downloads every remote member photo, card and portfolio image and uploads it to the private <code>member-portfolios</code> bucket, then rewrites the database to reference storage keys. The site then renders via short-lived signed URLs so Vercel and Supabase stay in sync. Safe to run repeatedly.
+          Mirrors every remote member photo, card and portfolio image into the private <code>member-portfolios</code> bucket and rewrites the database to use storage keys. The site then renders via signed URLs so Vercel and Supabase stay in sync.
         </p>
-        <Button
-          size="sm"
-          disabled={busy}
-          onClick={async () => {
-            setBusy(true);
-            setResult(null);
-            try {
-              const r = await mirror();
-              setResult(r);
-              toast.success(`Mirror complete: ${r.uploaded} uploaded, ${r.updated} members updated`);
-            } catch (e: any) {
-              toast.error(e.message ?? "Mirror failed");
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          {busy ? <Loader2 className="size-4 animate-spin mr-2" /> : <CloudUpload className="size-4 mr-2" />}
-          Run mirror now
-        </Button>
-        {result && (
-          <div className="text-xs text-muted-foreground grid grid-cols-2 gap-1 sm:grid-cols-5">
-            <div><strong>{result.members}</strong> members</div>
-            <div><strong>{result.uploaded}</strong> uploaded</div>
-            <div><strong>{result.skipped}</strong> skipped</div>
-            <div><strong>{result.updated}</strong> rows updated</div>
-            <div><strong>{result.failed}</strong> failed</div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-md border bg-background p-3 text-xs">
+            <div className="font-semibold mb-1">Last mirror run</div>
+            {mirrorStatus ? (
+              <>
+                <div>Ran: {fmt(mirrorStatus.ran_at)} {mirrorStatus.dry_run && <span className="text-muted-foreground">(dry run)</span>}</div>
+                <div>Members scanned: <strong>{mirrorStatus.members}</strong></div>
+                <div>Objects uploaded: <strong>{mirrorStatus.uploaded}</strong></div>
+                <div>Members updated: <strong>{mirrorStatus.updated}</strong></div>
+                <div>Skipped (already storage keys): <strong>{mirrorStatus.skipped}</strong></div>
+                <div className={mirrorStatus.failed > 0 ? "text-destructive" : ""}>Failures: <strong>{mirrorStatus.failed}</strong></div>
+              </>
+            ) : <div className="text-muted-foreground">Never run.</div>}
           </div>
+          <div className="rounded-md border bg-background p-3 text-xs">
+            <div className="font-semibold mb-1">Last purge run</div>
+            {purgeStatus ? (
+              <>
+                <div>Ran: {fmt(purgeStatus.ran_at)} {purgeStatus.dry_run && <span className="text-muted-foreground">(dry run)</span>}</div>
+                <div>Objects scanned: <strong>{purgeStatus.scanned}</strong></div>
+                <div>Referenced by members: <strong>{purgeStatus.referenced}</strong></div>
+                <div>Orphaned: <strong>{purgeStatus.orphaned}</strong></div>
+                <div>Deleted: <strong>{purgeStatus.deleted}</strong></div>
+              </>
+            ) : <div className="text-muted-foreground">Never run.</div>}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" disabled={!!busy} onClick={() => run("dry")}>
+            {busy === "dry" ? <Loader2 className="size-4 animate-spin mr-2" /> : <Eye className="size-4 mr-2" />}
+            Preview mirror (dry run)
+          </Button>
+          <Button size="sm" disabled={!!busy} onClick={() => run("mirror")}>
+            {busy === "mirror" ? <Loader2 className="size-4 animate-spin mr-2" /> : <CloudUpload className="size-4 mr-2" />}
+            Run mirror now
+          </Button>
+          <Button size="sm" variant="outline" disabled={!!busy} onClick={() => run("purge-dry")}>
+            {busy === "purge-dry" ? <Loader2 className="size-4 animate-spin mr-2" /> : <Eye className="size-4 mr-2" />}
+            Preview purge
+          </Button>
+          <Button size="sm" variant="destructive" disabled={!!busy} onClick={() => run("purge")}>
+            {busy === "purge" ? <Loader2 className="size-4 animate-spin mr-2" /> : <Trash className="size-4 mr-2" />}
+            Purge orphaned objects
+          </Button>
+        </div>
+
+        {preview && preview.mode === "dry" && (
+          <div className="rounded-md border bg-background p-3 text-xs space-y-2 max-h-72 overflow-auto">
+            <div className="font-semibold">Dry-run plan — nothing was changed</div>
+            <div>Would upload <strong>{preview.uploaded}</strong> objects, update <strong>{preview.updated}</strong> members, {preview.failed} would fail.</div>
+            {preview.planned_uploads?.length > 0 && (
+              <details>
+                <summary className="cursor-pointer">{preview.planned_uploads.length} planned uploads</summary>
+                <ul className="mt-1 space-y-0.5">
+                  {preview.planned_uploads.slice(0, 50).map((p: any, i: number) => (
+                    <li key={i} className="truncate"><code>{p.target_key}</code> ← {p.remote_url}</li>
+                  ))}
+                  {preview.planned_uploads.length > 50 && <li className="text-muted-foreground">…and {preview.planned_uploads.length - 50} more</li>}
+                </ul>
+              </details>
+            )}
+            {preview.planned_updates?.length > 0 && (
+              <details>
+                <summary className="cursor-pointer">{preview.planned_updates.length} member row updates</summary>
+                <ul className="mt-1 space-y-0.5">
+                  {preview.planned_updates.slice(0, 50).map((p: any, i: number) => (
+                    <li key={i}><code>{p.member_id}</code>: {p.fields.join(", ")}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
+        )}
+
+        {preview && preview.mode === "purge-dry" && (
+          <div className="rounded-md border bg-background p-3 text-xs space-y-2 max-h-72 overflow-auto">
+            <div className="font-semibold">Purge preview — nothing was deleted</div>
+            <div>{preview.orphaned} of {preview.scanned} objects are not referenced.</div>
+            {preview.orphan_keys?.length > 0 && (
+              <details open>
+                <summary className="cursor-pointer">Orphaned keys</summary>
+                <ul className="mt-1 space-y-0.5">
+                  {preview.orphan_keys.slice(0, 100).map((k: string) => (
+                    <li key={k} className="truncate"><code>{k}</code></li>
+                  ))}
+                  {preview.orphan_keys.length > 100 && <li className="text-muted-foreground">…and more</li>}
+                </ul>
+              </details>
+            )}
+          </div>
+        )}
+
+        {mirrorStatus?.failures?.length > 0 && (
+          <details className="text-xs">
+            <summary className="cursor-pointer text-destructive">{mirrorStatus.failures.length} failures from last mirror</summary>
+            <ul className="mt-1 space-y-0.5 max-h-40 overflow-auto">
+              {mirrorStatus.failures.slice(0, 50).map((f: any, i: number) => (
+                <li key={i} className="truncate"><code>{f.member_id}</code>: {f.error}{f.remote_url ? ` — ${f.remote_url}` : ""}</li>
+              ))}
+            </ul>
+          </details>
         )}
       </CardContent>
     </Card>
