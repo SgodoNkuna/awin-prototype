@@ -1,10 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus, Trash2, Loader2, Save, CloudUpload } from "lucide-react";
+import { Plus, Trash2, Loader2, Save, CloudUpload, Eye, Broom } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { mirrorPortfolioAssets } from "@/lib/portfolio-storage.functions";
+import {
+  mirrorPortfolioAssets,
+  purgeOrphanPortfolioObjects,
+  getPortfolioMirrorStatus,
+} from "@/lib/portfolio-storage.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
