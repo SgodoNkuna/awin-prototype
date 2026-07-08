@@ -8,9 +8,6 @@ import {
   Plus,
   FileText,
   ArrowRight,
-  Camera,
-  CheckCircle2,
-  AlertTriangle,
   Briefcase,
   FolderOpen,
 } from "lucide-react";
@@ -24,8 +21,6 @@ export const Route = createFileRoute("/admin/")({
   component: OverviewPage,
 });
 
-const LAST_EXPORT_KEY = "awin-last-export";
-
 type Stats = {
   members: number;
   pending: number;
@@ -37,23 +32,12 @@ type Stats = {
 
 type Activity = { type: string; title: string; when: string };
 
-type LastExport = { at: string; count: number; pages: number; themes: number };
-
 function OverviewPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [activity, setActivity] = useState<Activity[]>([]);
-  const [lastExport, setLastExport] = useState<LastExport | null>(null);
-  const [latestChange, setLatestChange] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LAST_EXPORT_KEY);
-      if (raw) setLastExport(JSON.parse(raw));
-    } catch {
-      /* ignore */
-    }
-
     (async () => {
       const [
         members,
@@ -64,10 +48,6 @@ function OverviewPage() {
         documents,
         recentApps,
         recentMsgs,
-        latestPortfolio,
-        latestEvent,
-        latestNews,
-        latestTeam,
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("applications").select("*", { count: "exact", head: true }).eq("status", "pending"),
@@ -80,10 +60,6 @@ function OverviewPage() {
         supabase.from("documents").select("*", { count: "exact", head: true }),
         supabase.from("applications").select("full_name, created_at").order("created_at", { ascending: false }).limit(3),
         supabase.from("contact_messages").select("name, subject, created_at").order("created_at", { ascending: false }).limit(3),
-        supabase.from("portfolio_items").select("updated_at").order("updated_at", { ascending: false }).limit(1),
-        supabase.from("events").select("updated_at").order("updated_at", { ascending: false }).limit(1),
-        supabase.from("news_articles").select("updated_at").order("updated_at", { ascending: false }).limit(1),
-        supabase.from("team_members").select("updated_at").order("updated_at", { ascending: false }).limit(1),
       ]);
 
       setStats({
@@ -110,19 +86,9 @@ function OverviewPage() {
         .sort((a, b) => +new Date(b.when) - +new Date(a.when))
         .slice(0, 8);
       setActivity(a);
-
-      const allLatest = [latestPortfolio, latestEvent, latestNews, latestTeam]
-        .map((r) => r.data?.[0]?.updated_at as string | undefined)
-        .filter((x): x is string => !!x)
-        .sort()
-        .reverse();
-      setLatestChange(allLatest[0] ?? null);
     })();
   }, []);
 
-  const exportStale =
-    !lastExport ||
-    (latestChange && new Date(latestChange).getTime() > new Date(lastExport.at).getTime());
 
   return (
     <div className="space-y-6">
@@ -137,49 +103,8 @@ function OverviewPage() {
           <Button asChild variant="outline" size="sm">
             <Link to="/" target="_blank">View Site</Link>
           </Button>
-          <Button asChild size="sm">
-            <Link to="/admin/exports">
-              <Camera className="size-4 mr-2" /> Snapshot Site
-            </Link>
-          </Button>
         </div>
       </div>
-
-      {/* Snapshot freshness banner */}
-      <Card
-        className={
-          exportStale
-            ? "border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/10"
-            : "border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-950/10"
-        }
-      >
-        <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-start gap-3">
-            {exportStale ? (
-              <AlertTriangle className="size-5 text-amber-600 mt-0.5" />
-            ) : (
-              <CheckCircle2 className="size-5 text-emerald-600 mt-0.5" />
-            )}
-            <div>
-              <p className="text-sm font-medium">
-                {exportStale ? "Site snapshots are out of date" : "Snapshots up to date"}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {lastExport
-                  ? `Last export: ${new Date(lastExport.at).toLocaleString()} · ${lastExport.count} screenshot${lastExport.count === 1 ? "" : "s"} (${lastExport.pages} page${lastExport.pages === 1 ? "" : "s"} × ${lastExport.themes} theme${lastExport.themes === 1 ? "" : "s"})`
-                  : "No export has been generated yet."}
-                {latestChange ? ` · Latest content change: ${new Date(latestChange).toLocaleString()}` : ""}
-              </p>
-            </div>
-          </div>
-          <Button asChild size="sm" variant={exportStale ? "default" : "outline"}>
-            <Link to="/admin/exports">
-              <Camera className="size-4 mr-2" />
-              {exportStale ? "Regenerate Now" : "Open Export"}
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <Stat icon={Users} label="Members" value={stats?.members} to="/admin/members" accent="text-blue-600" />
