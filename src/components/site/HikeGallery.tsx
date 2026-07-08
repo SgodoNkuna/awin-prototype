@@ -18,11 +18,11 @@ const photos = [
   { src: h3.url, caption: "Team moment" },
   { src: h4.url, caption: "Riverside" },
   { src: h5.url, caption: "Crossing together" },
-  { src: h6.url, caption: "Setting off" },
   { src: h7.url, caption: "Lakeside pause" },
   { src: h8.url, caption: "Onward" },
   { src: h9.url, caption: "Quiet waters" },
 ];
+void h6;
 
 export function HikeGallery() {
   const [open, setOpen] = useState<{ src: string; caption: string } | null>(null);
