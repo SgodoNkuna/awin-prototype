@@ -22,7 +22,7 @@ const photos = [
   { src: h8.url, caption: "Onward" },
   { src: h9.url, caption: "Quiet waters" },
 ];
-void h6;
+
 
 export function HikeGallery() {
   const [open, setOpen] = useState<{ src: string; caption: string } | null>(null);
