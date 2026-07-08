@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowRight,
   MapPin,
@@ -14,6 +15,7 @@ import { PortfolioCarousel } from "@/components/site/PortfolioCarousel";
 import { WCWGallery } from "@/components/site/WCWGallery";
 import { HikeGallery } from "@/components/site/HikeGallery";
 import { supabase } from "@/integrations/supabase/client";
+import { signPortfolioUrls } from "@/lib/portfolio-storage.functions";
 import wcwHero from "@/assets/wcw/wcw-5.jpeg.asset.json";
 import hikeImg1 from "@/assets/hike-2026/hike-00.44.593.jpeg.asset.json";
 import hikeImg2 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
@@ -129,23 +131,45 @@ function useUpcomingEvents(limit = 4) {
 
 function useFeaturedMembers(limit = 6) {
   const [members, setMembers] = useState<HomeMember[]>([]);
+  const sign = useServerFn(signPortfolioUrls);
   useEffect(() => {
     let cancelled = false;
-    supabase
-      .from("team_members")
-      .select("id, name, title, category, photo_url, profile_card_url" as any)
-      .eq("published", true)
-      .order("order_index", { ascending: true })
-      .limit(limit * 2)
-      .then(({ data }) => {
-        if (cancelled) return;
-        const rows = ((data ?? []) as unknown) as HomeMember[];
-        // Prefer members with an image
-        const withImg = rows.filter((m) => m.profile_card_url || m.photo_url);
-        setMembers((withImg.length ? withImg : rows).slice(0, limit));
-      });
+    (async () => {
+      const { data } = await supabase
+        .from("team_members")
+        .select("id, name, title, category, photo_url, profile_card_url" as any)
+        .eq("published", true)
+        .order("order_index", { ascending: true })
+        .limit(limit * 3);
+      const rows = ((data ?? []) as unknown) as HomeMember[];
+      const withImg = rows.filter((m) => m.profile_card_url || m.photo_url).slice(0, limit);
+      const pool = withImg.length ? withImg : rows.slice(0, limit);
+
+      // Resolve storage keys → signed URLs; external URLs pass through.
+      const keys = new Set<string>();
+      for (const m of pool) {
+        if (m.photo_url) keys.add(m.photo_url);
+        if (m.profile_card_url) keys.add(m.profile_card_url);
+      }
+      let urlMap: Record<string, string> = {};
+      if (keys.size > 0) {
+        try {
+          const res = await sign({ data: { keys: [...keys] } });
+          urlMap = res.urls;
+        } catch (e) {
+          console.error("signPortfolioUrls (home) failed", e);
+        }
+      }
+      const swap = (v: string | null) => (v && urlMap[v]) || v;
+      const resolved = pool.map((m) => ({
+        ...m,
+        photo_url: swap(m.photo_url),
+        profile_card_url: swap(m.profile_card_url),
+      }));
+      if (!cancelled) setMembers(resolved);
+    })();
     return () => { cancelled = true; };
-  }, [limit]);
+  }, [limit, sign]);
   return members;
 }
 

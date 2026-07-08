@@ -226,8 +226,10 @@ export function MembersPage() {
     };
   }, [sign]);
 
+  // Only the "main" (executive) committee is excluded from the general
+  // members directory. Everyone else is a member and is listed below.
   const generalMembers = useMemo(
-    () => (team ?? []).filter((m) => !m.committee),
+    () => (team ?? []).filter((m) => m.committee !== "main"),
     [team],
   );
 

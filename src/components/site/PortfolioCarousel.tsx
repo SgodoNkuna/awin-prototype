@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowRight } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
 import {
@@ -11,22 +12,25 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { signPortfolioUrls } from "@/lib/portfolio-storage.functions";
 
 type Item = {
   id: string;
-  title: string;
-  slug: string;
-  summary: string | null;
-  cover_image: string | null;
+  name: string;
+  title: string | null;
+  category: string | null;
+  profile_card_url: string | null;
+  photo_url: string | null;
 };
 
 export function PortfolioCarousel() {
   const [items, setItems] = useState<Item[]>([]);
   const [api, setApi] = useState<CarouselApi | null>(null);
   const [current, setCurrent] = useState(0);
+  const sign = useServerFn(signPortfolioUrls);
 
-  // Respect prefers-reduced-motion: disable autoplay when set.
   const prefersReducedMotion =
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -43,20 +47,42 @@ export function PortfolioCarousel() {
 
   useEffect(() => {
     let cancelled = false;
-    supabase
-      .from("portfolio_items")
-      .select("id,title,slug,summary,cover_image")
-      .eq("status", "published")
-      .order("sort_order", { ascending: true })
-      .limit(100)
-      .then(({ data }) => {
-        if (cancelled) return;
-        setItems((data as Item[]) ?? []);
-      });
+    (async () => {
+      const { data } = await supabase
+        .from("team_members")
+        .select("id, name, title, category, profile_card_url, photo_url" as any)
+        .eq("published", true)
+        .order("order_index", { ascending: true })
+        .limit(30);
+      const rows = ((data ?? []) as unknown) as Item[];
+      const withImg = rows.filter((r) => r.profile_card_url || r.photo_url);
+
+      const keys = new Set<string>();
+      for (const m of withImg) {
+        if (m.profile_card_url) keys.add(m.profile_card_url);
+        if (m.photo_url) keys.add(m.photo_url);
+      }
+      let urlMap: Record<string, string> = {};
+      if (keys.size > 0) {
+        try {
+          const res = await sign({ data: { keys: [...keys] } });
+          urlMap = res.urls;
+        } catch (e) {
+          console.error("signPortfolioUrls (portfolio) failed", e);
+        }
+      }
+      const swap = (v: string | null) => (v && urlMap[v]) || v;
+      const resolved = withImg.map((m) => ({
+        ...m,
+        profile_card_url: swap(m.profile_card_url),
+        photo_url: swap(m.photo_url),
+      }));
+      if (!cancelled) setItems(resolved);
+    })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [sign]);
 
   useEffect(() => {
     if (!api) return;
@@ -83,6 +109,9 @@ export function PortfolioCarousel() {
             <h2 id="portfolio-heading" className="mt-3 font-serif">
               Member Portfolio
             </h2>
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+              A rotating look at the women shaping A-WIN — click through to their full profile.
+            </p>
           </div>
           <Link
             to="/members"
@@ -98,45 +127,44 @@ export function PortfolioCarousel() {
           plugins={[autoplayRef.current]}
           className="mt-10"
           aria-roledescription="carousel"
-          aria-label="Featured A-WIN member businesses, auto-rotating. Pauses on hover or keyboard focus."
+          aria-label="Featured A-WIN members, auto-rotating. Pauses on hover or keyboard focus."
         >
           <CarouselContent>
-            {items.map((item, i) => (
-              <CarouselItem
-                key={item.id}
-                className="sm:basis-1/2 lg:basis-1/3"
-                aria-roledescription="slide"
-                aria-label={`${item.title}, slide ${i + 1} of ${items.length}`}
-              >
-                <Link
-                  to="/members"
-                  aria-label={`View ${item.title} in member portfolio`}
-                  className="block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            {items.map((item, i) => {
+              const img = item.profile_card_url || item.photo_url;
+              return (
+                <CarouselItem
+                  key={item.id}
+                  className="sm:basis-1/2 lg:basis-1/3"
+                  aria-roledescription="slide"
+                  aria-label={`${item.name}, slide ${i + 1} of ${items.length}`}
                 >
-                  <Card className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)] h-full">
-                    <div
-                      className="aspect-[4/3] w-full"
-                      style={{
-                        background: item.cover_image
-                          ? `center/cover no-repeat url(${item.cover_image})`
-                          : "var(--gradient-placeholder)",
-                      }}
-                      aria-hidden="true"
-                    />
-                    <CardContent className="p-5">
-                      <h3 className="font-serif text-lg text-foreground">
-                        {item.title}
-                      </h3>
-                      {item.summary && (
-                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                          {item.summary}
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
-              </CarouselItem>
-            ))}
+                  <Link
+                    to="/members"
+                    aria-label={`View ${item.name} in member directory`}
+                    className="block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  >
+                    <Card className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)] h-full">
+                      <div
+                        className="aspect-[3/4] w-full bg-cover bg-center bg-secondary"
+                        style={{ backgroundImage: img ? `url(${img})` : undefined }}
+                        aria-hidden="true"
+                      />
+                      <CardContent className="p-5">
+                        <h3 className="font-serif text-lg text-foreground">
+                          {item.name}
+                        </h3>
+                        {item.category && (
+                          <Badge className="mt-2 bg-accent text-accent-foreground text-[11px]">
+                            {item.category}
+                          </Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </CarouselItem>
+              );
+            })}
           </CarouselContent>
           <CarouselPrevious
             className="hidden sm:flex"
@@ -145,11 +173,9 @@ export function PortfolioCarousel() {
           <CarouselNext className="hidden sm:flex" aria-label="Next member" />
         </Carousel>
 
-        {/* Live region: announces current slide to screen readers without
-            interrupting focus. Polite so it doesn't fight autoplay updates. */}
         <p className="sr-only" aria-live="polite" aria-atomic="true">
           {items[current]
-            ? `Showing ${items[current].title}, ${current + 1} of ${items.length}`
+            ? `Showing ${items[current].name}, ${current + 1} of ${items.length}`
             : ""}
         </p>
 

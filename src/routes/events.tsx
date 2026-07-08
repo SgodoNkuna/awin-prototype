@@ -11,6 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import hike1 from "@/assets/hike-2026/hike-00.44.593.jpeg.asset.json";
+import hike2 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
+import hike3 from "@/assets/hike-2026/hike-00.44.5966.jpeg.asset.json";
+import hike4 from "@/assets/hike-2026/hike-00.45.001.jpeg.asset.json";
+
+const EVENT_FALLBACK_IMAGES = [hike1.url, hike2.url, hike3.url, hike4.url];
 
 export const Route = createFileRoute("/events")({
   head: () => ({
@@ -243,12 +249,14 @@ function EventsPage() {
             </>
           ) : (
             <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((e) => {
+              {filtered.map((e, i) => {
                 const db = dateBadge(e.event_date);
                 const isPast = new Date(e.event_date).getTime() < now;
+                const cover = e.image_url || EVENT_FALLBACK_IMAGES[i % EVENT_FALLBACK_IMAGES.length];
                 return (
                   <Card key={e.id} className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale">
-                    <div className="relative h-44 w-full bg-cover bg-center" style={{ background: e.image_url ? `url(${e.image_url}) center/cover` : "var(--gradient-placeholder)" }}>
+                    <div className="relative h-44 w-full bg-cover bg-center bg-secondary" style={{ backgroundImage: `url(${cover})` }}>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" aria-hidden="true" />
                       <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
                         <div className="font-serif text-xl leading-none">{db.d}</div>
                         <div className="text-[10px] font-semibold tracking-widest">{db.m}</div>
