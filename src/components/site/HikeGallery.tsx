@@ -7,7 +7,7 @@ import h2 from "@/assets/hike-2026/hike-00.44.5844.jpeg.asset.json";
 import h3 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
 import h4 from "@/assets/hike-2026/hike-00.44.5966.jpeg.asset.json";
 import h5 from "@/assets/hike-2026/hike-00.45.001.jpeg.asset.json";
-import h6 from "@/assets/hike-2026/hike-00.45.00.jpeg.asset.json";
+// h6 (hike-00.45.00.jpeg) intentionally omitted — asset is a book cover, not a hike photo.
 import h7 from "@/assets/hike-2026/hike-00.45.00-2.jpeg.asset.json";
 import h8 from "@/assets/hike-2026/hike-00.44.5911.jpeg.asset.json";
 import h9 from "@/assets/hike-2026/hike-00.44.5932.jpeg.asset.json";
