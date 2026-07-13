@@ -112,14 +112,16 @@ function OnboardingPage() {
   const phoneValid = /^[+\d\s()-]{8,}$/.test(phone);
   const step0Valid = fullName.trim().length > 2 && phoneValid && idValid && occupation.trim().length > 1 && motivation.trim().length > 20;
   const step1Valid = popia;
-  const step2Valid = agree && nameMatches;
+  const step2Valid = agree && nameMatches && drawnSignature.length > 0;
   const step3Valid = !!popFile && paymentRef.trim().length > 2;
+  const step4Valid = stampAcknowledged;
 
   const canGoNext =
     (step === 0 && step0Valid) ||
     (step === 1 && step1Valid) ||
     (step === 2 && step2Valid) ||
-    (step === 3 && step3Valid);
+    (step === 3 && step3Valid) ||
+    (step === 4 && step4Valid);
 
   const requireLogin = () => {
     toast.error("Please sign in to complete onboarding");
