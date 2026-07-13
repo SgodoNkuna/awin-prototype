@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { EventGallery } from "@/components/site/EventGallery";
 import hike1 from "@/assets/hike-2026/hike-00.44.593.jpeg.asset.json";
 import hike2 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
 import hike3 from "@/assets/hike-2026/hike-00.44.5966.jpeg.asset.json";
@@ -316,6 +317,9 @@ function EventsPage() {
           )}
         </div>
       </section>
+
+      <EventGallery />
+
 
 
       <Dialog open={!!registering} onOpenChange={(o) => !o && setRegistering(null)}>

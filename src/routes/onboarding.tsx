@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, FileCheck2, ShieldCheck, Upload, PenLine, Loader2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, FileCheck2, ShieldCheck, Upload, PenLine, Loader2, Stamp, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { SignaturePad } from "@/components/site/SignaturePad";
+import { EftPanel, buildEftReference } from "@/components/site/EftPanel";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -42,22 +44,23 @@ const AGREEMENT_TEXT = `A-WIN MEMBERSHIP AGREEMENT (${AGREEMENT_VERSION})
 
 8. Amendments. The Main Committee may update these terms with reasonable notice to members.`;
 
-const BANK_DETAILS = {
-  account: "A-WIN Collective",
-  bank: "Standard Bank",
-  number: "•••• •••• (contact admin)",
-  reference: "AWIN-{surname}",
-};
-
-type Step = 0 | 1 | 2 | 3 | 4;
+type Step = 0 | 1 | 2 | 3 | 4 | 5;
 
 const STEPS: { key: Step; label: string; icon: typeof FileCheck2 }[] = [
-  { key: 0, label: "Personal details", icon: PenLine },
-  { key: 1, label: "POPIA consent", icon: ShieldCheck },
-  { key: 2, label: "Agreement", icon: FileCheck2 },
-  { key: 3, label: "Proof of payment", icon: Upload },
-  { key: 4, label: "Done", icon: Check },
+  { key: 0, label: "Details", icon: PenLine },
+  { key: 1, label: "Consent", icon: ShieldCheck },
+  { key: 2, label: "Sign", icon: FileCheck2 },
+  { key: 3, label: "Pay", icon: Wallet },
+  { key: 4, label: "Stamp", icon: Stamp },
+  { key: 5, label: "Done", icon: Check },
 ];
+
+/** Mask an SA ID for display: show first 6 + last 2 digits. */
+function maskId(id: string) {
+  const clean = id.replace(/\s+/g, "");
+  if (clean.length < 8) return "•••••••••••••";
+  return `${clean.slice(0, 6)} ••••• ${clean.slice(-2)}`;
+}
 
 async function sha256(text: string) {
   const buf = new TextEncoder().encode(text);
@@ -87,6 +90,9 @@ function OnboardingPage() {
   const [agree, setAgree] = useState(false);
   const [popFile, setPopFile] = useState<File | null>(null);
   const [paymentRef, setPaymentRef] = useState("");
+  const [drawnSignature, setDrawnSignature] = useState("");
+  const [purpose, setPurpose] = useState<"entry" | "monthly">("entry");
+  const [stampAcknowledged, setStampAcknowledged] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -106,14 +112,16 @@ function OnboardingPage() {
   const phoneValid = /^[+\d\s()-]{8,}$/.test(phone);
   const step0Valid = fullName.trim().length > 2 && phoneValid && idValid && occupation.trim().length > 1 && motivation.trim().length > 20;
   const step1Valid = popia;
-  const step2Valid = agree && nameMatches;
+  const step2Valid = agree && nameMatches && drawnSignature.length > 0;
   const step3Valid = !!popFile && paymentRef.trim().length > 2;
+  const step4Valid = stampAcknowledged;
 
   const canGoNext =
     (step === 0 && step0Valid) ||
     (step === 1 && step1Valid) ||
     (step === 2 && step2Valid) ||
-    (step === 3 && step3Valid);
+    (step === 3 && step3Valid) ||
+    (step === 4 && step4Valid);
 
   const requireLogin = () => {
     toast.error("Please sign in to complete onboarding");
@@ -160,7 +168,7 @@ function OnboardingPage() {
       } as any);
       if (insErr) throw insErr;
 
-      setStep(4);
+      setStep(5);
       toast.success("Onboarding submitted. We will review and be in touch.");
     } catch (err: any) {
       console.error(err);
@@ -212,7 +220,7 @@ function OnboardingPage() {
 
           <Card className="border-border/60 shadow-[var(--shadow-elegant)]">
             <CardContent className="p-6 md:p-8 space-y-6">
-              {!userId && step < 4 && (
+              {!userId && step < 5 && (
                 <div className="rounded-lg border border-accent/40 bg-accent/10 p-4 text-sm">
                   You will need to <button className="font-semibold underline" onClick={requireLogin}>sign in</button> before submitting. You can fill everything in first.
                 </div>
@@ -291,48 +299,70 @@ function OnboardingPage() {
                       className="font-serif text-lg italic"
                     />
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Your typed name must match the full legal name from step 1. We record your signature, timestamp, browser and agreement version as your e-signature.
+                      Your typed name must match the full legal name from step 1.
                     </p>
                     {typedSignature && !nameMatches && (
                       <p className="mt-1 text-xs text-destructive">Signature does not match your full legal name.</p>
                     )}
+                  </div>
+                  <div>
+                    <Label>Draw your signature *</Label>
+                    <SignaturePad value={drawnSignature} onChange={setDrawnSignature} />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      We keep your typed name, drawn signature, timestamp, browser and agreement version as a full audit trail — the equivalent of a wet signature under the ECT Act.
+                    </p>
                   </div>
                 </div>
               )}
 
               {step === 3 && (
                 <div className="space-y-4">
-                  <h2 className="font-serif text-2xl text-foreground">Proof of payment</h2>
-                  <div className="rounded-lg border border-border bg-secondary/30 p-4 text-sm">
-                    <div className="font-semibold text-foreground">Pay the R200 annual fee (and optionally your first R500 contribution) to:</div>
-                    <ul className="mt-2 space-y-1 text-foreground/90">
-                      <li><strong>Account:</strong> {BANK_DETAILS.account}</li>
-                      <li><strong>Bank:</strong> {BANK_DETAILS.bank}</li>
-                      <li><strong>Account number:</strong> {BANK_DETAILS.number}</li>
-                      <li><strong>Reference:</strong> {BANK_DETAILS.reference.replace("{surname}", fullName.split(" ").pop() || "SURNAME")}</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <Label>Payment reference used *</Label>
-                    <Input value={paymentRef} onChange={(e) => setPaymentRef(e.target.value)} placeholder="e.g. AWIN-DLAMINI" />
-                  </div>
-                  <div>
-                    <Label>Upload proof of payment (PDF or image) *</Label>
-                    <Input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      onChange={(e) => setPopFile(e.target.files?.[0] ?? null)}
-                    />
-                    {popFile && (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Selected: {popFile.name} ({Math.round(popFile.size / 1024)} KB)
-                      </p>
-                    )}
-                  </div>
+                  <h2 className="font-serif text-2xl text-foreground">Pay by EFT</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Copy the details below into your banking app, then upload your proof of payment. Your reference is generated automatically so the treasurer can auto-match your payment.
+                  </p>
+                  <EftPanel
+                    fullName={fullName}
+                    userSeed={userId ?? userEmail}
+                    purpose={purpose}
+                    onPurposeChange={setPurpose}
+                    file={popFile}
+                    onFileChange={setPopFile}
+                    onReferenceChange={setPaymentRef}
+                  />
                 </div>
               )}
 
               {step === 4 && (
+                <div className="space-y-4">
+                  <h2 className="font-serif text-2xl text-foreground">Stamped membership record</h2>
+                  <p className="text-sm text-muted-foreground">
+                    This is how your certified record will look once the Main Committee has reviewed your proof of payment. Sensitive information is blurred to protect your privacy.
+                  </p>
+
+                  <StampedDocPreview
+                    fullName={fullName}
+                    idNumber={idNumber}
+                    phone={phone}
+                    occupation={occupation}
+                    motivation={motivation}
+                    typedSignature={typedSignature}
+                    drawnSignature={drawnSignature}
+                    reference={paymentRef}
+                    purpose={purpose}
+                    docHash={docHash}
+                  />
+
+                  <label className="flex items-start gap-3 rounded-lg border border-border p-4 cursor-pointer hover:bg-secondary/30">
+                    <Checkbox checked={stampAcknowledged} onCheckedChange={(v) => setStampAcknowledged(!!v)} className="mt-0.5" />
+                    <span className="text-sm">
+                      I confirm the details above are correct and I authorise the Main Committee to stamp and register my membership on verification.
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              {step === 5 && (
                 <div className="space-y-4 text-center py-8">
                   <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-primary/15 text-primary">
                     <Check className="size-8" />
@@ -353,7 +383,7 @@ function OnboardingPage() {
               )}
 
               {/* Nav buttons */}
-              {step < 4 && (
+              {step < 5 && (
                 <div className="flex items-center justify-between border-t border-border pt-4">
                   <Button
                     variant="ghost"
@@ -362,7 +392,7 @@ function OnboardingPage() {
                   >
                     <ChevronLeft className="mr-1 size-4" /> Back
                   </Button>
-                  {step < 3 ? (
+                  {step < 4 ? (
                     <Button
                       onClick={() => setStep((s) => ((s + 1) as Step))}
                       disabled={!canGoNext}
@@ -386,5 +416,119 @@ function OnboardingPage() {
         </div>
       </section>
     </>
+  );
+}
+
+// ---------------- Stamped document preview ----------------
+
+function StampedDocPreview({
+  fullName,
+  idNumber,
+  phone,
+  occupation,
+  motivation,
+  typedSignature,
+  drawnSignature,
+  reference,
+  purpose,
+  docHash,
+}: {
+  fullName: string;
+  idNumber: string;
+  phone: string;
+  occupation: string;
+  motivation: string;
+  typedSignature: string;
+  drawnSignature: string;
+  reference: string;
+  purpose: "entry" | "monthly";
+  docHash: string;
+}) {
+  const stampedRef = reference || buildEftReference(fullName || "MEMBER");
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-ZA", { day: "2-digit", month: "long", year: "numeric" });
+  const timeStr = now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-[#fefaf3] p-6 shadow-[var(--shadow-elegant)] md:p-8">
+      {/* Subtle grain */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{ backgroundImage: "radial-gradient(circle at 20% 30%, #000 1px, transparent 1px), radial-gradient(circle at 70% 80%, #000 1px, transparent 1px)", backgroundSize: "24px 24px, 32px 32px" }}
+      />
+
+      {/* Rotated stamp */}
+      <div className="pointer-events-none absolute right-6 top-6 rotate-[-14deg] select-none md:right-8 md:top-8">
+        <div className="rounded-md border-4 border-primary/70 px-4 py-2 text-center text-primary/80">
+          <div className="font-serif text-xl font-black uppercase tracking-widest">Pending</div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.2em]">Verification · A-WIN</div>
+          <div className="mt-1 text-[10px] tracking-wide">{dateStr}</div>
+        </div>
+      </div>
+
+      {/* Header */}
+      <div className="relative border-b-2 border-primary/30 pb-4">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">
+          African Women Investment Network
+        </div>
+        <h3 className="mt-1 font-serif text-2xl text-foreground">Membership Registration Certificate</h3>
+        <div className="mt-1 text-xs text-muted-foreground">Reference · <span className="font-mono font-semibold text-foreground">{stampedRef}</span></div>
+      </div>
+
+      {/* Body */}
+      <dl className="relative mt-5 grid gap-4 text-sm md:grid-cols-2">
+        <Field label="Full legal name" value={fullName || "—"} />
+        <Field label="SA ID number" value={maskId(idNumber)} blurred />
+        <Field label="Phone" value={phone ? phone.replace(/(\d{3})\d+(\d{2})/, "$1 ••• $2") : "—"} blurred />
+        <Field label="Occupation" value={occupation || "—"} />
+        <div className="md:col-span-2">
+          <dt className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Motivation</dt>
+          <dd className="mt-0.5 line-clamp-3 text-sm text-foreground">{motivation || "—"}</dd>
+        </div>
+        <Field label="Contribution" value={purpose === "entry" ? "R200 entry fee" : "R500 monthly"} />
+        <Field label="Agreement version" value="v1.0-2026" />
+      </dl>
+
+      {/* Signatures */}
+      <div className="relative mt-6 grid gap-6 border-t border-border pt-5 md:grid-cols-2">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Typed signature</div>
+          <div className="mt-1 font-serif text-xl italic text-foreground">{typedSignature || fullName || "—"}</div>
+          <div className="mt-1 border-t border-foreground/40" />
+        </div>
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Drawn signature</div>
+          <div className="mt-1 flex h-16 items-end">
+            {drawnSignature ? (
+              <img src={drawnSignature} alt="Signature" className="max-h-16" />
+            ) : (
+              <span className="text-xs text-muted-foreground">(not signed)</span>
+            )}
+          </div>
+          <div className="border-t border-foreground/40" />
+        </div>
+      </div>
+
+      {/* Audit trail */}
+      <div className="relative mt-5 rounded-lg bg-secondary/60 p-3 text-[10px] leading-relaxed text-muted-foreground">
+        <div className="font-semibold uppercase tracking-widest text-foreground/70">Digital audit trail</div>
+        <div className="mt-1 grid gap-x-4 gap-y-0.5 md:grid-cols-2">
+          <div>Signed at · {dateStr} {timeStr} SAST</div>
+          <div>Reference · <span className="font-mono">{stampedRef}</span></div>
+          <div className="truncate">Doc hash · <span className="font-mono">{docHash ? docHash.slice(0, 20) + "…" : "computing"}</span></div>
+          <div>Method · ECT Act 25/2002 e-signature</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, blurred }: { label: string; value: string; blurred?: boolean }) {
+  return (
+    <div>
+      <dt className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</dt>
+      <dd className={cn("mt-0.5 text-sm text-foreground", blurred && "blur-[2px] hover:blur-0 transition-[filter]")}>{value}</dd>
+    </div>
   );
 }
