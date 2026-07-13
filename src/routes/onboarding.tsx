@@ -418,3 +418,117 @@ function OnboardingPage() {
     </>
   );
 }
+
+// ---------------- Stamped document preview ----------------
+
+function StampedDocPreview({
+  fullName,
+  idNumber,
+  phone,
+  occupation,
+  motivation,
+  typedSignature,
+  drawnSignature,
+  reference,
+  purpose,
+  docHash,
+}: {
+  fullName: string;
+  idNumber: string;
+  phone: string;
+  occupation: string;
+  motivation: string;
+  typedSignature: string;
+  drawnSignature: string;
+  reference: string;
+  purpose: "entry" | "monthly";
+  docHash: string;
+}) {
+  const stampedRef = reference || buildEftReference(fullName || "MEMBER");
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-ZA", { day: "2-digit", month: "long", year: "numeric" });
+  const timeStr = now.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-[#fefaf3] p-6 shadow-[var(--shadow-elegant)] md:p-8">
+      {/* Subtle grain */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{ backgroundImage: "radial-gradient(circle at 20% 30%, #000 1px, transparent 1px), radial-gradient(circle at 70% 80%, #000 1px, transparent 1px)", backgroundSize: "24px 24px, 32px 32px" }}
+      />
+
+      {/* Rotated stamp */}
+      <div className="pointer-events-none absolute right-6 top-6 rotate-[-14deg] select-none md:right-8 md:top-8">
+        <div className="rounded-md border-4 border-primary/70 px-4 py-2 text-center text-primary/80">
+          <div className="font-serif text-xl font-black uppercase tracking-widest">Pending</div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.2em]">Verification · A-WIN</div>
+          <div className="mt-1 text-[10px] tracking-wide">{dateStr}</div>
+        </div>
+      </div>
+
+      {/* Header */}
+      <div className="relative border-b-2 border-primary/30 pb-4">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">
+          African Women Investment Network
+        </div>
+        <h3 className="mt-1 font-serif text-2xl text-foreground">Membership Registration Certificate</h3>
+        <div className="mt-1 text-xs text-muted-foreground">Reference · <span className="font-mono font-semibold text-foreground">{stampedRef}</span></div>
+      </div>
+
+      {/* Body */}
+      <dl className="relative mt-5 grid gap-4 text-sm md:grid-cols-2">
+        <Field label="Full legal name" value={fullName || "—"} />
+        <Field label="SA ID number" value={maskId(idNumber)} blurred />
+        <Field label="Phone" value={phone ? phone.replace(/(\d{3})\d+(\d{2})/, "$1 ••• $2") : "—"} blurred />
+        <Field label="Occupation" value={occupation || "—"} />
+        <div className="md:col-span-2">
+          <dt className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Motivation</dt>
+          <dd className="mt-0.5 line-clamp-3 text-sm text-foreground">{motivation || "—"}</dd>
+        </div>
+        <Field label="Contribution" value={purpose === "entry" ? "R200 entry fee" : "R500 monthly"} />
+        <Field label="Agreement version" value="v1.0-2026" />
+      </dl>
+
+      {/* Signatures */}
+      <div className="relative mt-6 grid gap-6 border-t border-border pt-5 md:grid-cols-2">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Typed signature</div>
+          <div className="mt-1 font-serif text-xl italic text-foreground">{typedSignature || fullName || "—"}</div>
+          <div className="mt-1 border-t border-foreground/40" />
+        </div>
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Drawn signature</div>
+          <div className="mt-1 flex h-16 items-end">
+            {drawnSignature ? (
+              <img src={drawnSignature} alt="Signature" className="max-h-16" />
+            ) : (
+              <span className="text-xs text-muted-foreground">(not signed)</span>
+            )}
+          </div>
+          <div className="border-t border-foreground/40" />
+        </div>
+      </div>
+
+      {/* Audit trail */}
+      <div className="relative mt-5 rounded-lg bg-secondary/60 p-3 text-[10px] leading-relaxed text-muted-foreground">
+        <div className="font-semibold uppercase tracking-widest text-foreground/70">Digital audit trail</div>
+        <div className="mt-1 grid gap-x-4 gap-y-0.5 md:grid-cols-2">
+          <div>Signed at · {dateStr} {timeStr} SAST</div>
+          <div>Reference · <span className="font-mono">{stampedRef}</span></div>
+          <div className="truncate">Doc hash · <span className="font-mono">{docHash ? docHash.slice(0, 20) + "…" : "computing"}</span></div>
+          <div>Method · ECT Act 25/2002 e-signature</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, blurred }: { label: string; value: string; blurred?: boolean }) {
+  return (
+    <div>
+      <dt className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</dt>
+      <dd className={cn("mt-0.5 text-sm text-foreground", blurred && "blur-[2px] hover:blur-0 transition-[filter]")}>{value}</dd>
+    </div>
+  );
+}
