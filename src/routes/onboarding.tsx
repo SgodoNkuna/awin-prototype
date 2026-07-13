@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, FileCheck2, ShieldCheck, Upload, PenLine, Loader2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, FileCheck2, ShieldCheck, Upload, PenLine, Loader2, Stamp, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { SignaturePad } from "@/components/site/SignaturePad";
+import { EftPanel, buildEftReference } from "@/components/site/EftPanel";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -42,22 +44,23 @@ const AGREEMENT_TEXT = `A-WIN MEMBERSHIP AGREEMENT (${AGREEMENT_VERSION})
 
 8. Amendments. The Main Committee may update these terms with reasonable notice to members.`;
 
-const BANK_DETAILS = {
-  account: "A-WIN Collective",
-  bank: "Standard Bank",
-  number: "•••• •••• (contact admin)",
-  reference: "AWIN-{surname}",
-};
-
-type Step = 0 | 1 | 2 | 3 | 4;
+type Step = 0 | 1 | 2 | 3 | 4 | 5;
 
 const STEPS: { key: Step; label: string; icon: typeof FileCheck2 }[] = [
-  { key: 0, label: "Personal details", icon: PenLine },
-  { key: 1, label: "POPIA consent", icon: ShieldCheck },
-  { key: 2, label: "Agreement", icon: FileCheck2 },
-  { key: 3, label: "Proof of payment", icon: Upload },
-  { key: 4, label: "Done", icon: Check },
+  { key: 0, label: "Details", icon: PenLine },
+  { key: 1, label: "Consent", icon: ShieldCheck },
+  { key: 2, label: "Sign", icon: FileCheck2 },
+  { key: 3, label: "Pay", icon: Wallet },
+  { key: 4, label: "Stamp", icon: Stamp },
+  { key: 5, label: "Done", icon: Check },
 ];
+
+/** Mask an SA ID for display: show first 6 + last 2 digits. */
+function maskId(id: string) {
+  const clean = id.replace(/\s+/g, "");
+  if (clean.length < 8) return "•••••••••••••";
+  return `${clean.slice(0, 6)} ••••• ${clean.slice(-2)}`;
+}
 
 async function sha256(text: string) {
   const buf = new TextEncoder().encode(text);
@@ -87,6 +90,9 @@ function OnboardingPage() {
   const [agree, setAgree] = useState(false);
   const [popFile, setPopFile] = useState<File | null>(null);
   const [paymentRef, setPaymentRef] = useState("");
+  const [drawnSignature, setDrawnSignature] = useState("");
+  const [purpose, setPurpose] = useState<"entry" | "monthly">("entry");
+  const [stampAcknowledged, setStampAcknowledged] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
