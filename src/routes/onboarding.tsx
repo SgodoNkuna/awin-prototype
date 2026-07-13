@@ -168,7 +168,7 @@ function OnboardingPage() {
       } as any);
       if (insErr) throw insErr;
 
-      setStep(4);
+      setStep(5);
       toast.success("Onboarding submitted. We will review and be in touch.");
     } catch (err: any) {
       console.error(err);
@@ -220,7 +220,7 @@ function OnboardingPage() {
 
           <Card className="border-border/60 shadow-[var(--shadow-elegant)]">
             <CardContent className="p-6 md:p-8 space-y-6">
-              {!userId && step < 4 && (
+              {!userId && step < 5 && (
                 <div className="rounded-lg border border-accent/40 bg-accent/10 p-4 text-sm">
                   You will need to <button className="font-semibold underline" onClick={requireLogin}>sign in</button> before submitting. You can fill everything in first.
                 </div>
@@ -383,7 +383,7 @@ function OnboardingPage() {
               )}
 
               {/* Nav buttons */}
-              {step < 4 && (
+              {step < 5 && (
                 <div className="flex items-center justify-between border-t border-border pt-4">
                   <Button
                     variant="ghost"
@@ -392,7 +392,7 @@ function OnboardingPage() {
                   >
                     <ChevronLeft className="mr-1 size-4" /> Back
                   </Button>
-                  {step < 3 ? (
+                  {step < 4 ? (
                     <Button
                       onClick={() => setStep((s) => ((s + 1) as Step))}
                       disabled={!canGoNext}
