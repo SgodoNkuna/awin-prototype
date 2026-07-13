@@ -299,48 +299,70 @@ function OnboardingPage() {
                       className="font-serif text-lg italic"
                     />
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Your typed name must match the full legal name from step 1. We record your signature, timestamp, browser and agreement version as your e-signature.
+                      Your typed name must match the full legal name from step 1.
                     </p>
                     {typedSignature && !nameMatches && (
                       <p className="mt-1 text-xs text-destructive">Signature does not match your full legal name.</p>
                     )}
+                  </div>
+                  <div>
+                    <Label>Draw your signature *</Label>
+                    <SignaturePad value={drawnSignature} onChange={setDrawnSignature} />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      We keep your typed name, drawn signature, timestamp, browser and agreement version as a full audit trail — the equivalent of a wet signature under the ECT Act.
+                    </p>
                   </div>
                 </div>
               )}
 
               {step === 3 && (
                 <div className="space-y-4">
-                  <h2 className="font-serif text-2xl text-foreground">Proof of payment</h2>
-                  <div className="rounded-lg border border-border bg-secondary/30 p-4 text-sm">
-                    <div className="font-semibold text-foreground">Pay the R200 annual fee (and optionally your first R500 contribution) to:</div>
-                    <ul className="mt-2 space-y-1 text-foreground/90">
-                      <li><strong>Account:</strong> {BANK_DETAILS.account}</li>
-                      <li><strong>Bank:</strong> {BANK_DETAILS.bank}</li>
-                      <li><strong>Account number:</strong> {BANK_DETAILS.number}</li>
-                      <li><strong>Reference:</strong> {BANK_DETAILS.reference.replace("{surname}", fullName.split(" ").pop() || "SURNAME")}</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <Label>Payment reference used *</Label>
-                    <Input value={paymentRef} onChange={(e) => setPaymentRef(e.target.value)} placeholder="e.g. AWIN-DLAMINI" />
-                  </div>
-                  <div>
-                    <Label>Upload proof of payment (PDF or image) *</Label>
-                    <Input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      onChange={(e) => setPopFile(e.target.files?.[0] ?? null)}
-                    />
-                    {popFile && (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Selected: {popFile.name} ({Math.round(popFile.size / 1024)} KB)
-                      </p>
-                    )}
-                  </div>
+                  <h2 className="font-serif text-2xl text-foreground">Pay by EFT</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Copy the details below into your banking app, then upload your proof of payment. Your reference is generated automatically so the treasurer can auto-match your payment.
+                  </p>
+                  <EftPanel
+                    fullName={fullName}
+                    userSeed={userId ?? userEmail}
+                    purpose={purpose}
+                    onPurposeChange={setPurpose}
+                    file={popFile}
+                    onFileChange={setPopFile}
+                    onReferenceChange={setPaymentRef}
+                  />
                 </div>
               )}
 
               {step === 4 && (
+                <div className="space-y-4">
+                  <h2 className="font-serif text-2xl text-foreground">Stamped membership record</h2>
+                  <p className="text-sm text-muted-foreground">
+                    This is how your certified record will look once the Main Committee has reviewed your proof of payment. Sensitive information is blurred to protect your privacy.
+                  </p>
+
+                  <StampedDocPreview
+                    fullName={fullName}
+                    idNumber={idNumber}
+                    phone={phone}
+                    occupation={occupation}
+                    motivation={motivation}
+                    typedSignature={typedSignature}
+                    drawnSignature={drawnSignature}
+                    reference={paymentRef}
+                    purpose={purpose}
+                    docHash={docHash}
+                  />
+
+                  <label className="flex items-start gap-3 rounded-lg border border-border p-4 cursor-pointer hover:bg-secondary/30">
+                    <Checkbox checked={stampAcknowledged} onCheckedChange={(v) => setStampAcknowledged(!!v)} className="mt-0.5" />
+                    <span className="text-sm">
+                      I confirm the details above are correct and I authorise the Main Committee to stamp and register my membership on verification.
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              {step === 5 && (
                 <div className="space-y-4 text-center py-8">
                   <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-primary/15 text-primary">
                     <Check className="size-8" />
