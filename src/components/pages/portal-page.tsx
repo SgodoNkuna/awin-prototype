@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BillingTab } from "@/components/portal/BillingTab";
+import { OnboardingTab } from "@/components/portal/OnboardingTab";
 
 
 
