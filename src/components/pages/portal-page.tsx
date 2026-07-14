@@ -240,8 +240,9 @@ function PortalPage() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="events" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs defaultValue="onboarding" className="w-full">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="onboarding"><Send className="size-4 mr-1.5" />Onboarding</TabsTrigger>
           <TabsTrigger value="events"><Calendar className="size-4 mr-1.5" />Events</TabsTrigger>
           <TabsTrigger value="documents"><FileText className="size-4 mr-1.5" />Documents</TabsTrigger>
           <TabsTrigger value="billing"><CreditCard className="size-4 mr-1.5" />Billing</TabsTrigger>
@@ -249,9 +250,14 @@ function PortalPage() {
           <TabsTrigger value="profile"><UserIcon className="size-4 mr-1.5" />Profile</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="onboarding" className="mt-4">
+          {user?.id && <OnboardingTab userId={user.id} />}
+        </TabsContent>
+
         <TabsContent value="billing" className="mt-4">
           <BillingTab preferredTier={latest?.tier ?? profile?.membership_tier ?? null} />
         </TabsContent>
+
 
 
         {/* EVENTS */}
