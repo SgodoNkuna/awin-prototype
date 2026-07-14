@@ -58,7 +58,7 @@ function EftQueuePage() {
     supabase.storage
       .from("onboarding-uploads")
       .createSignedUrl(viewing.proof_of_payment_path, 60 * 10)
-      .then(({ data, error }) => {
+      .then(({ data, error }: any) => {
         if (cancelled) return;
         if (error) toast.error(`Preview: ${error.message}`);
         else setSignedUrl(data?.signedUrl ?? null);
