@@ -1,0 +1,67 @@
+/**
+ * Zoho ZeptoMail transactional email — SERVER ONLY.
+ * Never import from client / route component code.
+ *
+ * Env:
+ *   ZOHO_ZEPTOMAIL_TOKEN  — "Send Mail Token" from ZeptoMail → Mail Agent → Setup Info
+ *   ZOHO_MAIL_FROM        — verified sender, e.g. noreply@awin.co.za
+ *   ZOHO_MAIL_FROM_NAME   — display name (default "A-WIN")
+ *   ZOHO_ZEPTOMAIL_URL    — API base (default global; use https://api.zeptomail.eu/v1.1/email for EU DC)
+ *
+ * Emails fail soft: a delivery failure logs and returns { ok: false } but never
+ * throws, so webhooks and admin actions are never broken by the mail provider.
+ */
+
+const ZEPTOMAIL_URL = process.env.ZOHO_ZEPTOMAIL_URL ?? "https://api.zeptomail.com/v1.1/email";
+
+export interface SendEmailInput {
+  to: string;
+  toName?: string;
+  subject: string;
+  html: string;
+  text?: string;
+}
+
+export type SendEmailResult = { ok: true } | { ok: false; error: string };
+
+export function emailConfigured(): boolean {
+  return !!process.env.ZOHO_ZEPTOMAIL_TOKEN && !!process.env.ZOHO_MAIL_FROM;
+}
+
+export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
+  const token = process.env.ZOHO_ZEPTOMAIL_TOKEN;
+  const from = process.env.ZOHO_MAIL_FROM;
+  if (!token || !from) {
+    console.warn("[email] ZOHO_ZEPTOMAIL_TOKEN / ZOHO_MAIL_FROM not set — skipping send:", input.subject);
+    return { ok: false, error: "email not configured" };
+  }
+
+  try {
+    const res = await fetch(ZEPTOMAIL_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Zoho-enczapikey ${token}`,
+      },
+      body: JSON.stringify({
+        from: { address: from, name: process.env.ZOHO_MAIL_FROM_NAME ?? "A-WIN" },
+        to: [{ email_address: { address: input.to, name: input.toName ?? input.to } }],
+        subject: input.subject,
+        htmlbody: input.html,
+        ...(input.text ? { textbody: input.text } : {}),
+      }),
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error(`[email] ZeptoMail ${res.status} sending "${input.subject}" to ${input.to}: ${body}`);
+      return { ok: false, error: `zeptomail ${res.status}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error(`[email] network error sending "${input.subject}" to ${input.to}: ${msg}`);
+    return { ok: false, error: msg };
+  }
+}

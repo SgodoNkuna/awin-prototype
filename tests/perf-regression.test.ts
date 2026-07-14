@@ -20,14 +20,14 @@ const read = (rel: string) => fs.readFileSync(path.join(root, rel), "utf8");
 describe("perf regression: home portfolio carousel query", () => {
   const src = read("src/components/site/PortfolioCarousel.tsx");
 
-  it("only selects the 4 columns needed for the card (no `body`, no `*`)", () => {
-    expect(src).toMatch(/\.select\(["']id,title,slug,summary,cover_image["']\)/);
+  it("only selects the columns needed for the card (no `body`, no `*`)", () => {
+    expect(src).toMatch(/\.select\(["']id, name, title, category, profile_card_url, photo_url["']/);
     expect(src).not.toMatch(/\.select\(["']\*["']\)/);
     expect(src).not.toMatch(/,\s*body[,"']/);
   });
 
   it("filters to published items only", () => {
-    expect(src).toMatch(/\.eq\(["']status["'],\s*["']published["']\)/);
+    expect(src).toMatch(/\.eq\(["']published["'],\s*true\)/);
   });
 
   it("caps results to at most 100 rows", () => {

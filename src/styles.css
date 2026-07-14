@@ -353,7 +353,8 @@ section[style*="gradient-hero"] p { text-shadow: 0 1px 10px rgba(0,0,0,0.45); fo
 }
 
 /* Placeholder contrast — ensure visible on all themes. */
-::placeholder { color: color-mix(in srgb, var(--muted-foreground) 85%, transparent); opacity: 1; }
+/* opacity instead of a mixed color — html2canvas/PDF export can't parse modern color functions */
+::placeholder { color: var(--muted-foreground); opacity: 0.85; }
 
 /* Hide native scrollbar on horizontal pill rails */
 .no-scrollbar { scrollbar-width: none; }

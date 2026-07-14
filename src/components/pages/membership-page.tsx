@@ -172,6 +172,10 @@ function MembershipPage() {
       }
       setSubmitted(true);
       toast.success("Application received!");
+      // Confirmation email — fire and forget, submission already succeeded.
+      void import("@/lib/email.functions").then(({ sendApplicationReceivedEmail }) =>
+        sendApplicationReceivedEmail({ data: { email: cleanEmail, fullName: parsed.data.full_name } }).catch(() => {}),
+      );
       (e.target as HTMLFormElement).reset();
     },
     [user?.id],

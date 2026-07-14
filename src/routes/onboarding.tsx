@@ -170,6 +170,12 @@ function OnboardingPage() {
 
       setStep(5);
       toast.success("Onboarding submitted. We will review and be in touch.");
+      // Confirmation email — fire and forget, submission already succeeded.
+      if (userEmail) {
+        void import("@/lib/email.functions").then(({ sendApplicationReceivedEmail }) =>
+          sendApplicationReceivedEmail({ data: { email: userEmail, fullName: fullName.trim() } }).catch(() => {}),
+        );
+      }
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Something went wrong. Please try again.");

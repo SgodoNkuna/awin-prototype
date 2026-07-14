@@ -83,6 +83,22 @@ export async function processItnPayload(
           joined_at: paidAt,
         })
         .eq("id", payment.user_id);
+
+      // Receipt + activation email — fail-soft, never blocks the webhook.
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("email, full_name")
+        .eq("id", payment.user_id)
+        .maybeSingle();
+      if (profile?.email) {
+        const { sendEmail } = await import("./email.server");
+        const { paymentReceiptEmail, membershipActivatedEmail } = await import("./email-templates.server");
+        const name = profile.full_name ?? profile.email;
+        const receipt = paymentReceiptEmail(name, payment.amount_cents, payment.tier, mPaymentId, paidAt);
+        await sendEmail({ to: profile.email, toName: name, ...receipt });
+        const welcome = membershipActivatedEmail(name, payment.tier, expiresAt);
+        await sendEmail({ to: profile.email, toName: name, ...welcome });
+      }
     }
     return { ok: true, paymentId: payment.id };
   }

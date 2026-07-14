@@ -20,6 +20,31 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Environment — never commit
+.env
+.env.*
+
+# Claude Code local files (this dir doubles as ~/.claude)
+.credentials.json
+.last-cleanup
+mcp-needs-auth-cache.json
+settings.json
+settings.local.json
+backups/
+sessions/
+projects/
+plugins/
+shell-snapshots/
+statsig/
+todos/
+memory/
+file-history/
+history.jsonl
+tasks/
+.claude/
+keybindings.json
+CLAUDE.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

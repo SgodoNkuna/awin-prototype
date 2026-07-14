@@ -1,4 +1,4 @@
-/**
+﻿/**
  * A11y regression for the Home page member carousel.
  *
  * Asserts:
@@ -21,10 +21,18 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 
+// Carousel now signs storage URLs through a server fn; stub both layers.
+vi.mock("@tanstack/react-start", () => ({
+  useServerFn: () => async () => ({ urls: {} }),
+}));
+vi.mock("@/lib/portfolio-storage.functions", () => ({
+  signPortfolioUrls: async () => ({ urls: {} }),
+}));
+
 const ITEMS = [
-  { id: "1", title: "Thabo Capital", slug: "thabo", summary: "Advisory", cover_image: null },
-  { id: "2", title: "Lerato Ventures", slug: "lerato", summary: "Fund", cover_image: null },
-  { id: "3", title: "Naledi Studio", slug: "naledi", summary: "Design", cover_image: null },
+  { id: "1", name: "Thabo Capital", title: "Advisory", category: "Finance", profile_card_url: "cards/thabo.jpg", photo_url: null },
+  { id: "2", name: "Lerato Ventures", title: "Fund", category: "Investing", profile_card_url: "cards/lerato.jpg", photo_url: null },
+  { id: "3", name: "Naledi Studio", title: "Design", category: "Creative", profile_card_url: "cards/naledi.jpg", photo_url: null },
 ];
 
 let sb = makeSupabaseMock({ data: ITEMS });
@@ -68,14 +76,14 @@ describe("Home carousel — accessibility regression", () => {
   it("gives each card-link an accessible name (no icon-only-link)", async () => {
     render(<PortfolioCarousel />);
     expect(
-      await screen.findByRole("link", { name: /view thabo capital in member portfolio/i }),
+      await screen.findByRole("link", { name: /view thabo capital in member directory/i }),
     ).toBeInTheDocument();
   });
 
   it("applies focus-visible ring on cards (themed via ring-ring token)", async () => {
     render(<PortfolioCarousel />);
     const link = await screen.findByRole("link", {
-      name: /view thabo capital in member portfolio/i,
+      name: /view thabo capital in member directory/i,
     });
     expect(link.className).toMatch(/focus-visible:ring/);
     expect(link.className).toMatch(/ring-ring/);
@@ -95,7 +103,7 @@ describe("Home carousel — accessibility regression", () => {
   it("keeps card links in the natural tab order (no tabindex traps)", async () => {
     render(<PortfolioCarousel />);
     const link = await screen.findByRole("link", {
-      name: /view thabo capital in member portfolio/i,
+      name: /view thabo capital in member directory/i,
     });
     // No tabindex override means the anchor stays in document order at tabindex=0
     expect(link.getAttribute("tabindex")).toBeNull();
@@ -108,7 +116,7 @@ describe("Home carousel — accessibility regression", () => {
     const user = userEvent.setup();
     render(<PortfolioCarousel />);
     const link = (await screen.findByRole("link", {
-      name: /view thabo capital in member portfolio/i,
+      name: /view thabo capital in member directory/i,
     })) as HTMLAnchorElement;
     const clicked = vi.fn((e: Event) => e.preventDefault());
     link.addEventListener("click", clicked);
@@ -156,7 +164,7 @@ describe("Home carousel — accessibility regression", () => {
           screen.getByLabelText("Thabo Capital, slide 1 of 3"),
         ).toBeInTheDocument();
         const link = screen.getByRole("link", {
-          name: /view thabo capital in member portfolio/i,
+          name: /view thabo capital in member directory/i,
         });
         // Tokens — must not be hard-coded color utilities like text-white / bg-black
         expect(link.className).toMatch(/ring-ring/);
