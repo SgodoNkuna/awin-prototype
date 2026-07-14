@@ -29,8 +29,10 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminPortfolioRouteImport } from './routes/admin.portfolio'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
+import { Route as AdminGalleryRouteImport } from './routes/admin.gallery'
 import { Route as AdminExportsRouteImport } from './routes/admin.exports'
 import { Route as AdminEventsRouteImport } from './routes/admin.events'
+import { Route as AdminEftRouteImport } from './routes/admin.eft'
 import { Route as AdminDocumentsRouteImport } from './routes/admin.documents'
 import { Route as AdminCommitteesRouteImport } from './routes/admin.committees'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
@@ -137,6 +139,11 @@ const AdminMembersRoute = AdminMembersRouteImport.update({
   path: '/members',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminGalleryRoute = AdminGalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminExportsRoute = AdminExportsRouteImport.update({
   id: '/exports',
   path: '/exports',
@@ -145,6 +152,11 @@ const AdminExportsRoute = AdminExportsRouteImport.update({
 const AdminEventsRoute = AdminEventsRouteImport.update({
   id: '/events',
   path: '/events',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEftRoute = AdminEftRouteImport.update({
+  id: '/eft',
+  path: '/eft',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDocumentsRoute = AdminDocumentsRouteImport.update({
@@ -192,8 +204,10 @@ export interface FileRoutesByFullPath {
   '/admin/billing': typeof AdminBillingRoute
   '/admin/committees': typeof AdminCommitteesRoute
   '/admin/documents': typeof AdminDocumentsRoute
+  '/admin/eft': typeof AdminEftRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/exports': typeof AdminExportsRoute
+  '/admin/gallery': typeof AdminGalleryRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
@@ -220,8 +234,10 @@ export interface FileRoutesByTo {
   '/admin/billing': typeof AdminBillingRoute
   '/admin/committees': typeof AdminCommitteesRoute
   '/admin/documents': typeof AdminDocumentsRoute
+  '/admin/eft': typeof AdminEftRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/exports': typeof AdminExportsRoute
+  '/admin/gallery': typeof AdminGalleryRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
@@ -250,8 +266,10 @@ export interface FileRoutesById {
   '/admin/billing': typeof AdminBillingRoute
   '/admin/committees': typeof AdminCommitteesRoute
   '/admin/documents': typeof AdminDocumentsRoute
+  '/admin/eft': typeof AdminEftRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/exports': typeof AdminExportsRoute
+  '/admin/gallery': typeof AdminGalleryRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/portfolio': typeof AdminPortfolioRoute
@@ -281,8 +299,10 @@ export interface FileRouteTypes {
     | '/admin/billing'
     | '/admin/committees'
     | '/admin/documents'
+    | '/admin/eft'
     | '/admin/events'
     | '/admin/exports'
+    | '/admin/gallery'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
@@ -309,8 +329,10 @@ export interface FileRouteTypes {
     | '/admin/billing'
     | '/admin/committees'
     | '/admin/documents'
+    | '/admin/eft'
     | '/admin/events'
     | '/admin/exports'
+    | '/admin/gallery'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
@@ -338,8 +360,10 @@ export interface FileRouteTypes {
     | '/admin/billing'
     | '/admin/committees'
     | '/admin/documents'
+    | '/admin/eft'
     | '/admin/events'
     | '/admin/exports'
+    | '/admin/gallery'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/portfolio'
@@ -510,6 +534,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMembersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/gallery': {
+      id: '/admin/gallery'
+      path: '/gallery'
+      fullPath: '/admin/gallery'
+      preLoaderRoute: typeof AdminGalleryRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/exports': {
       id: '/admin/exports'
       path: '/exports'
@@ -522,6 +553,13 @@ declare module '@tanstack/react-router' {
       path: '/events'
       fullPath: '/admin/events'
       preLoaderRoute: typeof AdminEventsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/eft': {
+      id: '/admin/eft'
+      path: '/eft'
+      fullPath: '/admin/eft'
+      preLoaderRoute: typeof AdminEftRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/documents': {
@@ -567,8 +605,10 @@ interface AdminRouteChildren {
   AdminBillingRoute: typeof AdminBillingRoute
   AdminCommitteesRoute: typeof AdminCommitteesRoute
   AdminDocumentsRoute: typeof AdminDocumentsRoute
+  AdminEftRoute: typeof AdminEftRoute
   AdminEventsRoute: typeof AdminEventsRoute
   AdminExportsRoute: typeof AdminExportsRoute
+  AdminGalleryRoute: typeof AdminGalleryRoute
   AdminMembersRoute: typeof AdminMembersRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminPortfolioRoute: typeof AdminPortfolioRoute
@@ -581,8 +621,10 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBillingRoute: AdminBillingRoute,
   AdminCommitteesRoute: AdminCommitteesRoute,
   AdminDocumentsRoute: AdminDocumentsRoute,
+  AdminEftRoute: AdminEftRoute,
   AdminEventsRoute: AdminEventsRoute,
   AdminExportsRoute: AdminExportsRoute,
+  AdminGalleryRoute: AdminGalleryRoute,
   AdminMembersRoute: AdminMembersRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminPortfolioRoute: AdminPortfolioRoute,
@@ -613,13 +655,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
