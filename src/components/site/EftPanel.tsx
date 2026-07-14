@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Copy, Check, Upload, FileText, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -24,13 +25,35 @@ export function buildEftReference(fullName: string, seed?: string): string {
   return `AWIN-${surname}-${digits}`;
 }
 
-const BANK = {
+/** Fallback while the eft_banking site_setting loads (or if it's missing). */
+const BANK_FALLBACK = {
   account_name: "A-WIN Collective NPC",
   bank: "Standard Bank",
   branch: "Universal · 051001",
   account_type: "Business Current",
   account_number: "•••• •••• 4821",
 };
+type BankDetails = typeof BANK_FALLBACK;
+
+/** Live bank details from site_settings — editable in Admin → Settings, no redeploy needed. */
+export function useBankDetails(): BankDetails {
+  const [bank, setBank] = useState<BankDetails>(BANK_FALLBACK);
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "eft_banking")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data?.value) setBank({ ...BANK_FALLBACK, ...(data.value as Partial<BankDetails>) });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return bank;
+}
 
 type Purpose = "entry" | "monthly";
 
@@ -52,6 +75,7 @@ export function EftPanel({
   file: File | null;
 }) {
   const [copied, setCopied] = useState<string | null>(null);
+  const BANK = useBankDetails();
 
   const reference = useMemo(() => {
     const ref = buildEftReference(fullName, userSeed);

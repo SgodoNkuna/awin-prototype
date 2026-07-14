@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getMyPayments, createPayfastCheckout } from "@/lib/payfast.functions";
+import { buildEftReference, useBankDetails } from "@/components/site/EftPanel";
+import { useAuth } from "@/lib/use-auth";
 
 type Payment = {
   id: string;
@@ -44,6 +46,8 @@ function statusBadge(s: string) {
 export function BillingTab({ preferredTier }: { preferredTier?: string | null }) {
   const [data, setData] = useState<{ payments: Payment[]; profile: Profile | null } | null>(null);
   const [paying, setPaying] = useState(false);
+  const { user } = useAuth();
+  const bank = useBankDetails();
   const fnGet = useServerFn(getMyPayments);
   const fnCheckout = useServerFn(createPayfastCheckout);
 
@@ -134,22 +138,53 @@ export function BillingTab({ preferredTier }: { preferredTier?: string | null })
               {status === "active" ? "Renew your membership" : "Pay your dues"}
             </div>
             <p className="text-sm text-muted-foreground mb-3">
-              Pay securely via PayFast. You'll be redirected to complete the transaction.
+              Pay by EFT using the details below, with <strong>your reference</strong> so the
+              treasurer can match your payment.
             </p>
-            <div className="flex flex-wrap gap-2">
-              {(["general", "active", "patron"] as const).map((t) => (
-                <Button
-                  key={t}
-                  variant={t === tierForPay ? "default" : "outline"}
-                  size="sm"
-                  disabled={paying}
-                  onClick={() => pay(t)}
-                >
-                  {paying && t === tierForPay && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
-                  Pay {t} — {fmtZar(t === "general" ? 50000 : t === "active" ? 150000 : 500000)}
-                </Button>
+            <div className="rounded-md border bg-background p-3 text-sm space-y-1.5 mb-3">
+              {[
+                ["Beneficiary", bank.account_name],
+                ["Bank", bank.bank],
+                ["Branch code", bank.branch],
+                ["Account type", bank.account_type],
+                ["Account number", bank.account_number],
+                [
+                  "Your reference",
+                  buildEftReference(
+                    (user?.user_metadata?.full_name as string) ?? user?.email ?? "Member",
+                    user?.id,
+                  ),
+                ],
+              ].map(([label, value]) => (
+                <div key={label} className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">{label}</span>
+                  <span className="font-medium font-mono">{value}</span>
+                </div>
               ))}
             </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Email your proof of payment to <a className="underline" href="mailto:treasurer@awin.co.za">treasurer@awin.co.za</a>.
+              The committee confirms EFTs from the admin EFT queue.
+            </p>
+            <details>
+              <summary className="text-xs text-muted-foreground cursor-pointer">
+                Prefer to pay by card instead? (PayFast)
+              </summary>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {(["general", "active", "patron"] as const).map((t) => (
+                  <Button
+                    key={t}
+                    variant={t === tierForPay ? "default" : "outline"}
+                    size="sm"
+                    disabled={paying}
+                    onClick={() => pay(t)}
+                  >
+                    {paying && t === tierForPay && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
+                    Pay {t} — {fmtZar(t === "general" ? 50000 : t === "active" ? 150000 : 500000)}
+                  </Button>
+                ))}
+              </div>
+            </details>
           </div>
         )}
 
