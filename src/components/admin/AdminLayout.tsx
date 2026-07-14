@@ -27,7 +27,9 @@ type AdminPath =
   | "/admin/members"
   | "/admin/committees"
   | "/admin/applications"
+  | "/admin/eft"
   | "/admin/events"
+  | "/admin/gallery"
   | "/admin/portfolio"
   | "/admin/messages"
   | "/admin/documents"
@@ -55,12 +57,14 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/admin/members", label: "Members", icon: Users },
       { to: "/admin/committees", label: "Committees", icon: Award },
       { to: "/admin/applications", label: "Applications", icon: ClipboardList },
+      { to: "/admin/eft", label: "EFT Queue", icon: CreditCard },
     ],
   },
   {
     label: "Content",
     items: [
       { to: "/admin/events", label: "Events", icon: Calendar },
+      { to: "/admin/gallery", label: "Event Gallery", icon: Briefcase },
       { to: "/admin/portfolio", label: "News & Gallery", icon: Newspaper },
       { to: "/admin/documents", label: "Documents", icon: FolderOpen },
     ],
