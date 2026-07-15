@@ -4,10 +4,11 @@
  */
 type Result = { ok: boolean; error?: string; paymentId?: string };
 
+// R200 joining fee ("general") + R500 monthly contribution ("active").
+// Sync with TIER_PRICES_ZAR in payfast.functions.ts.
 const TIER_PRICES_CENTS: Record<string, number> = {
-  general: 50000,
-  active: 150000,
-  patron: 500000,
+  general: 20000,
+  active: 50000,
 };
 
 export async function processItnPayload(

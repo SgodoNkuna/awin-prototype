@@ -171,7 +171,10 @@ export function BillingTab({ preferredTier }: { preferredTier?: string | null })
                 Prefer to pay by card instead? (PayFast)
               </summary>
               <div className="mt-2 flex flex-wrap gap-2">
-                {(["general", "active", "patron"] as const).map((t) => (
+                {([
+                  { t: "general" as const, label: "Joining fee", cents: 20000 },
+                  { t: "active" as const, label: "Monthly contribution", cents: 50000 },
+                ]).map(({ t, label, cents }) => (
                   <Button
                     key={t}
                     variant={t === tierForPay ? "default" : "outline"}
@@ -180,7 +183,7 @@ export function BillingTab({ preferredTier }: { preferredTier?: string | null })
                     onClick={() => pay(t)}
                   >
                     {paying && t === tierForPay && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
-                    Pay {t} — {fmtZar(t === "general" ? 50000 : t === "active" ? 150000 : 500000)}
+                    {label} — {fmtZar(cents)}
                   </Button>
                 ))}
               </div>

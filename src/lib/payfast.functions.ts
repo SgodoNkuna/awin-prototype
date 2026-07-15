@@ -2,20 +2,22 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+// Single membership model: R200 joining fee (once, on approval) + R500 monthly
+// contribution. "general" = joining fee, "active" = monthly contribution.
+// Must stay in sync with MEMBERSHIP_MODEL in membership-page.tsx and
+// TIER_PRICES_CENTS in payfast-process.server.ts.
 const TIER_PRICES_ZAR: Record<string, number> = {
-  general: 500,
-  active: 1500,
-  patron: 5000,
+  general: 200,
+  active: 500,
 };
 
 const TIER_NAMES: Record<string, string> = {
-  general: "General Member",
-  active: "Active Member",
-  patron: "Patron Member",
+  general: "Joining Fee",
+  active: "Monthly Contribution",
 };
 
 const checkoutSchema = z.object({
-  tier: z.enum(["general", "active", "patron"]),
+  tier: z.enum(["general", "active"]),
 });
 
 /**
@@ -46,7 +48,7 @@ export const createPayfastCheckout = createServerFn({ method: "POST" })
     }
 
     const amountZar = TIER_PRICES_ZAR[data.tier];
-    const itemName = `A-WIN ${TIER_NAMES[data.tier]} — Annual Dues`;
+    const itemName = `A-WIN ${TIER_NAMES[data.tier]}`;
     const mPaymentId = `awin_${data.tier}_${context.userId}_${Date.now()}`;
 
     // Profile for name + email

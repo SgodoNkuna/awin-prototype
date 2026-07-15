@@ -182,6 +182,32 @@ function SettingsPage() {
               <Button onClick={() => saveSetting("stats")} size="sm"><Save className="size-4 mr-2" />Publish</Button>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base">EFT Banking Details</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Shown to applicants on onboarding and to members in the portal Billing tab.
+                Members pay against these details with their AWIN reference.
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {([
+                  ["account_name", "Account name / beneficiary"],
+                  ["bank", "Bank"],
+                  ["branch", "Branch code"],
+                  ["account_type", "Account type"],
+                  ["account_number", "Account number"],
+                ] as const).map(([k, label]) => (
+                  <Field key={k} label={label}>
+                    <Input
+                      value={(settings.eft_banking?.[k] as string) ?? ""}
+                      onChange={(e) => updateSetting("eft_banking", { ...settings.eft_banking, [k]: e.target.value })}
+                    />
+                  </Field>
+                ))}
+              </div>
+              <Button onClick={() => saveSetting("eft_banking")} size="sm"><Save className="size-4 mr-2" />Publish</Button>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="tiers" className="space-y-3 mt-4">
