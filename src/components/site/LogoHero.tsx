@@ -166,7 +166,6 @@ export function LogoHero() {
           transition={{ duration: 0.6 }}
           className="inline-flex items-center gap-2 rounded-full border border-hero-border bg-hero-surface px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-hero-foreground backdrop-blur-md shadow-[var(--shadow-gold-glow)]"
         >
-          <Sparkles className="h-3.5 w-3.5" />
           African Women Investment Network
         </motion.span>
 

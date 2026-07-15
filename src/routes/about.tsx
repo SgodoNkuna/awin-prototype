@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, Users, BookOpen, Sparkles, ChevronRight, Sprout, Globe2 } from "lucide-react";
+import { Crown, HeartHandshake, GraduationCap, Gem, ChevronRight, Sprout, Globe2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,22 +27,22 @@ export const Route = createFileRoute("/about")({
 
 const values = [
   {
-    icon: Heart,
+    icon: Crown,
     title: "Empowerment",
     body: "Every woman, regardless of background, deserves access to financial knowledge and investment opportunity.",
   },
   {
-    icon: Users,
+    icon: HeartHandshake,
     title: "Community",
     body: "We grow stronger together — sisterhood, mentorship and honest money conversations sit at the heart of A-WIN.",
   },
   {
-    icon: BookOpen,
+    icon: GraduationCap,
     title: "Education",
     body: "Lifelong learning fuels lifelong wealth. We invest in financial literacy at every stage of the journey.",
   },
   {
-    icon: Sparkles,
+    icon: Gem,
     title: "Legacy",
     body: "We build wealth that outlives us — for our families, our communities and the generations to come.",
   },

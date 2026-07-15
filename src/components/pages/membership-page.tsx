@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import {
   Check,
-  FileText,
-  Users,
+  PenLine,
+  UserRoundSearch,
   MailCheck,
   PartyPopper,
   Loader2,
@@ -45,8 +45,8 @@ export const MEMBERSHIP_MODEL = {
 } as const;
 
 const STEPS = [
-  { n: 1, title: "Submit Application", icon: FileText, desc: "Fill out the form below with your details." },
-  { n: 2, title: "Committee Review", icon: Users, desc: "Our team reviews within 5 business days." },
+  { n: 1, title: "Submit Application", icon: PenLine, desc: "Fill out the form below with your details." },
+  { n: 2, title: "Committee Review", icon: UserRoundSearch, desc: "Our team reviews within 5 business days." },
   { n: 3, title: "Payment Details", icon: MailCheck, desc: "Receive payment details securely after approval." },
   { n: 4, title: "Welcome to A-WIN", icon: PartyPopper, desc: "Access your member benefits and community." },
 ];
