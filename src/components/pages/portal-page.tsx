@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Eye,
   Send,
+  ChevronLeft,
   CreditCard} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -201,6 +202,9 @@ function PortalPage() {
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-10">
+      <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2 text-muted-foreground">
+        <Link to="/"><ChevronLeft className="mr-1 size-4" /> Back to site</Link>
+      </Button>
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl md:text-4xl text-foreground">Welcome back, {greetingName}</h1>

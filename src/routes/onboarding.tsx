@@ -203,7 +203,13 @@ function OnboardingPage() {
       <section className="py-10">
         <div className="mx-auto max-w-4xl px-4">
           {/* Progress */}
-          <ol className="mb-8 grid grid-cols-5 gap-2">
+          <div className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-border">
+            <div
+              className="h-full rounded-full bg-accent transition-all duration-300"
+              style={{ width: `${(step / (STEPS.length - 1)) * 100}%` }}
+            />
+          </div>
+          <ol className="mb-8 grid grid-cols-6 gap-2">
             {STEPS.map((s) => {
               const done = step > s.key;
               const current = step === s.key;

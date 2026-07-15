@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,14 +107,17 @@ function AuthPage() {
             disabled={busy}
             onClick={async () => {
               setBusy(true);
-              const result = await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: `${window.location.origin}/auth`,
+              // Use our own Supabase project's Google OAuth (configured in Supabase
+              // Auth → Providers), NOT the Lovable broker.
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: { redirectTo: `${window.location.origin}/portal` },
               });
-              if (result.error) {
+              if (error) {
                 setBusy(false);
-                toast.error(result.error.message || "Google sign-in failed");
+                toast.error(error.message || "Google sign-in failed");
               }
-              // On redirect or success, the page either navigates away or auth state updates.
+              // On success the browser redirects to Google, then back to /portal.
             }}
           >
             <svg className="size-4 mr-2" viewBox="0 0 24 24" aria-hidden="true">

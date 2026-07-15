@@ -341,37 +341,16 @@ export function MembersPage() {
         <div className="mx-auto max-w-6xl space-y-10 px-4">
           {COMMITTEES.map((c) => {
             const list = committeeMembers.get(c.key) ?? [];
-            const cards = list.length > 0 ? list : Array.from({ length: 3 }).map((_, i) => ({
-              id: `placeholder-${c.key}-${i}`,
-              name: "",
-              title: "",
-              bio: null, photo_url: null, profile_card_url: null, category: null, expertise: null, location: null,
-              contact_email: null, website: null, linkedin_url: null, social_url: null,
-              portfolio_images: null, committee: c.key, committee_position: "",
-              committee_order: i,
-            } as Member));
+            if (list.length === 0) return null; // ponytail: skip empty committees, no placeholder cards
             return (
               <div key={c.key}>
                 <div className="mb-4 flex items-end justify-between gap-3">
                   <h2 className="font-serif text-xl text-foreground md:text-2xl">{c.label}</h2>
-                  {list.length === 0 && (
-                    <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                      Placeholder · admin to confirm
-                    </span>
-                  )}
                 </div>
                 <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:thin]">
-                  {cards.map((m) =>
-                    list.length > 0 ? (
-                      <CommitteeCard key={m.id} m={m} onOpen={setActive} />
-                    ) : (
-                      <div key={m.id} className="flex w-44 shrink-0 flex-col items-center rounded-2xl border border-dashed border-border bg-card p-4 text-center sm:w-52">
-                        <div className="size-20 rounded-full bg-muted sm:size-24" aria-hidden="true" />
-                        <div className="mt-3 font-serif text-base text-muted-foreground">[Name]</div>
-                        <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">[Position]</div>
-                      </div>
-                    ),
-                  )}
+                  {list.map((m) => (
+                    <CommitteeCard key={m.id} m={m} onOpen={setActive} />
+                  ))}
                 </div>
               </div>
             );
