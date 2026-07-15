@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { asset } from "@/lib/cdn";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronRight, Search, Mail, Globe, MapPin, Linkedin, X, ExternalLink } from "lucide-react";
@@ -19,21 +20,19 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import wcw1 from "@/assets/wcw/wcw-1.jpeg.asset.json";
-import wcw2 from "@/assets/wcw/wcw-2.jpeg.asset.json";
-import wcw3 from "@/assets/wcw/wcw-3.jpeg.asset.json";
-import wcw4 from "@/assets/wcw/wcw-4.jpeg.asset.json";
-import wcw5 from "@/assets/wcw/wcw-5.jpeg.asset.json";
-import wcw6 from "@/assets/wcw/wcw-6.jpeg.asset.json";
-import hike1 from "@/assets/hike-2026/hike-00.44.5844.jpeg.asset.json";
-import hike2 from "@/assets/hike-2026/hike-00.44.5911.jpeg.asset.json";
-import hike3 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
-import coach1 from "@/assets/wcw-coaching/coaching-1.jpeg.asset.json";
-import coach2 from "@/assets/wcw-coaching/coaching-2.jpeg.asset.json";
+const wcw1 = asset("wcw/wcw-1.jpeg");
+const wcw2 = asset("wcw/wcw-2.jpeg");
+const wcw3 = asset("wcw/wcw-3.jpeg");
+const wcw4 = asset("wcw/wcw-4.jpeg");
+const wcw5 = asset("wcw/wcw-5.jpeg");
+const wcw6 = asset("wcw/wcw-6.jpeg");
+const hike1 = asset("hike-2026/hike-00.44.5844.jpeg");
+const hike2 = asset("hike-2026/hike-00.44.5911.jpeg");
+const hike3 = asset("hike-2026/hike-00.44.5922.jpeg");
+const coach1 = asset("wcw-coaching/coaching-1.jpeg");
+const coach2 = asset("wcw-coaching/coaching-2.jpeg");
 
-const FALLBACK_POOL: string[] = [wcw1, wcw2, wcw3, wcw4, wcw5, wcw6, hike1, hike2, hike3, coach1, coach2].map(
-  (a) => (a as { url: string }).url,
-);
+const FALLBACK_POOL: string[] = [wcw1, wcw2, wcw3, wcw4, wcw5, wcw6, hike1, hike2, hike3, coach1, coach2];
 
 // Deterministic per-id pick so a member's fallback gallery is stable across renders.
 function fallbackImagesFor(id: string, n = 3): string[] {

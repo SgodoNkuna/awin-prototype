@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { asset } from "@/lib/cdn";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Calendar, MapPin, ChevronRight, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -12,20 +13,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { EventGallery } from "@/components/site/EventGallery";
-import hike1 from "@/assets/hike-2026/hike-00.44.593.jpeg.asset.json";
-import hike2 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
-import hike3 from "@/assets/hike-2026/hike-00.44.5966.jpeg.asset.json";
-import hike4 from "@/assets/hike-2026/hike-00.45.001.jpeg.asset.json";
+import { WCWGallery } from "@/components/site/WCWGallery";
+import { ArrowRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+const hike1 = asset("hike-2026/hike-00.44.593.jpeg");
+const hike2 = asset("hike-2026/hike-00.44.5922.jpeg");
+const hike3 = asset("hike-2026/hike-00.44.5966.jpeg");
+const hike4 = asset("hike-2026/hike-00.45.001.jpeg");
 
-const EVENT_FALLBACK_IMAGES = [hike1.url, hike2.url, hike3.url, hike4.url];
+const EVENT_FALLBACK_IMAGES = [hike1, hike2, hike3, hike4];
 
 export const Route = createFileRoute("/events")({
   head: () => ({
     meta: [
-      { title: "Events | A-WIN" },
-      { name: "description", content: "Browse upcoming and past A-WIN events." },
-      { property: "og:title", content: "A-WIN Events" },
-      { property: "og:description", content: "Masterclasses, summits and meetups for women investors across Africa." },
+      { title: "Events & Gallery | A-WIN" },
+      { name: "description", content: "Browse upcoming and past A-WIN events, photography and member stories." },
+      { property: "og:title", content: "A-WIN Events & Gallery" },
+      { property: "og:description", content: "Masterclasses, summits, meetups and event photography for women investors across Africa." },
     ],
   }),
   component: EventsPage,
@@ -184,9 +189,9 @@ function EventsPage() {
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="text-accent">Events</span>
+            <span className="text-accent">Events &amp; Gallery</span>
           </nav>
-          <h1 className="mt-5 font-serif">Events</h1>
+          <h1 className="mt-5 font-serif">Events &amp; Gallery</h1>
           <p className="mt-5 max-w-2xl text-primary-foreground/85 md:text-lg">
             Masterclasses, summits and member meetups designed to move you forward as an investor.
           </p>
@@ -320,7 +325,14 @@ function EventsPage() {
 
       <EventGallery />
 
+      {/* WCW Summit gallery + news, folded in from the old /news page */}
+      <section className="py-12">
+        <div className="mx-auto max-w-6xl px-4">
+          <WCWGallery />
+        </div>
+      </section>
 
+      <NewsSection />
 
       <Dialog open={!!registering} onOpenChange={(o) => !o && setRegistering(null)}>
         <DialogContent>
@@ -348,5 +360,81 @@ function EventsPage() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+type Article = {
+  id: string;
+  title: string;
+  slug: string | null;
+  excerpt: string | null;
+  cover_image: string | null;
+  category: string | null;
+  published_at: string | null;
+  author_name: string | null;
+};
+
+/** News & Insights strip, folded in from the retired /news page. */
+function NewsSection() {
+  const [articles, setArticles] = useState<Article[] | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("news_articles")
+      .select("id, title, slug, excerpt, cover_image, category, published_at, author_name")
+      .eq("published", true)
+      .order("published_at", { ascending: false })
+      .limit(6)
+      .then(({ data }) => setArticles((data as Article[]) ?? []));
+  }, []);
+
+  return (
+    <section className="py-12">
+      <div className="mx-auto max-w-6xl px-4">
+        <h2 className="font-serif text-2xl text-foreground">News &amp; Insights</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Member stories and investment insights from the network.</p>
+        <div className="mt-8">
+          {articles === null ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2].map((i) => <Skeleton key={i} className="h-72 rounded-2xl" />)}
+            </div>
+          ) : articles.length === 0 ? (
+            <EmptyState
+              title="First stories coming soon"
+              description="Our editorial team is preparing the first articles. Check back shortly."
+            />
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {articles.map((a) => (
+                <Card key={a.id} className="overflow-hidden border-border/60 transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]">
+                  <div
+                    className="aspect-video w-full bg-cover bg-center"
+                    style={{ background: a.cover_image ? `url(${a.cover_image}) center/cover` : "var(--gradient-hero)" }}
+                    aria-hidden="true"
+                  />
+                  <CardContent className="p-6">
+                    {a.category && <Badge variant="outline" className="mb-3">{a.category}</Badge>}
+                    <h3 className="font-serif text-xl text-foreground">{a.title}</h3>
+                    {a.excerpt && <p className="mt-3 text-sm text-muted-foreground line-clamp-3">{a.excerpt}</p>}
+                    <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {a.published_at ? new Date(a.published_at).toLocaleDateString() : "-"}
+                      </div>
+                      {a.author_name && <span>{a.author_name}</span>}
+                    </div>
+                    {a.slug && (
+                      <div className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent">
+                        Read more <ArrowRight className="h-3.5 w-3.5" />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }

@@ -1,44 +1,45 @@
 import { useState } from "react";
+import { asset } from "@/lib/cdn";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Play } from "lucide-react";
 
-import wcw1 from "@/assets/wcw/wcw-1.jpeg.asset.json";
-import wcw2 from "@/assets/wcw/wcw-2.jpeg.asset.json";
-import wcw3 from "@/assets/wcw/wcw-3.jpeg.asset.json";
-import wcw4 from "@/assets/wcw/wcw-4.jpeg.asset.json";
-import wcw5 from "@/assets/wcw/wcw-5.jpeg.asset.json";
-import wcw6 from "@/assets/wcw/wcw-6.jpeg.asset.json";
-import vid1 from "@/assets/wcw/wcw-31.mp4.asset.json";
-import vid2 from "@/assets/wcw/wcw-32.mp4.asset.json";
-import vid3 from "@/assets/wcw/wcw-32-1.mp4.asset.json";
-import vid4 from "@/assets/wcw/wcw-32-2.mp4.asset.json";
+const wcw1 = asset("wcw/wcw-1.jpeg");
+const wcw2 = asset("wcw/wcw-2.jpeg");
+const wcw3 = asset("wcw/wcw-3.jpeg");
+const wcw4 = asset("wcw/wcw-4.jpeg");
+const wcw5 = asset("wcw/wcw-5.jpeg");
+const wcw6 = asset("wcw/wcw-6.jpeg");
+const vid1 = asset("wcw/wcw-31.mp4");
+const vid2 = asset("wcw/wcw-32.mp4");
+const vid3 = asset("wcw/wcw-32-1.mp4");
+const vid4 = asset("wcw/wcw-32-2.mp4");
 
 // Paired sequence: each photo aligns with the matching video segment from the
 // Graça Machel Trust · Women Creating Wealth Graduation (November 2024).
 const pairs = [
   {
-    image: { src: wcw1.url, caption: "1 · Opening — From Debt to Riches book signing" },
-    video: { src: vid1.url, caption: "1 · Opening — WCW Summit highlight reel" },
+    image: { src: wcw1, caption: "1 · Opening — From Debt to Riches book signing" },
+    video: { src: vid1, caption: "1 · Opening — WCW Summit highlight reel" },
   },
   {
-    image: { src: wcw2.url, caption: "2 · Sisterhood on the floor" },
-    video: { src: vid2.url, caption: "2 · Member testimonial" },
+    image: { src: wcw2, caption: "2 · Sisterhood on the floor" },
+    video: { src: vid2, caption: "2 · Member testimonial" },
   },
   {
-    image: { src: wcw3.url, caption: "3 · Panel: Women Creating Wealth" },
-    video: { src: vid3.url, caption: "3 · On-stage moments" },
+    image: { src: wcw3, caption: "3 · Panel: Women Creating Wealth" },
+    video: { src: vid3, caption: "3 · On-stage moments" },
   },
   {
-    image: { src: wcw4.url, caption: "4 · Celebrating member milestones" },
-    video: { src: vid4.url, caption: "4 · Behind the scenes" },
+    image: { src: wcw4, caption: "4 · Celebrating member milestones" },
+    video: { src: vid4, caption: "4 · Behind the scenes" },
   },
 ];
 
 // Additional photos (no paired video) shown after the main sequence.
 const extraImages = [
-  { src: wcw5.url, caption: "5 · Mentorship in action" },
-  { src: wcw6.url, caption: "6 · Graduation embrace" },
+  { src: wcw5, caption: "5 · Mentorship in action" },
+  { src: wcw6, caption: "6 · Graduation embrace" },
 ];
 
 const images = [...pairs.map((p) => p.image), ...extraImages];

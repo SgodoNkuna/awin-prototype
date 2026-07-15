@@ -1,26 +1,27 @@
 import { useState } from "react";
+import { asset } from "@/lib/cdn";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 
-import h1 from "@/assets/hike-2026/hike-00.44.593.jpeg.asset.json";
-import h2 from "@/assets/hike-2026/hike-00.44.5844.jpeg.asset.json";
-import h3 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
-import h4 from "@/assets/hike-2026/hike-00.44.5966.jpeg.asset.json";
-import h5 from "@/assets/hike-2026/hike-00.45.001.jpeg.asset.json";
+const h1 = asset("hike-2026/hike-00.44.593.jpeg");
+const h2 = asset("hike-2026/hike-00.44.5844.jpeg");
+const h3 = asset("hike-2026/hike-00.44.5922.jpeg");
+const h4 = asset("hike-2026/hike-00.44.5966.jpeg");
+const h5 = asset("hike-2026/hike-00.45.001.jpeg");
 // h6 (hike-00.45.00.jpeg) intentionally omitted — asset is a book cover, not a hike photo.
-import h7 from "@/assets/hike-2026/hike-00.45.00-2.jpeg.asset.json";
-import h8 from "@/assets/hike-2026/hike-00.44.5911.jpeg.asset.json";
-import h9 from "@/assets/hike-2026/hike-00.44.5932.jpeg.asset.json";
+const h7 = asset("hike-2026/hike-00.45.00-2.jpeg");
+const h8 = asset("hike-2026/hike-00.44.5911.jpeg");
+const h9 = asset("hike-2026/hike-00.44.5932.jpeg");
 
 const photos = [
-  { src: h1.url, caption: "Sisterhood on the trail" },
-  { src: h2.url, caption: "By the bridge" },
-  { src: h3.url, caption: "Team moment" },
-  { src: h4.url, caption: "Riverside" },
-  { src: h5.url, caption: "Crossing together" },
-  { src: h7.url, caption: "Lakeside pause" },
-  { src: h8.url, caption: "Onward" },
-  { src: h9.url, caption: "Quiet waters" },
+  { src: h1, caption: "Sisterhood on the trail" },
+  { src: h2, caption: "By the bridge" },
+  { src: h3, caption: "Team moment" },
+  { src: h4, caption: "Riverside" },
+  { src: h5, caption: "Crossing together" },
+  { src: h7, caption: "Lakeside pause" },
+  { src: h8, caption: "Onward" },
+  { src: h9, caption: "Quiet waters" },
 ];
 
 

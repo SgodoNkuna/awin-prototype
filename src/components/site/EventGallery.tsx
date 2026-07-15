@@ -1,48 +1,49 @@
 import { useState } from "react";
+import { asset } from "@/lib/cdn";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-import h1 from "@/assets/hike-2026/hike-00.44.593.jpeg.asset.json";
-import h2 from "@/assets/hike-2026/hike-00.44.5844.jpeg.asset.json";
-import h3 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
-import h4 from "@/assets/hike-2026/hike-00.44.5966.jpeg.asset.json";
-import h5 from "@/assets/hike-2026/hike-00.45.001.jpeg.asset.json";
-import h7 from "@/assets/hike-2026/hike-00.45.00-2.jpeg.asset.json";
-import h8 from "@/assets/hike-2026/hike-00.44.5911.jpeg.asset.json";
-import h9 from "@/assets/hike-2026/hike-00.44.5932.jpeg.asset.json";
-import w1 from "@/assets/wcw/wcw-1.jpeg.asset.json";
-import w2 from "@/assets/wcw/wcw-2.jpeg.asset.json";
-import w3 from "@/assets/wcw/wcw-3.jpeg.asset.json";
-import w4 from "@/assets/wcw/wcw-4.jpeg.asset.json";
-import w5 from "@/assets/wcw/wcw-5.jpeg.asset.json";
-import w6 from "@/assets/wcw/wcw-6.jpeg.asset.json";
-import c1 from "@/assets/wcw-coaching/coaching-1.jpeg.asset.json";
-import c2 from "@/assets/wcw-coaching/coaching-2.jpeg.asset.json";
-import c3 from "@/assets/wcw-coaching/coaching-3.jpeg.asset.json";
-import c4 from "@/assets/wcw-coaching/coaching-4.jpeg.asset.json";
+const h1 = asset("hike-2026/hike-00.44.593.jpeg");
+const h2 = asset("hike-2026/hike-00.44.5844.jpeg");
+const h3 = asset("hike-2026/hike-00.44.5922.jpeg");
+const h4 = asset("hike-2026/hike-00.44.5966.jpeg");
+const h5 = asset("hike-2026/hike-00.45.001.jpeg");
+const h7 = asset("hike-2026/hike-00.45.00-2.jpeg");
+const h8 = asset("hike-2026/hike-00.44.5911.jpeg");
+const h9 = asset("hike-2026/hike-00.44.5932.jpeg");
+const w1 = asset("wcw/wcw-1.jpeg");
+const w2 = asset("wcw/wcw-2.jpeg");
+const w3 = asset("wcw/wcw-3.jpeg");
+const w4 = asset("wcw/wcw-4.jpeg");
+const w5 = asset("wcw/wcw-5.jpeg");
+const w6 = asset("wcw/wcw-6.jpeg");
+const c1 = asset("wcw-coaching/coaching-1.jpeg");
+const c2 = asset("wcw-coaching/coaching-2.jpeg");
+const c3 = asset("wcw-coaching/coaching-3.jpeg");
+const c4 = asset("wcw-coaching/coaching-4.jpeg");
 
 type Cat = "all" | "hike" | "wcw" | "coaching";
 
 const PHOTOS: { src: string; caption: string; event: string; cat: Cat }[] = [
-  { src: h1.url, caption: "Sisterhood on the trail", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h2.url, caption: "By the bridge", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h3.url, caption: "Team moment", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h4.url, caption: "Riverside", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h5.url, caption: "Crossing together", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h7.url, caption: "Lakeside pause", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h8.url, caption: "Onward", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h9.url, caption: "Quiet waters", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: w1.url, caption: "WCW gathering", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: w2.url, caption: "Panel in session", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: w3.url, caption: "Community", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: w4.url, caption: "Networking", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: w5.url, caption: "Speakers", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: w6.url, caption: "Full house", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: c1.url, caption: "Group coaching", event: "Coaching with Nompumelelo", cat: "coaching" },
-  { src: c2.url, caption: "Workshop notes", event: "Coaching with Nompumelelo", cat: "coaching" },
-  { src: c3.url, caption: "Small circle", event: "Coaching with Nompumelelo", cat: "coaching" },
-  { src: c4.url, caption: "Reflection", event: "Coaching with Nompumelelo", cat: "coaching" },
+  { src: h1, caption: "Sisterhood on the trail", event: "A-WIN Hike · April 2026", cat: "hike" },
+  { src: h2, caption: "By the bridge", event: "A-WIN Hike · April 2026", cat: "hike" },
+  { src: h3, caption: "Team moment", event: "A-WIN Hike · April 2026", cat: "hike" },
+  { src: h4, caption: "Riverside", event: "A-WIN Hike · April 2026", cat: "hike" },
+  { src: h5, caption: "Crossing together", event: "A-WIN Hike · April 2026", cat: "hike" },
+  { src: h7, caption: "Lakeside pause", event: "A-WIN Hike · April 2026", cat: "hike" },
+  { src: h8, caption: "Onward", event: "A-WIN Hike · April 2026", cat: "hike" },
+  { src: h9, caption: "Quiet waters", event: "A-WIN Hike · April 2026", cat: "hike" },
+  { src: w1, caption: "WCW gathering", event: "Woman Crush Wednesday", cat: "wcw" },
+  { src: w2, caption: "Panel in session", event: "Woman Crush Wednesday", cat: "wcw" },
+  { src: w3, caption: "Community", event: "Woman Crush Wednesday", cat: "wcw" },
+  { src: w4, caption: "Networking", event: "Woman Crush Wednesday", cat: "wcw" },
+  { src: w5, caption: "Speakers", event: "Woman Crush Wednesday", cat: "wcw" },
+  { src: w6, caption: "Full house", event: "Woman Crush Wednesday", cat: "wcw" },
+  { src: c1, caption: "Group coaching", event: "Coaching with Nompumelelo", cat: "coaching" },
+  { src: c2, caption: "Workshop notes", event: "Coaching with Nompumelelo", cat: "coaching" },
+  { src: c3, caption: "Small circle", event: "Coaching with Nompumelelo", cat: "coaching" },
+  { src: c4, caption: "Reflection", event: "Coaching with Nompumelelo", cat: "coaching" },
 ];
 
 const TABS: { id: Cat; label: string }[] = [

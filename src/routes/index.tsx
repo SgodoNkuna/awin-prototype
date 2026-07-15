@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { asset } from "@/lib/cdn";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -16,11 +17,11 @@ import { WCWGallery } from "@/components/site/WCWGallery";
 import { HikeGallery } from "@/components/site/HikeGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { signPortfolioUrls } from "@/lib/portfolio-storage.functions";
-import wcwHero from "@/assets/wcw/wcw-5.jpeg.asset.json";
-import hikeImg1 from "@/assets/hike-2026/hike-00.44.593.jpeg.asset.json";
-import hikeImg2 from "@/assets/hike-2026/hike-00.44.5922.jpeg.asset.json";
-import hikeImg3 from "@/assets/hike-2026/hike-00.44.5966.jpeg.asset.json";
-import hikeImg4 from "@/assets/hike-2026/hike-00.45.001.jpeg.asset.json";
+const wcwHero = asset("wcw/wcw-5.jpeg");
+const hikeImg1 = asset("hike-2026/hike-00.44.593.jpeg");
+const hikeImg2 = asset("hike-2026/hike-00.44.5922.jpeg");
+const hikeImg3 = asset("hike-2026/hike-00.44.5966.jpeg");
+const hikeImg4 = asset("hike-2026/hike-00.45.001.jpeg");
 
 
 export const Route = createFileRoute("/")({
@@ -106,7 +107,7 @@ type HomeMember = {
   profile_card_url: string | null;
 };
 
-const EVENT_FALLBACK_IMAGES = [hikeImg1.url, hikeImg2.url, hikeImg3.url, hikeImg4.url];
+const EVENT_FALLBACK_IMAGES = [hikeImg1, hikeImg2, hikeImg3, hikeImg4];
 
 function useUpcomingEvents(limit = 4) {
   const [events, setEvents] = useState<HomeEvent[]>([]);
@@ -239,7 +240,7 @@ function Index() {
 
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-primary/20 shadow-[var(--shadow-elegant)]">
             <img
-              src={wcwHero.url}
+              src={wcwHero}
               alt="A-WIN women together at a community gathering"
               className="h-full w-full object-cover"
               loading="lazy"
