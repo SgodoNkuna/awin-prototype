@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, Phone, MapPin, Clock, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,15 +38,38 @@ const contactSchema = z.object({
   message: z.string().trim().min(10).max(2000),
 });
 
-const INFO = [
-  { icon: Mail, label: "Email", value: "info@thuthuka-sa.co.za" },
-  { icon: Phone, label: "Phone", value: "+27 11 568 2635" },
-  { icon: Phone, label: "Mobile", value: "+27 69 245 0228" },
-  { icon: MapPin, label: "Location", value: "Centurion, Pretoria, South Africa" },
-  { icon: Clock, label: "Office Hours", value: "Mon – Fri · 09:00 – 17:00 SAST" },
-];
+// Defaults — overridden by the `contact_info` site_setting (Admin → Settings → Content).
+const INFO_DEFAULTS = {
+  email: "info@awin.co.za",
+  phone: "+27 72 236 9002",
+  mobile: "",
+  location: "Centurion, South Africa",
+  hours: "Mon – Fri · 09:00 – 17:00 SAST",
+};
+
+function useContactInfo() {
+  const [info, setInfo] = useState(INFO_DEFAULTS);
+  useEffect(() => {
+    supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "contact_info")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) setInfo({ ...INFO_DEFAULTS, ...(data.value as Partial<typeof INFO_DEFAULTS>) });
+      });
+  }, []);
+  return [
+    { icon: Mail, label: "Email", value: info.email },
+    { icon: Phone, label: "Phone", value: info.phone },
+    ...(info.mobile ? [{ icon: Phone, label: "Mobile", value: info.mobile }] : []),
+    { icon: MapPin, label: "Location", value: info.location },
+    { icon: Clock, label: "Office Hours", value: info.hours },
+  ];
+}
 
 function ContactPage() {
+  const INFO = useContactInfo();
   const [subject, setSubject] = useState<"general" | "membership" | "events" | "partnership" | "media">("general");
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
@@ -82,6 +105,10 @@ function ContactPage() {
     }
     setSent(true);
     toast.success("Message sent — we'll be in touch.");
+    // Forward to the info@ inbox — fire-and-forget, the DB row is the source of truth.
+    void import("@/lib/email.functions").then(({ sendContactNotification }) =>
+      sendContactNotification({ data: parsed.data }).catch(() => {}),
+    );
     (e.target as HTMLFormElement).reset();
   };
 

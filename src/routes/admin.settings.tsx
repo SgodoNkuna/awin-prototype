@@ -208,6 +208,71 @@ function SettingsPage() {
               <Button onClick={() => saveSetting("eft_banking")} size="sm"><Save className="size-4 mr-2" />Publish</Button>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Contact Details</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-muted-foreground">Shown on the Contact page and used across the site.</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {([
+                  ["email", "Email"],
+                  ["phone", "Phone"],
+                  ["mobile", "Mobile (optional)"],
+                  ["location", "Location"],
+                  ["hours", "Office hours"],
+                ] as const).map(([k, label]) => (
+                  <Field key={k} label={label}>
+                    <Input
+                      value={(settings.contact_info?.[k] as string) ?? ""}
+                      onChange={(e) => updateSetting("contact_info", { ...settings.contact_info, [k]: e.target.value })}
+                    />
+                  </Field>
+                ))}
+              </div>
+              <Button onClick={() => saveSetting("contact_info")} size="sm"><Save className="size-4 mr-2" />Publish</Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">FAQ (public FAQ &amp; Privacy page)</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              {(((settings.faq?.items as { q: string; a: string }[]) ?? [])).map((item, i, arr) => (
+                <div key={i} className="rounded-lg border p-3 space-y-2">
+                  <Field label={`Question ${i + 1}`}>
+                    <Input
+                      value={item.q}
+                      onChange={(e) => updateSetting("faq", { items: arr.map((x, idx) => idx === i ? { ...x, q: e.target.value } : x) })}
+                    />
+                  </Field>
+                  <Field label="Answer">
+                    <Textarea
+                      rows={3}
+                      value={item.a}
+                      onChange={(e) => updateSetting("faq", { items: arr.map((x, idx) => idx === i ? { ...x, a: e.target.value } : x) })}
+                    />
+                  </Field>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() => updateSetting("faq", { items: arr.filter((_, idx) => idx !== i) })}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updateSetting("faq", { items: [ ...(((settings.faq?.items as { q: string; a: string }[]) ?? [])), { q: "", a: "" } ] })}
+                >
+                  Add question
+                </Button>
+                <Button onClick={() => saveSetting("faq")} size="sm"><Save className="size-4 mr-2" />Publish</Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="tiers" className="space-y-3 mt-4">

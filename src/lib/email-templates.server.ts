@@ -36,8 +36,14 @@ function layout(title: string, bodyHtml: string): string {
 </body></html>`;
 }
 
+// Escape user-supplied leaf values before they hit the HTML email body.
+// Prevents HTML/link injection from public endpoints (contact form, applications).
+const esc = (s: string) =>
+  String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
 const p = (t: string) => `<p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#44403c;">${t}</p>`;
-const strong = (t: string) => `<strong style="color:#1c1917;">${t}</strong>`;
+// strong() only ever wraps leaf user values (names, tiers, amounts) — escape here.
+const strong = (t: string) => `<strong style="color:#1c1917;">${esc(t)}</strong>`;
 const btn = (href: string, label: string) =>
   `<p style="margin:20px 0;"><a href="${href}" style="background:${BRAND.accent};color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;display:inline-block;">${label}</a></p>`;
 
@@ -82,6 +88,30 @@ export function membershipSuspendedEmail(fullName: string) {
         p(
           "Your A-WIN membership has been suspended. If you believe this is a mistake, or you'd like to discuss reinstatement, please contact the committee by replying to this email.",
         ),
+    ),
+  };
+}
+
+export function adminNewApplicationEmail(fullName: string, email: string) {
+  return {
+    subject: `New membership application — ${fullName}`,
+    html: layout(
+      "New application received",
+      p(`${strong(fullName)} (${esc(email)}) just submitted a membership application.`) +
+        btn(`${BRAND.site}/admin/applications`, "Review in admin") +
+        p("Their proof of payment (if attached) is waiting in the EFT queue."),
+    ),
+  };
+}
+
+export function contactMessageEmail(name: string, email: string, subject: string, message: string) {
+  return {
+    subject: `Website contact — ${subject} — ${name}`,
+    html: layout(
+      "New contact message",
+      p(`${strong(name)} (${esc(email)}) sent a message via the website contact form:`) +
+        `<blockquote style="margin:12px 0;padding:12px 16px;border-left:3px solid ${"#e36414"};background:#fafaf9;font-size:14px;color:#44403c;white-space:pre-wrap;">${esc(message)}</blockquote>` +
+        p(`Reply directly to ${strong(email)}.`),
     ),
   };
 }

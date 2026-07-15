@@ -54,8 +54,8 @@ describe("Admin route gating (regression: only admins reach /admin/portfolio act
     render(<AdminLayout />);
     expect(navigate).not.toHaveBeenCalled();
     expect(screen.getByTestId("outlet")).toBeInTheDocument();
-    // Sidebar exposes the News & Gallery (portfolio) link only inside the gate
-    expect(screen.getAllByRole("link", { name: /News & Gallery/i }).length).toBeGreaterThan(0);
+    // Sidebar exposes the Member Spotlights (portfolio) link only inside the gate
+    expect(screen.getAllByRole("link", { name: /Member Spotlights/i }).length).toBeGreaterThan(0);
   });
 
   it("shows a loading state (not the protected outlet) while auth resolves", () => {

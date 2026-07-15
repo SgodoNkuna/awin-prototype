@@ -28,8 +28,6 @@ export function SiteFooter() {
           <ul className="mt-4 space-y-2 text-sm">
             <li><Link to="/about" className="text-white/85 hover:text-[#E8960A]">About</Link></li>
             <li><Link to="/membership" className="text-white/85 hover:text-[#E8960A]">Membership</Link></li>
-            <li><Link to="/events" className="text-white/85 hover:text-[#E8960A]">Events</Link></li>
-            
             <li><Link to="/events" className="text-white/85 hover:text-[#E8960A]">Events &amp; Gallery</Link></li>
             <li><Link to="/members" className="text-white/85 hover:text-[#E8960A]">Our Members</Link></li>
             <li><Link to="/info" className="text-white/85 hover:text-[#E8960A]">FAQ &amp; Privacy</Link></li>
@@ -51,7 +49,7 @@ export function SiteFooter() {
           <ul className="mt-4 inline-flex flex-col gap-3 text-sm text-white/85 md:flex md:items-start">
             <li className="flex items-start gap-2">
               <Mail className="mt-0.5 h-4 w-4 text-[#E8960A]" />
-              <span>info@awinetwork.co.za</span>
+              <span>info@awin.co.za</span>
             </li>
             <li className="flex items-start gap-2">
               <Phone className="mt-0.5 h-4 w-4 text-[#E8960A]" />
@@ -59,7 +57,7 @@ export function SiteFooter() {
             </li>
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 text-[#E8960A]" />
-              <span>Pretoria, South Africa</span>
+              <span>Centurion, South Africa</span>
             </li>
           </ul>
           <div className="mt-5 flex justify-center gap-3 md:justify-start">

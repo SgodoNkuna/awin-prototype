@@ -64,8 +64,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Content",
     items: [
       { to: "/admin/events", label: "Events", icon: Calendar },
-      { to: "/admin/gallery", label: "Event Gallery", icon: Briefcase },
-      { to: "/admin/portfolio", label: "News & Gallery", icon: Newspaper },
+      { to: "/admin/gallery", label: "Photo Gallery", icon: Briefcase },
+      { to: "/admin/portfolio", label: "Member Spotlights", icon: Newspaper },
       { to: "/admin/documents", label: "Documents", icon: FolderOpen },
     ],
   },

@@ -48,17 +48,18 @@ const values = [
   },
 ];
 
-type TeamMember = { id: string; name: string; title: string; photo_url: string | null };
+type TeamMember = { id: string; name: string; title: string; photo_url: string | null; committee_position: string | null };
 
 function AboutPage() {
   const [team, setTeam] = useState<TeamMember[]>([]);
   useEffect(() => {
+    // Main committee, in committee order — the actual leadership.
     supabase
       .from("team_members")
-      .select("id, name, title, photo_url")
+      .select("id, name, title, photo_url, committee_position")
       .eq("published", true)
-      .order("order_index")
-      .limit(3)
+      .eq("committee", "main")
+      .order("committee_order")
       .then(({ data }) => setTeam((data as TeamMember[]) ?? []));
   }, []);
 
@@ -258,7 +259,7 @@ function AboutPage() {
                       aria-hidden="true"
                     />
                     <h3 className="mt-5 font-serif text-lg text-foreground">{m.name}</h3>
-                    <div className="text-sm font-medium text-accent">{m.title}</div>
+                    <div className="text-sm font-medium text-accent">{m.committee_position ?? m.title}</div>
                   </CardContent>
                 </Card>
               ))}

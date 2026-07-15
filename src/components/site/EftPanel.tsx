@@ -27,11 +27,11 @@ export function buildEftReference(fullName: string, seed?: string): string {
 
 /** Fallback while the eft_banking site_setting loads (or if it's missing). */
 const BANK_FALLBACK = {
-  account_name: "A-WIN Collective NPC",
-  bank: "Standard Bank",
-  branch: "Universal · 051001",
-  account_type: "Business Current",
-  account_number: "•••• •••• 4821",
+  account_name: "African Women Investment Network Club",
+  bank: "Absa Bank Ltd",
+  branch: "Universal · 632005",
+  account_type: "Club Account",
+  account_number: "9400745213",
 };
 type BankDetails = typeof BANK_FALLBACK;
 

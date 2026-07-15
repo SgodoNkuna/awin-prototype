@@ -191,7 +191,7 @@ function MembershipPage() {
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-primary via-primary to-primary/80 py-20 md:py-28 text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="font-bold mb-4">Join A-WIN</h1>
+          <h1 className="font-bold mb-4">Become a Member</h1>
           <p className="text-base md:text-xl max-w-2xl mx-auto opacity-95 leading-relaxed">
             You do not need a degree or a professional title to join A-WIN. You
             need a commitment to saving, investing, and growing with a community
@@ -278,7 +278,7 @@ function MembershipPage() {
       {/* How it works */}
       <section className="py-16 md:py-24 bg-muted/30">
         <div className="container mx-auto px-4">
-          <h2 className="font-bold text-center mb-10 md:mb-14">How It Works</h2>
+          <h2 className="font-bold text-center mb-10 md:mb-14">Your Path to Membership</h2>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
             {STEPS.map((step) => (
               <div key={step.n} className="text-center group">
@@ -324,7 +324,7 @@ function MembershipPage() {
       {/* Application form */}
       <section id="application" className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 max-w-2xl">
-          <h2 className="font-bold text-center mb-3">Membership Application</h2>
+          <h2 className="font-bold text-center mb-3">Apply Now</h2>
           <p className="text-center text-muted-foreground mb-10">
             Tell us about yourself — we'll be in touch within 5 business days.
           </p>

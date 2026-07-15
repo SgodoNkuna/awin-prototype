@@ -49,9 +49,26 @@ export const signPortfolioUrls = createServerFn({ method: "POST" })
     if (toSign.length === 0) return { urls: passthrough };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Public endpoint (no auth — it renders images on public pages), so the
+    // service-role signer must NOT sign arbitrary caller-supplied keys or it
+    // becomes an IDOR over the whole private bucket. Only sign keys actually
+    // referenced by published team_members rows.
+    const { data: members } = await supabaseAdmin
+      .from("team_members")
+      .select("photo_url, profile_card_url, portfolio_images");
+    const allowed = new Set<string>();
+    for (const m of members ?? []) {
+      if (m.photo_url) allowed.add(m.photo_url);
+      if (m.profile_card_url) allowed.add(m.profile_card_url);
+      for (const p of (m.portfolio_images as string[] | null) ?? []) if (p) allowed.add(p);
+    }
+    const safeKeys = toSign.filter((k) => allowed.has(k));
+    if (safeKeys.length === 0) return { urls: passthrough };
+
     const { data: signed, error } = await supabaseAdmin.storage
       .from(BUCKET)
-      .createSignedUrls(toSign, SIGNED_TTL_SECONDS);
+      .createSignedUrls(safeKeys, SIGNED_TTL_SECONDS);
     if (error) throw new Error(error.message);
 
     const out = { ...passthrough };

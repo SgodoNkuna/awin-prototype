@@ -1,5 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { ChevronRight, ShieldCheck, HelpCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Accordion,
   AccordionContent,
@@ -55,6 +57,19 @@ const FAQS: { q: string; a: string }[] = [
 ];
 
 function InfoPage() {
+  // Admin-editable via the `faq` site_setting; hardcoded list is the fallback.
+  const [faqs, setFaqs] = useState(FAQS);
+  useEffect(() => {
+    supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "faq")
+      .maybeSingle()
+      .then(({ data }) => {
+        const items = (data?.value as { items?: { q: string; a: string }[] })?.items;
+        if (items?.length) setFaqs(items);
+      });
+  }, []);
   return (
     <>
       <section
@@ -83,7 +98,7 @@ function InfoPage() {
             <h2 className="font-serif">Frequently asked questions</h2>
           </div>
           <Accordion type="single" collapsible className="space-y-2">
-            {FAQS.map((f, i) => (
+            {faqs.map((f, i) => (
               <AccordionItem key={i} value={`q${i}`} className="rounded-lg border bg-card px-4">
                 <AccordionTrigger className="text-left font-medium">{f.q}</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground leading-relaxed">
