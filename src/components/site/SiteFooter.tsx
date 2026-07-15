@@ -24,7 +24,7 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h4 className="font-serif text-base text-[#E8960A]">Quick Links</h4>
+          <h4 className="font-serif text-base font-semibold text-white">Quick Links</h4>
           <ul className="mt-4 space-y-2 text-sm">
             <li><Link to="/about" className="text-white/85 hover:text-[#E8960A]">About</Link></li>
             <li><Link to="/membership" className="text-white/85 hover:text-[#E8960A]">Membership</Link></li>
@@ -36,7 +36,7 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h4 className="font-serif text-base text-[#E8960A]">Membership</h4>
+          <h4 className="font-serif text-base font-semibold text-white">Membership</h4>
           <ul className="mt-4 space-y-2 text-sm">
             <li><Link to="/membership" className="text-white/85 hover:text-[#E8960A]">Become a Member</Link></li>
             <li><Link to="/membership" hash="fees" className="text-white/85 hover:text-[#E8960A]">Fees &amp; Benefits</Link></li>
@@ -45,7 +45,7 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h4 className="font-serif text-base text-[#E8960A]">Contact</h4>
+          <h4 className="font-serif text-base font-semibold text-white">Contact</h4>
           <ul className="mt-4 inline-flex flex-col gap-3 text-sm text-white/85 md:flex md:items-start">
             <li className="flex items-start gap-2">
               <Mail className="mt-0.5 h-4 w-4 text-[#E8960A]" />
