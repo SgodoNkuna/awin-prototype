@@ -5,7 +5,11 @@ import logoWhite from "@/assets/awin-logo-white.png";
 
 export type LogoVariant = "color" | "orange" | "black" | "white";
 
-const ORDER: LogoVariant[] = ["color", "orange", "black", "white"];
+// "white" (a full dark theme) is intentionally omitted from the cycle: Tailwind v4
+// @theme inline doesn't propagate the overridden --foreground/--muted-foreground to
+// utility classes, so dark-theme text renders dark-on-dark site-wide. The three light
+// themes below all have correct contrast. Re-add "white" only with a proper dark-mode pass.
+const ORDER: LogoVariant[] = ["color", "orange", "black"];
 const STORAGE_KEY = "awin-logo-variant";
 
 const LOGO_SRC: Record<LogoVariant, string> = {

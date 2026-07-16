@@ -49,11 +49,11 @@ export function SiteFooter() {
           <ul className="mt-4 inline-flex flex-col gap-3 text-sm text-white/85 md:flex md:items-start">
             <li className="flex items-start gap-2">
               <Mail className="mt-0.5 h-4 w-4 text-[#E8960A]" />
-              <span>info@awin.co.za</span>
+              <a href="mailto:info@awin.co.za" className="hover:text-[#E8960A]">info@awin.co.za</a>
             </li>
             <li className="flex items-start gap-2">
               <Phone className="mt-0.5 h-4 w-4 text-[#E8960A]" />
-              <span>+27 12 460 0805</span>
+              <a href="tel:+27722369002" className="hover:text-[#E8960A]">+27 72 236 9002</a>
             </li>
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 text-[#E8960A]" />

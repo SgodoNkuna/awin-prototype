@@ -467,7 +467,7 @@ function Index() {
                           )}
                         </div>
                         <CardContent className="p-4">
-                          <h3 className="font-serif text-base font-bold leading-tight text-foreground">
+                          <h3 className="font-serif text-base font-bold leading-tight text-card-foreground">
                             {m.name}
                           </h3>
                           {m.category && (
