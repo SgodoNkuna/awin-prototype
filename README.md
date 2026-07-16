@@ -1,72 +1,60 @@
-# A-WIN
+# A-WIN — African Women Investment Network
 
-TanStack Start + React 19 + Supabase (Lovable Cloud). Edited inside Lovable, two-way synced to GitHub, deployable to Vercel.
+The official website and member platform for A-WIN. Public marketing site, member
+portal, and admin console in one app.
 
-## Deploying to Vercel from GitHub
+**Stack:** TanStack Start (React 19 + Vite) · Supabase (Postgres, Auth, Storage) ·
+Nitro server · deployed on Vercel · transactional email via Zoho ZeptoMail.
 
-The project ships pre-configured for Vercel.
+## Local development
 
-1. Push the repo to GitHub (Lovable's GitHub sync does this automatically).
-2. In Vercel: **Add New Project → Import** the GitHub repo.
-3. Framework Preset: **Other** (auto-detected from `vercel.json`).
-4. Build/install/output are read from `vercel.json` — leave the defaults.
-5. Add the environment variables below in **Project Settings → Environment Variables**, then **Deploy**.
-
-`vercel.json` runs `NITRO_PRESET=vercel npm run build`. That switches the Nitro target from `cloudflare-module` (used inside Lovable's preview) to `vercel`, producing the Vercel Build Output (`.vercel/output/`) which Vercel deploys as static assets + serverless functions automatically — no extra config needed.
-
-### Required environment variables
-
-Public (safe to expose, must be prefixed `VITE_`):
-
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-- `VITE_SUPABASE_PROJECT_ID`
-
-Server-only (used by server functions / webhooks):
-
-- `SUPABASE_URL`
-- `SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` *(only set if you've provisioned your own Supabase project; not available on Lovable Cloud)*
-- `PAYFAST_MERCHANT_ID`
-- `PAYFAST_MERCHANT_KEY`
-- `PAYFAST_PASSPHRASE`
-- `LOVABLE_API_KEY` *(only if you keep Lovable AI calls)*
-
-Copy the `VITE_*` values from `.env` after Lovable provisions Cloud — never commit `.env`.
-
-### Webhooks
-
-PayFast ITN endpoint will be live at:
-
-```
-https://<your-vercel-domain>/api/public/payfast/itn
-```
-
-Update this in the PayFast dashboard after the first deploy.
-
-### Local development
+Requires [Bun](https://bun.sh).
 
 ```bash
 bun install
 bun dev          # http://localhost:8080
-bun run build    # production build (Cloudflare preset by default)
+bun run build    # production build
 bun test         # vitest suite
 ```
 
-To reproduce a Vercel build locally:
-
-```bash
-NITRO_PRESET=vercel npm run build
-# output in .vercel/output/
-```
+Copy `.env` and fill in the Supabase + Zoho values before running (see **Environment** below).
 
 ## Project layout
 
-- `src/routes/` – file-based routes (TanStack Router)
-- `src/routes/api/public/` – webhook + public API endpoints
-- `src/lib/*.functions.ts` – `createServerFn` RPCs
-- `src/lib/*.server.ts` – server-only helpers
-- `supabase/migrations/` – database schema
-- `tests/` – vitest + Testing Library
+- `src/routes/` — file-based routes (TanStack Router)
+- `src/routes/api/public/` — webhook + public API endpoints
+- `src/components/` — `site/` (public), `portal/`, `admin/`, `ui/` (shadcn)
+- `src/lib/*.functions.ts` — `createServerFn` RPCs (ship to client — no secrets)
+- `src/lib/*.server.ts` — server-only helpers (service-role Supabase, PayFast, email)
+- `src/integrations/supabase/` — client, server client, auth middleware
+- `supabase/migrations/` — database schema (apply in order)
+- `scripts/` — seeding, mirroring and preflight utilities
+- `tests/` — vitest + Testing Library
+- `docs/DEPLOYMENT_CHECKLIST.md` — full go-live checklist
 
-See `.lovable/plan.md` for the sprint roadmap.
+## Environment
+
+Public (safe to expose, `VITE_` prefixed):
+
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+Server-only:
+
+- `SUPABASE_URL`, `SUPABASE_PROJECT_ID`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- `ZOHO_ZEPTOMAIL_TOKEN`, `ZOHO_MAIL_FROM`, `ZOHO_MAIL_FROM_NAME` — transactional email
+- `PAYFAST_MERCHANT_ID`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYFAST_SANDBOX` — card payments (optional)
+
+Never commit `.env`. On Vercel these live in **Project Settings → Environment Variables**.
+
+## Deploying to Vercel
+
+The repo ships pre-configured. Vercel builds with `NITRO_PRESET=vercel npm run build`
+(see `vercel.json`), producing the Vercel Build Output. Add the environment variables
+above, then deploy. Google OAuth and the PayFast ITN webhook are configured in their
+respective dashboards — see `docs/DEPLOYMENT_CHECKLIST.md`.
+
+## Admin
+
+Sign in at `/auth`, then `/admin`. Admins can edit site content, membership tiers,
+banking details, FAQ and contact info, manage members/applications/events, review the
+EFT queue, and export a screenshot runbook — all without a redeploy.

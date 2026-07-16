@@ -22,19 +22,20 @@ export default defineConfig({
         ...(process.env.NITRO_PRESET === "vercel"
           ? { output: { dir: ".vercel/output" } }
           : {}),
-        // Security headers on every response. frame-ancestors 'none' + X-Frame-Options
-        // stop clickjacking; nosniff stops content-type sniffing; HSTS forces HTTPS.
-        // A full script-src CSP is deliberately omitted — it needs per-app tuning and
-        // would break Vite/Supabase without careful testing; add it as a follow-up.
+        // Security headers on every response. SAMEORIGIN/frame-ancestors 'self' stop
+        // cross-site clickjacking while still allowing the app's own same-origin
+        // capture iframe (admin runbook export); nosniff stops content-type sniffing;
+        // HSTS forces HTTPS. A full script-src CSP is deliberately omitted — it needs
+        // per-app tuning and would break Vite/Supabase without careful testing.
         routeRules: {
           "/**": {
             headers: {
-              "X-Frame-Options": "DENY",
+              "X-Frame-Options": "SAMEORIGIN",
               "X-Content-Type-Options": "nosniff",
               "Referrer-Policy": "strict-origin-when-cross-origin",
               "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
               "Permissions-Policy": "camera=(), microphone=(), geolocation=(), browsing-topics=()",
-              "Content-Security-Policy": "frame-ancestors 'none'",
+              "Content-Security-Policy": "frame-ancestors 'self'",
             },
           },
         },

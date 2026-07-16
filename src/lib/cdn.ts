@@ -1,7 +1,7 @@
 /**
  * Public URLs for site media mirrored into the Supabase `gallery` bucket
- * (see scripts/mirror-lovable-assets.mjs). Replaces Lovable's *.asset.json
- * imports, whose /__l5e/ URLs only resolve inside Lovable's preview.
+ * (see scripts/mirror-lovable-assets.mjs). Replaces the old build host's
+ * *.asset.json imports, whose /__l5e/ URLs only resolved in its preview.
  */
 const BASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/assets/`;
 

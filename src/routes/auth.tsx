@@ -108,7 +108,7 @@ function AuthPage() {
             onClick={async () => {
               setBusy(true);
               // Use our own Supabase project's Google OAuth (configured in Supabase
-              // Auth → Providers), NOT the Lovable broker.
+              // Auth → Providers).
               const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: { redirectTo: `${window.location.origin}/portal` },

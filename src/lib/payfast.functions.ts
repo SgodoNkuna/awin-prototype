@@ -41,7 +41,7 @@ export const createPayfastCheckout = createServerFn({ method: "POST" })
     const siteUrl =
       process.env.SITE_URL ??
       process.env.VITE_SITE_URL ??
-      "https://prompt-path-architect.lovable.app";
+      "https://awin.co.za";
 
     if (!merchantId || !merchantKey) {
       throw new Error("PayFast is not configured. Add PAYFAST_MERCHANT_ID and PAYFAST_MERCHANT_KEY.");

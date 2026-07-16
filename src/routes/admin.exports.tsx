@@ -47,10 +47,8 @@ const PAGES: readonly ExportPageDef[] = [
   { path: "/", label: "Home", group: "Public" },
   { path: "/about", label: "About", group: "Public" },
   { path: "/membership", label: "Membership", group: "Public" },
-  { path: "/events", label: "Events", group: "Public" },
-  { path: "/portfolio", label: "Portfolio", group: "Public" },
-  { path: "/news", label: "News & Insights", group: "Public" },
-  { path: "/team", label: "Team & Leadership", group: "Public" },
+  { path: "/events", label: "Events & Gallery", group: "Public" },
+  { path: "/members", label: "Our Members", group: "Public" },
   { path: "/info", label: "FAQ & Privacy", group: "Public" },
   { path: "/contact", label: "Contact", group: "Public" },
   { path: "/portal", label: "Member Portal Dashboard", group: "Member Portal" },
@@ -71,7 +69,6 @@ const THEMES = [
   { id: "color", label: "Green (Default)", swatch: "#1f6b46" },
   { id: "orange", label: "Orange", swatch: "#e07a3c" },
   { id: "black", label: "Black", swatch: "#111827" },
-  { id: "white", label: "White / Ivory", swatch: "#f6f1e8" },
 ] as const;
 
 const THEME_STORAGE_KEY = "awin-logo-variant";
@@ -101,7 +98,7 @@ async function waitForIframeLoad(iframe: HTMLIFrameElement, path: string) {
     const timeout = window.setTimeout(() => {
       iframe.removeEventListener("load", onLoad);
       reject(new Error("Timed out while loading capture page"));
-    }, 15_000);
+    }, 30_000);
     const onLoad = () => {
       window.clearTimeout(timeout);
       iframe.removeEventListener("load", onLoad);
@@ -783,7 +780,7 @@ function ExportsPage() {
               <Badge variant="secondary">{totalJobs}</Badge>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Fast mode captures the default theme only; choose All for the full 76-screenshot theme audit.
+              Fast mode captures the default theme only; choose All for the full theme audit across every page.
             </p>
           </CardContent>
         </Card>
