@@ -104,6 +104,17 @@ export function adminNewApplicationEmail(fullName: string, email: string) {
   };
 }
 
+export function eventRegistrationEmail(fullName: string, email: string, eventTitle: string) {
+  return {
+    subject: `New event registration — ${eventTitle}`,
+    html: layout(
+      "New event registration",
+      p(`${strong(fullName)} (${esc(email)}) registered for ${strong(eventTitle)}.`) +
+        btn(`${BRAND.site}/admin/events`, "View registrations"),
+    ),
+  };
+}
+
 export function contactMessageEmail(name: string, email: string, subject: string, message: string) {
   return {
     subject: `Website contact — ${subject} — ${name}`,

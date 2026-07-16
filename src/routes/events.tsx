@@ -159,6 +159,12 @@ function EventsPage() {
       return toast.error(error.message);
     }
     toast.success("You're registered! We'll email confirmation soon.");
+    // Notify the committee (gated by the event-registration notification toggle).
+    void import("@/lib/email.functions").then(({ sendEventRegistrationNotification }) =>
+      sendEventRegistrationNotification({
+        data: { fullName: cleanName, email: cleanEmail, eventTitle: registering.title },
+      }).catch(() => {}),
+    );
     setRegistering(null);
     setReg({ full_name: "", email: "", phone: "" });
     await loadMyRsvps();

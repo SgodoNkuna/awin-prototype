@@ -468,18 +468,25 @@ function SettingsPage() {
         <TabsContent value="notifications" className="space-y-4 mt-4">
           <Card>
             <CardContent className="pt-6 space-y-4">
-              {(["new_application", "new_message", "event_registration"] as const).map((k) => (
-                <div key={k} className="flex items-center justify-between">
-                  <Label className="capitalize">{k.replace(/_/g, " ")}</Label>
+              {([
+                ["new_application", "New membership application", "Email admin@awin.co.za when someone applies to join."],
+                ["new_message", "New contact message", "Email info@awin.co.za when the contact form is submitted."],
+                ["event_registration", "New event registration", "Email admin@awin.co.za when someone registers for an event."],
+              ] as const).map(([k, label, desc]) => (
+                <div key={k} className="flex items-center justify-between gap-4">
+                  <div>
+                    <Label>{label}</Label>
+                    <p className="text-xs text-muted-foreground">{desc}</p>
+                  </div>
                   <Switch
-                    checked={!!settings.notifications?.[k]}
+                    checked={settings.notifications?.[k] !== false}
                     onCheckedChange={(v) => updateSetting("notifications", { ...settings.notifications, [k]: v })}
                   />
                 </div>
               ))}
               <Button size="sm" onClick={() => saveSetting("notifications")}><Save className="size-4 mr-2" />Save</Button>
               <p className="text-xs text-muted-foreground">
-                Email delivery requires connecting an email domain (skipped for now). These preferences are stored for later use.
+                These control the committee alert emails sent via Zoho. Applicant/member-facing confirmation emails always send.
               </p>
             </CardContent>
           </Card>

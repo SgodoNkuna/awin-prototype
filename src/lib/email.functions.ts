@@ -11,12 +11,15 @@ export const sendApplicationReceivedEmail = createServerFn({ method: "POST" })
     z.object({ email: z.string().email(), fullName: z.string().trim().min(1).max(200) }).parse(i),
   )
   .handler(async ({ data }) => {
-    const { sendEmail } = await import("./email.server");
+    const { sendEmail, adminNotifyEnabled } = await import("./email.server");
     const { applicationReceivedEmail, adminNewApplicationEmail } = await import("./email-templates.server");
     const mail = applicationReceivedEmail(data.fullName);
-    // Notify the committee inbox too — fire-and-forget, applicant email is the one we report on.
-    const adminMail = adminNewApplicationEmail(data.fullName, data.email);
-    void sendEmail({ to: "admin@awin.co.za", toName: "A-WIN Admin", ...adminMail });
+    // Committee alert — gated by the "new application" notification toggle.
+    // The applicant confirmation (below) always sends; it's a transactional reply.
+    if (await adminNotifyEnabled("new_application")) {
+      const adminMail = adminNewApplicationEmail(data.fullName, data.email);
+      void sendEmail({ to: "admin@awin.co.za", toName: "A-WIN Admin", ...adminMail });
+    }
     return sendEmail({ to: data.email, toName: data.fullName, ...mail });
   });
 
@@ -33,8 +36,28 @@ export const sendContactNotification = createServerFn({ method: "POST" })
       .parse(i),
   )
   .handler(async ({ data }) => {
-    const { sendEmail } = await import("./email.server");
+    const { sendEmail, adminNotifyEnabled } = await import("./email.server");
+    if (!(await adminNotifyEnabled("new_message"))) return { ok: true as const };
     const { contactMessageEmail } = await import("./email-templates.server");
     const mail = contactMessageEmail(data.name, data.email, data.subject, data.message);
     return sendEmail({ to: "info@awin.co.za", toName: "A-WIN Info", ...mail });
+  });
+
+/** Public: notify the committee that someone registered for an event. */
+export const sendEventRegistrationNotification = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) =>
+    z
+      .object({
+        fullName: z.string().trim().min(1).max(200),
+        email: z.string().email().max(255),
+        eventTitle: z.string().trim().min(1).max(200),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data }) => {
+    const { sendEmail, adminNotifyEnabled } = await import("./email.server");
+    if (!(await adminNotifyEnabled("event_registration"))) return { ok: true as const };
+    const { eventRegistrationEmail } = await import("./email-templates.server");
+    const mail = eventRegistrationEmail(data.fullName, data.email, data.eventTitle);
+    return sendEmail({ to: "admin@awin.co.za", toName: "A-WIN Admin", ...mail });
   });

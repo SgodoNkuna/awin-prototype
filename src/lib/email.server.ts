@@ -28,6 +28,28 @@ export function emailConfigured(): boolean {
   return !!process.env.ZOHO_ZEPTOMAIL_TOKEN && !!process.env.ZOHO_MAIL_FROM;
 }
 
+/**
+ * Whether an admin-facing notification type is enabled in Admin → Settings →
+ * Notifications (the `notifications` site_setting). Fails OPEN (returns true) if
+ * the setting can't be read, so admin alerts are never silently lost.
+ */
+export async function adminNotifyEnabled(
+  key: "new_application" | "new_message" | "event_registration",
+): Promise<boolean> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", "notifications")
+      .maybeSingle();
+    const v = (data?.value as Record<string, boolean> | null)?.[key];
+    return v !== false; // default on
+  } catch {
+    return true;
+  }
+}
+
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
   const token = process.env.ZOHO_ZEPTOMAIL_TOKEN;
   const from = process.env.ZOHO_MAIL_FROM;
