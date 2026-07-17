@@ -56,3 +56,5 @@ CLAUDE.md
 *.sln
 *.sw?
 awin-dns-zone.txt
+
+.vercel/
