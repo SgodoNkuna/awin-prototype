@@ -340,11 +340,18 @@ function SettingsPage() {
                     <Input value={m.title} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} />
                   </Field>
                 </div>
-                <Field label="Profile Card Image URL (full designed graphic — shown as the main image)">
-                  <Input value={m.profile_card_url ?? ""} placeholder="https://..." onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, profile_card_url: e.target.value } : x))} />
+                <Field label="Profile Card Image (upload a photo, or paste a URL — shown as the main image)">
+                  <div className="flex gap-2">
+                    <Input value={m.profile_card_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, profile_card_url: e.target.value } : x))} />
+                    <UploadImageButton onUploaded={(url) => setTeam(team.map((x, idx) => idx === i ? { ...x, profile_card_url: url } : x))} />
+                  </div>
+                  {m.profile_card_url ? <img src={m.profile_card_url} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
                 </Field>
-                <Field label="Headshot URL (optional fallback)">
-                  <Input value={m.photo_url ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, photo_url: e.target.value } : x))} />
+                <Field label="Headshot (optional fallback — upload or paste URL)">
+                  <div className="flex gap-2">
+                    <Input value={m.photo_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, photo_url: e.target.value } : x))} />
+                    <UploadImageButton onUploaded={(url) => setTeam(team.map((x, idx) => idx === i ? { ...x, photo_url: url } : x))} />
+                  </div>
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Category">
@@ -542,6 +549,50 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <Label className="text-xs">{label}</Label>
       {children}
     </div>
+  );
+}
+
+/** Uploads an image to the public `gallery` bucket and returns its public URL. */
+function UploadImageButton({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <label
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 text-xs cursor-pointer hover:bg-muted ${busy ? "opacity-60 pointer-events-none" : ""}`}
+    >
+      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <CloudUpload className="size-3.5" />}
+      {busy ? "Uploading…" : "Upload"}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          if (file.size > 8 * 1024 * 1024) {
+            toast.error("Image must be under 8 MB");
+            e.target.value = "";
+            return;
+          }
+          setBusy(true);
+          try {
+            const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+            const path = `members/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const { error } = await supabase.storage
+              .from("gallery")
+              .upload(path, file, { contentType: file.type, upsert: true });
+            if (error) throw error;
+            const { data } = supabase.storage.from("gallery").getPublicUrl(path);
+            onUploaded(data.publicUrl);
+            toast.success("Image uploaded");
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Upload failed");
+          } finally {
+            setBusy(false);
+            e.target.value = "";
+          }
+        }}
+      />
+    </label>
   );
 }
 
