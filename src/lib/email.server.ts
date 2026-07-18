@@ -29,6 +29,26 @@ export function emailConfigured(): boolean {
 }
 
 /**
+ * Sliding-window rate limit backed by the rate_limits table. Returns true if the
+ * call is allowed. Fails OPEN (returns true) on any error so a DB hiccup never
+ * blocks a legitimate email.
+ */
+export async function rateLimitOk(key: string, max: number, windowSeconds: number): Promise<boolean> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.rpc("rate_limit_hit", {
+      _key: key,
+      _max: max,
+      _window_seconds: windowSeconds,
+    });
+    if (error) return true;
+    return data === true;
+  } catch {
+    return true;
+  }
+}
+
+/**
  * Whether an admin-facing notification type is enabled in Admin → Settings →
  * Notifications (the `notifications` site_setting). Fails OPEN (returns true) if
  * the setting can't be read, so admin alerts are never silently lost.

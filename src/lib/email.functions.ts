@@ -11,7 +11,11 @@ export const sendApplicationReceivedEmail = createServerFn({ method: "POST" })
     z.object({ email: z.string().email(), fullName: z.string().trim().min(1).max(200) }).parse(i),
   )
   .handler(async ({ data }) => {
-    const { sendEmail, adminNotifyEnabled } = await import("./email.server");
+    const { sendEmail, adminNotifyEnabled, rateLimitOk } = await import("./email.server");
+    // Abuse guard: at most 3 application emails per address per hour.
+    if (!(await rateLimitOk(`app:${data.email.toLowerCase()}`, 3, 3600))) {
+      return { ok: false as const, error: "rate limited" };
+    }
     const { applicationReceivedEmail, adminNewApplicationEmail } = await import("./email-templates.server");
     const mail = applicationReceivedEmail(data.fullName);
     // Committee alert — gated by the "new application" notification toggle.
@@ -36,7 +40,11 @@ export const sendContactNotification = createServerFn({ method: "POST" })
       .parse(i),
   )
   .handler(async ({ data }) => {
-    const { sendEmail, adminNotifyEnabled } = await import("./email.server");
+    const { sendEmail, adminNotifyEnabled, rateLimitOk } = await import("./email.server");
+    // Abuse guard: at most 5 contact forwards per address per hour.
+    if (!(await rateLimitOk(`contact:${data.email.toLowerCase()}`, 5, 3600))) {
+      return { ok: false as const, error: "rate limited" };
+    }
     if (!(await adminNotifyEnabled("new_message"))) return { ok: true as const };
     const { contactMessageEmail } = await import("./email-templates.server");
     const mail = contactMessageEmail(data.name, data.email, data.subject, data.message);
