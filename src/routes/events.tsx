@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { EventGallery } from "@/components/site/EventGallery";
@@ -47,6 +47,7 @@ type EventRow = {
   event_type: string;
   max_attendees: number | null;
   registration_deadline: string | null;
+  is_awin_hosted: boolean;
 };
 
 type Filter = "all" | "upcoming" | "past";
@@ -77,11 +78,12 @@ function EventsPage() {
   // event_id -> registration row for the current user
   const [myRsvps, setMyRsvps] = useState<Record<string, { id: string; status: string }>>({});
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [viewingImage, setViewingImage] = useState<EventRow | null>(null);
 
   useEffect(() => {
     supabase
       .from("events")
-      .select("id, title, description, event_date, event_time, location, image_url, event_type, max_attendees, registration_deadline")
+      .select("id, title, description, event_date, event_time, location, image_url, event_type, max_attendees, registration_deadline, is_awin_hosted")
       .eq("published", true)
       .order("event_date", { ascending: true })
       .then(({ data }) => setEvents((data as EventRow[]) ?? []));
@@ -267,24 +269,47 @@ function EventsPage() {
                 const cover = e.image_url || EVENT_FALLBACK_IMAGES[i % EVENT_FALLBACK_IMAGES.length];
                 return (
                   <Card key={e.id} className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale">
-                    <div className="relative h-44 w-full bg-cover bg-center bg-secondary" style={{ backgroundImage: `url(${cover})` }}>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" aria-hidden="true" />
+                    <button
+                      type="button"
+                      onClick={() => setViewingImage(e)}
+                      className="group relative block h-44 w-full cursor-zoom-in bg-cover bg-center bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      style={{ backgroundImage: `url(${cover})` }}
+                      aria-label={`View full poster for ${e.title}`}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent transition-opacity group-hover:from-black/60" aria-hidden="true" />
                       <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
                         <div className="font-serif text-xl leading-none">{db.d}</div>
                         <div className="text-[10px] font-semibold tracking-widest">{db.m}</div>
                       </div>
                       {isPast && <Badge className="absolute right-4 top-4 bg-background/80 text-foreground">Past</Badge>}
-                    </div>
+                      {!e.is_awin_hosted && !isPast && (
+                        <Badge className="absolute bottom-3 right-4 bg-background/90 text-foreground shadow">
+                          Meet A-WIN here
+                        </Badge>
+                      )}
+                    </button>
                     <CardContent className="p-6">
                       <h3 className="font-serif text-lg text-foreground">{e.title}</h3>
                       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                         <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {formatDate(e.event_date)}{e.event_time && ` · ${e.event_time}`}</span>
                         <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {e.location}</span>
                       </div>
+                      {!e.is_awin_hosted && (
+                        <p className="mt-2 text-xs font-medium text-accent-deep">
+                          Not an A-WIN event — a community event where A-WIN members will be present. Tickets, stall bookings and enquiries go directly to the host (see poster).
+                        </p>
+                      )}
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">{e.description}</p>
                       {(() => {
                         const my = myRsvps[e.id];
                         const isConfirmed = my?.status === "confirmed";
+                        if (!e.is_awin_hosted) {
+                          return (
+                            <Button className="mt-5 w-full" variant="outline" onClick={() => setViewingImage(e)}>
+                              View poster &amp; details
+                            </Button>
+                          );
+                        }
                         if (isPast) {
                           return (
                             <Button className="mt-5 w-full" variant="outline" disabled>
@@ -339,6 +364,36 @@ function EventsPage() {
       </section>
 
       <NewsSection />
+
+      {/* Full-size poster viewer — same expand-to-view treatment as member profile cards. */}
+      <Dialog open={!!viewingImage} onOpenChange={(o) => !o && setViewingImage(null)}>
+        <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
+          {viewingImage && (
+            <>
+              <DialogHeader className="p-5 pb-0">
+                <DialogTitle className="font-serif text-xl">{viewingImage.title}</DialogTitle>
+                <DialogDescription className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                  <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {formatDate(viewingImage.event_date)}{viewingImage.event_time && ` · ${viewingImage.event_time}`}</span>
+                  <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {viewingImage.location}</span>
+                </DialogDescription>
+              </DialogHeader>
+              <img
+                src={viewingImage.image_url || EVENT_FALLBACK_IMAGES[0]}
+                alt={`${viewingImage.title} poster`}
+                className="mt-4 max-h-[75vh] w-full object-contain"
+              />
+              <div className="p-5 pt-4 space-y-3">
+                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">{viewingImage.description}</p>
+                {!viewingImage.is_awin_hosted && (
+                  <p className="text-xs font-medium text-accent-deep">
+                    This is not an A-WIN event. Ticket, stall and payment enquiries go directly to the host organiser — see the poster above.
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!registering} onOpenChange={(o) => !o && setRegistering(null)}>
         <DialogContent>

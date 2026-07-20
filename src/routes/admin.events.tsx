@@ -29,6 +29,7 @@ type EventRow = {
   registration_deadline: string | null;
   event_type: string;
   published: boolean;
+  is_awin_hosted: boolean;
 };
 
 type Registration = {
@@ -43,6 +44,7 @@ type Registration = {
 const empty = (): Partial<EventRow> => ({
   title: "", description: "", event_date: "", event_time: "", location: "",
   image_url: "", max_attendees: null, registration_deadline: "", event_type: "in-person", published: false,
+  is_awin_hosted: true,
 });
 
 function EventsAdminPage() {
@@ -107,6 +109,7 @@ function EventsAdminPage() {
       registration_deadline: editing.registration_deadline || null,
       event_type: editing.event_type ?? "in-person",
       published: editing.published ?? false,
+      is_awin_hosted: editing.is_awin_hosted ?? true,
     };
     const { error } = editing.id
       ? await supabase.from("events").update(payload).eq("id", editing.id)
@@ -162,6 +165,7 @@ function EventsAdminPage() {
                       {e.published ? "Published" : "Draft"}
                     </Badge>
                     <Badge variant="outline">{e.event_type}</Badge>
+                    {!e.is_awin_hosted && <Badge variant="outline">Community event</Badge>}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {new Date(e.event_date).toLocaleDateString()} {e.event_time && `· ${e.event_time}`} · {e.location}
@@ -234,6 +238,10 @@ function EventsAdminPage() {
               <div className="flex items-center gap-2 pt-2">
                 <Switch checked={editing.published ?? false} onCheckedChange={(v) => setEditing({ ...editing, published: v })} />
                 <Label>Published (visible on public events page)</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={editing.is_awin_hosted ?? true} onCheckedChange={(v) => setEditing({ ...editing, is_awin_hosted: v })} />
+                <Label>A-WIN hosts this event (off = a community/partner event — A-WIN members are invited to attend, ticket &amp; payment handled by the host)</Label>
               </div>
             </div>
           )}
