@@ -48,7 +48,14 @@ const values = [
   },
 ];
 
-type TeamMember = { id: string; name: string; title: string; photo_url: string | null; committee_position: string | null };
+type TeamMember = {
+  id: string;
+  name: string;
+  title: string;
+  photo_url: string | null;
+  profile_card_url: string | null;
+  committee_position: string | null;
+};
 
 function AboutPage() {
   const [team, setTeam] = useState<TeamMember[]>([]);
@@ -56,7 +63,7 @@ function AboutPage() {
     // Main committee, in committee order — the actual leadership.
     supabase
       .from("team_members")
-      .select("id, name, title, photo_url, committee_position")
+      .select("id, name, title, photo_url, profile_card_url, committee_position")
       .eq("published", true)
       .eq("committee", "main")
       .order("committee_order")
@@ -252,8 +259,8 @@ function AboutPage() {
                     <div
                       className="mx-auto h-24 w-24 rounded-full bg-cover bg-center"
                       style={{
-                        background: m.photo_url
-                          ? `url(${m.photo_url}) center/cover`
+                        background: m.profile_card_url || m.photo_url
+                          ? `url(${m.profile_card_url || m.photo_url}) center/cover`
                           : "var(--gradient-placeholder)",
                       }}
                       aria-hidden="true"
