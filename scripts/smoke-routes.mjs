@@ -11,9 +11,10 @@ const ROUTES = [
   { path: "/about" },
   { path: "/membership" },
   { path: "/events" },
-  { path: "/portfolio", critical: true },
+  { path: "/portfolio", critical: true, expect: [301, 302, 307, 308] }, // redirects to /members
+  { path: "/members", critical: true },
   { path: "/contact" },
-  { path: "/news" },
+  { path: "/news", expect: [301, 302, 307, 308] }, // redirects to /events
   { path: "/team" },
   { path: "/info" },
   { path: "/auth", critical: true },
