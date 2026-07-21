@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { BillingTab } from "@/components/portal/BillingTab";
 import { OnboardingTab } from "@/components/portal/OnboardingTab";
+import { LinkifiedText } from "@/components/site/LinkifiedText";
 
 
 
@@ -506,7 +507,7 @@ function PortalPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="prose-reader mt-6 max-w-none font-serif text-[1.05rem] leading-[1.85] text-foreground/90 whitespace-pre-wrap">
-                  {readingArticle.content}
+                  <LinkifiedText text={readingArticle.content ?? ""} />
                 </div>
               </div>
             </>

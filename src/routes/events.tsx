@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { EventGallery } from "@/components/site/EventGallery";
 import { WCWGallery } from "@/components/site/WCWGallery";
+import { LinkifiedText } from "@/components/site/LinkifiedText";
 import { ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -383,7 +384,7 @@ function EventsPage() {
                 className="mt-4 max-h-[55vh] w-full object-contain"
               />
               <div className="p-5 pt-4 space-y-3">
-                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">{viewingImage.description}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap"><LinkifiedText text={viewingImage.description} /></p>
                 {!viewingImage.is_awin_hosted && (
                   <p className="text-xs font-medium text-accent-deep">
                     This is not an A-Win event. Ticket, stall and payment enquiries go directly to the host organiser — see the poster above.
@@ -546,7 +547,7 @@ function NewsSection() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="prose-reader mt-6 max-w-none font-serif text-[1.05rem] leading-[1.85] text-foreground/90 whitespace-pre-wrap">
-                  {reading.content}
+                  <LinkifiedText text={reading.content ?? ""} />
                 </div>
               </div>
             </>

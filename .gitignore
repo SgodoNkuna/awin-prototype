@@ -58,3 +58,6 @@ CLAUDE.md
 awin-dns-zone.txt
 
 .vercel/
+
+# Claude Code internal telemetry (not project code)
+telemetry/
