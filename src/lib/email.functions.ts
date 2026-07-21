@@ -22,7 +22,7 @@ export const sendApplicationReceivedEmail = createServerFn({ method: "POST" })
     // The applicant confirmation (below) always sends; it's a transactional reply.
     if (await adminNotifyEnabled("new_application")) {
       const adminMail = adminNewApplicationEmail(data.fullName, data.email);
-      void sendEmail({ to: "admin@awin.co.za", toName: "A-WIN Admin", ...adminMail });
+      void sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...adminMail });
     }
     return sendEmail({ to: data.email, toName: data.fullName, ...mail });
   });
@@ -48,7 +48,7 @@ export const sendContactNotification = createServerFn({ method: "POST" })
     if (!(await adminNotifyEnabled("new_message"))) return { ok: true as const };
     const { contactMessageEmail } = await import("./email-templates.server");
     const mail = contactMessageEmail(data.name, data.email, data.subject, data.message);
-    return sendEmail({ to: "info@awin.co.za", toName: "A-WIN Info", ...mail });
+    return sendEmail({ to: "info@awin.co.za", toName: "A-Win Info", ...mail });
   });
 
 /** Public: notify the committee that someone registered for an event. */
@@ -67,5 +67,5 @@ export const sendEventRegistrationNotification = createServerFn({ method: "POST"
     if (!(await adminNotifyEnabled("event_registration"))) return { ok: true as const };
     const { eventRegistrationEmail } = await import("./email-templates.server");
     const mail = eventRegistrationEmail(data.fullName, data.email, data.eventTitle);
-    return sendEmail({ to: "admin@awin.co.za", toName: "A-WIN Admin", ...mail });
+    return sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...mail });
   });

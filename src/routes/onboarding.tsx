@@ -17,8 +17,8 @@ import { EftPanel, buildEftReference } from "@/components/site/EftPanel";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "Onboarding | A-WIN" },
-      { name: "description", content: "Complete your A-WIN membership onboarding: personal details, consent, agreement and proof of payment." },
+      { title: "Onboarding | A-Win" },
+      { name: "description", content: "Complete your A-Win membership onboarding: personal details, consent, agreement and proof of payment." },
     ],
   }),
   component: OnboardingPage,
@@ -26,17 +26,17 @@ export const Route = createFileRoute("/onboarding")({
 
 const AGREEMENT_VERSION = "v1.0-2026";
 
-const AGREEMENT_TEXT = `A-WIN MEMBERSHIP AGREEMENT (${AGREEMENT_VERSION})
+const AGREEMENT_TEXT = `A-Win MEMBERSHIP AGREEMENT (${AGREEMENT_VERSION})
 
-1. Membership. I apply to join the African Women Investment Network (A-WIN) as a member and agree to the annual membership fee of R200 and the minimum monthly collective investment contribution of R500.
+1. Membership. I apply to join the African Women Investment Network (A-Win) as a member and agree to the annual membership fee of R200 and the minimum monthly collective investment contribution of R500.
 
-2. Purpose. I understand that A-WIN is a peer community that pools resources for education, mentorship and collective investment opportunities. A-WIN is not a licensed financial services provider. Investment recommendations are provided by qualified independent advisors.
+2. Purpose. I understand that A-Win is a peer community that pools resources for education, mentorship and collective investment opportunities. A-Win is not a licensed financial services provider. Investment recommendations are provided by qualified independent advisors.
 
-3. Fair Use. I agree to act with integrity, respect fellow members, and not use A-WIN spaces or member data for solicitation, marketing or personal gain without consent.
+3. Fair Use. I agree to act with integrity, respect fellow members, and not use A-Win spaces or member data for solicitation, marketing or personal gain without consent.
 
 4. Contributions and Refunds. Monthly contributions are directed into collective investment vehicles. Withdrawals follow the published exit process and may take up to 60 days. Annual membership fees are non refundable once the year has commenced.
 
-5. POPIA and Privacy. My personal information will be processed lawfully in terms of the Protection of Personal Information Act (POPIA). Data is used only for membership administration, investment record keeping, and A-WIN communications.
+5. POPIA and Privacy. My personal information will be processed lawfully in terms of the Protection of Personal Information Act (POPIA). Data is used only for membership administration, investment record keeping, and A-Win communications.
 
 6. Risk. All investments carry risk. Past performance does not guarantee future results. I confirm that I am making this commitment voluntarily and after my own consideration.
 
@@ -266,7 +266,7 @@ function OnboardingPage() {
                       <Input value={employer} onChange={(e) => setEmployer(e.target.value)} />
                     </div>
                     <div className="md:col-span-2">
-                      <Label>Why do you want to join A-WIN? *</Label>
+                      <Label>Why do you want to join A-Win? *</Label>
                       <Textarea value={motivation} onChange={(e) => setMotivation(e.target.value)} rows={4} placeholder="Share your goals and what you hope to contribute (min. 20 characters)." />
                     </div>
                   </div>
@@ -277,14 +277,14 @@ function OnboardingPage() {
                 <div className="space-y-4">
                   <h2 className="font-serif text-2xl text-foreground">POPIA consent</h2>
                   <div className="rounded-lg border border-border bg-secondary/30 p-4 text-sm leading-relaxed text-foreground/90">
-                    <p><strong>How we use your data.</strong> A-WIN processes your personal information under the Protection of Personal Information Act (POPIA) for the purposes of: (a) member administration, (b) investment record keeping, (c) sending you A-WIN updates, and (d) legal or regulatory compliance.</p>
+                    <p><strong>How we use your data.</strong> A-Win processes your personal information under the Protection of Personal Information Act (POPIA) for the purposes of: (a) member administration, (b) investment record keeping, (c) sending you A-Win updates, and (d) legal or regulatory compliance.</p>
                     <p className="mt-3"><strong>Your rights.</strong> You may request access to, correction of, or deletion of your personal information at any time by emailing the Main Committee. We will not share your data with third parties without your consent, except where required by law.</p>
                     <p className="mt-3"><strong>Retention.</strong> Membership records are retained for the duration of your membership plus 5 years, in line with FICA requirements.</p>
                   </div>
                   <label className="flex items-start gap-3 rounded-lg border border-border p-4 cursor-pointer hover:bg-secondary/30">
                     <Checkbox checked={popia} onCheckedChange={(v) => setPopia(!!v)} className="mt-0.5" />
                     <span className="text-sm">
-                      I have read and I consent to A-WIN processing my personal information for the purposes described above, in terms of POPIA.
+                      I have read and I consent to A-Win processing my personal information for the purposes described above, in terms of POPIA.
                     </span>
                   </label>
                 </div>
@@ -474,7 +474,7 @@ function StampedDocPreview({
       <div className="pointer-events-none absolute right-6 top-6 rotate-[-14deg] select-none md:right-8 md:top-8">
         <div className="rounded-md border-4 border-primary/70 px-4 py-2 text-center text-primary/80">
           <div className="font-serif text-xl font-black uppercase tracking-widest">Pending</div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.2em]">Verification · A-WIN</div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.2em]">Verification · A-Win</div>
           <div className="mt-1 text-[10px] tracking-wide">{dateStr}</div>
         </div>
       </div>

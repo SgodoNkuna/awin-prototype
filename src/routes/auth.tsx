@@ -15,8 +15,8 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
   head: () => ({
     meta: [
-      { title: "Sign In | A-WIN" },
-      { name: "description", content: "Sign in or create your A-WIN member account." },
+      { title: "Sign In | A-Win" },
+      { name: "description", content: "Sign in or create your A-Win member account." },
     ],
   }),
 });

@@ -27,9 +27,9 @@ const EVENT_FALLBACK_IMAGES = [hike1, hike2, hike3, hike4];
 export const Route = createFileRoute("/events")({
   head: () => ({
     meta: [
-      { title: "Events & Gallery | A-WIN" },
-      { name: "description", content: "Browse upcoming and past A-WIN events, photography and member stories." },
-      { property: "og:title", content: "A-WIN Events & Gallery" },
+      { title: "Events & Gallery | A-Win" },
+      { name: "description", content: "Browse upcoming and past A-Win events, photography and member stories." },
+      { property: "og:title", content: "A-Win Events & Gallery" },
       { property: "og:description", content: "Masterclasses, summits, meetups and event photography for women investors across Africa." },
     ],
   }),
@@ -256,7 +256,7 @@ function EventsPage() {
                 ))}
               </div>
               <p className="mx-auto mt-10 max-w-2xl text-center text-sm leading-relaxed text-muted-foreground">
-                A-WIN hosts regular investment workshops, networking events, and
+                A-Win hosts regular investment workshops, networking events, and
                 annual summits. Events are announced to members first. Join us
                 to be the first to know.
               </p>
@@ -284,7 +284,7 @@ function EventsPage() {
                       {isPast && <Badge className="absolute right-4 top-4 bg-background/80 text-foreground">Past</Badge>}
                       {!e.is_awin_hosted && !isPast && (
                         <Badge className="absolute bottom-3 right-4 bg-background/90 text-foreground shadow">
-                          Meet A-WIN here
+                          Meet A-Win here
                         </Badge>
                       )}
                     </button>
@@ -296,7 +296,7 @@ function EventsPage() {
                       </div>
                       {!e.is_awin_hosted && (
                         <p className="mt-2 text-xs font-medium text-accent-deep">
-                          Not an A-WIN event — a community event where A-WIN members will be present. Tickets, stall bookings and enquiries go directly to the host (see poster).
+                          Not an A-Win event — a community event where A-Win members will be present. Tickets, stall bookings and enquiries go directly to the host (see poster).
                         </p>
                       )}
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">{e.description}</p>
@@ -367,7 +367,7 @@ function EventsPage() {
 
       {/* Full-size poster viewer — same expand-to-view treatment as member profile cards. */}
       <Dialog open={!!viewingImage} onOpenChange={(o) => !o && setViewingImage(null)}>
-        <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
           {viewingImage && (
             <>
               <DialogHeader className="p-5 pb-0">
@@ -380,13 +380,13 @@ function EventsPage() {
               <img
                 src={viewingImage.image_url || EVENT_FALLBACK_IMAGES[0]}
                 alt={`${viewingImage.title} poster`}
-                className="mt-4 max-h-[75vh] w-full object-contain"
+                className="mt-4 max-h-[55vh] w-full object-contain"
               />
               <div className="p-5 pt-4 space-y-3">
                 <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">{viewingImage.description}</p>
                 {!viewingImage.is_awin_hosted && (
                   <p className="text-xs font-medium text-accent-deep">
-                    This is not an A-WIN event. Ticket, stall and payment enquiries go directly to the host organiser — see the poster above.
+                    This is not an A-Win event. Ticket, stall and payment enquiries go directly to the host organiser — see the poster above.
                   </p>
                 )}
               </div>
@@ -429,6 +429,7 @@ type Article = {
   title: string;
   slug: string | null;
   excerpt: string | null;
+  content: string | null;
   cover_image: string | null;
   category: string | null;
   published_at: string | null;
@@ -438,15 +439,26 @@ type Article = {
 /** News & Insights strip, folded in from the retired /news page. */
 function NewsSection() {
   const [articles, setArticles] = useState<Article[] | null>(null);
+  const [reading, setReading] = useState<Article | null>(null);
 
   useEffect(() => {
     supabase
       .from("news_articles")
-      .select("id, title, slug, excerpt, cover_image, category, published_at, author_name")
+      .select("id, title, slug, excerpt, content, cover_image, category, published_at, author_name")
       .eq("published", true)
       .order("published_at", { ascending: false })
       .limit(6)
-      .then(({ data }) => setArticles((data as Article[]) ?? []));
+      .then(({ data }) => {
+        const rows = (data as Article[]) ?? [];
+        setArticles(rows);
+        // Deep-link support: /events?article=<slug> opens the reader directly
+        // (used by the About page link, avoids needing a dedicated route/page).
+        const wanted = new URLSearchParams(window.location.search).get("article");
+        if (wanted) {
+          const match = rows.find((a) => a.slug === wanted);
+          if (match) setReading(match);
+        }
+      });
   }, []);
 
   return (
@@ -467,35 +479,80 @@ function NewsSection() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {articles.map((a) => (
-                <Card key={a.id} className="overflow-hidden border-border/60 transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]">
-                  <div
-                    className="aspect-video w-full bg-cover bg-center"
-                    style={{ background: a.cover_image ? `url(${a.cover_image}) center/cover` : "var(--gradient-hero)" }}
-                    aria-hidden="true"
-                  />
-                  <CardContent className="p-6">
-                    {a.category && <Badge variant="outline" className="mb-3">{a.category}</Badge>}
-                    <h3 className="font-serif text-xl text-foreground">{a.title}</h3>
-                    {a.excerpt && <p className="mt-3 text-sm text-muted-foreground line-clamp-3">{a.excerpt}</p>}
-                    <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {a.published_at ? new Date(a.published_at).toLocaleDateString() : "-"}
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => a.content && setReading(a)}
+                  disabled={!a.content}
+                  className="text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl disabled:cursor-default"
+                >
+                  <Card className="h-full overflow-hidden border-border/60 transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]">
+                    <div
+                      className="aspect-video w-full bg-cover bg-center"
+                      style={{ background: a.cover_image ? `url(${a.cover_image}) center/cover` : "var(--gradient-hero)" }}
+                      aria-hidden="true"
+                    />
+                    <CardContent className="p-6">
+                      {a.category && <Badge variant="outline" className="mb-3">{a.category}</Badge>}
+                      <h3 className="font-serif text-xl text-foreground">{a.title}</h3>
+                      {a.excerpt && <p className="mt-3 text-sm text-muted-foreground line-clamp-3">{a.excerpt}</p>}
+                      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {a.published_at ? new Date(a.published_at).toLocaleDateString() : "-"}
+                        </div>
+                        {a.author_name && <span>{a.author_name}</span>}
                       </div>
-                      {a.author_name && <span>{a.author_name}</span>}
-                    </div>
-                    {a.slug && (
-                      <div className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent">
-                        Read more <ArrowRight className="h-3.5 w-3.5" />
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                      {a.content && (
+                        <div className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent">
+                          Read more <ArrowRight className="h-3.5 w-3.5" />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </button>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Full article reader — a "paper to read" view, no dedicated route needed. */}
+      <Dialog open={!!reading} onOpenChange={(o) => !o && setReading(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+          {reading && (
+            <>
+              {reading.cover_image && (
+                <div
+                  className="aspect-[21/9] w-full bg-cover bg-center"
+                  style={{ backgroundImage: `url(${reading.cover_image})` }}
+                  aria-hidden="true"
+                />
+              )}
+              <div className="p-6 sm:p-10">
+                <DialogHeader className="text-left">
+                  {reading.category && <Badge variant="outline" className="mb-3 self-start">{reading.category}</Badge>}
+                  <DialogTitle className="font-serif text-2xl sm:text-3xl leading-tight text-foreground">
+                    {reading.title}
+                  </DialogTitle>
+                  <DialogDescription className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs pt-1">
+                    {reading.author_name && <span>{reading.author_name}</span>}
+                    {reading.published_at && (
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {new Date(reading.published_at).toLocaleDateString()}
+                      </span>
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="prose-reader mt-6 max-w-none font-serif text-[1.05rem] leading-[1.85] text-foreground/90 whitespace-pre-wrap">
+                  {reading.content}
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

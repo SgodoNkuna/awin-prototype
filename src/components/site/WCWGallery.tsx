@@ -62,7 +62,7 @@ export function WCWGallery() {
             Graça Machel Trust · Women Creating Wealth Program Graduation
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-            Moments from the WCW Summit — celebrating A-WIN members, mentors and the
+            Moments from the WCW Summit — celebrating A-Win members, mentors and the
             sisterhood building generational wealth across Africa.
           </p>
         </div>

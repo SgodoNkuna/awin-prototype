@@ -27,7 +27,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <div className="container mx-auto flex h-24 items-center justify-between px-4 md:h-32 md:px-8">
         <div className="flex min-w-0 items-center gap-2">
-          <Link to="/" className="flex items-center" aria-label="A-WIN home">
+          <Link to="/" className="flex items-center" aria-label="A-Win home">
             <button
               type="button"
               onClick={(e) => { e.preventDefault(); cycle(); }}
@@ -41,7 +41,7 @@ export function SiteHeader() {
               />
               <img
                 src={src}
-                alt="A-WIN — African Women Investment Network"
+                alt="A-Win — African Women Investment Network"
                 className="relative h-16 w-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.15)] transition-all duration-500 ease-out group-hover:drop-shadow-[0_4px_20px_var(--accent)] md:h-24"
                 style={filter ? { filter } : undefined}
               />
@@ -113,11 +113,11 @@ export function SiteHeader() {
             className="w-[300px] border-l-0 p-0 [&>button]:hidden"
             style={{ background: "#3D8B2F", color: "#FFFFFF" }}
           >
-            <SheetTitle className="sr-only">A-WIN navigation</SheetTitle>
+            <SheetTitle className="sr-only">A-Win navigation</SheetTitle>
             <div className="flex items-center justify-between px-5 pt-5">
               <img
                 src={logoWhite}
-                alt="A-WIN — African Women Investment Network"
+                alt="A-Win — African Women Investment Network"
                 className="h-12 w-auto"
               />
               <button

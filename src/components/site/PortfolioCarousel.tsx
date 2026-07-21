@@ -110,7 +110,7 @@ export function PortfolioCarousel() {
               Member Portfolio
             </h2>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              A rotating look at the women shaping A-WIN — click through to their full profile.
+              A rotating look at the women shaping A-Win — click through to their full profile.
             </p>
           </div>
           <Link
@@ -127,7 +127,7 @@ export function PortfolioCarousel() {
           plugins={[autoplayRef.current]}
           className="mt-10"
           aria-roledescription="carousel"
-          aria-label="Featured A-WIN members, auto-rotating. Pauses on hover or keyboard focus."
+          aria-label="Featured A-Win members, auto-rotating. Pauses on hover or keyboard focus."
         >
           <CarouselContent>
             {items.map((item, i) => {

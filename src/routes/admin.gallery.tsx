@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/admin/gallery")({
-  head: () => ({ meta: [{ title: "Event Gallery | A-WIN Admin" }] }),
+  head: () => ({ meta: [{ title: "Event Gallery | A-Win Admin" }] }),
   component: GalleryAdminPage,
 });
 
@@ -138,7 +138,7 @@ function GalleryAdminPage() {
             </div>
             <div>
               <Label>Event label</Label>
-              <Input value={eventLabel} onChange={(e) => setEventLabel(e.target.value)} placeholder="A-WIN Hike · April 2026" />
+              <Input value={eventLabel} onChange={(e) => setEventLabel(e.target.value)} placeholder="A-Win Hike · April 2026" />
             </div>
             <div>
               <Label>Caption</Label>

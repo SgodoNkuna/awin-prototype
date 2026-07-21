@@ -46,9 +46,9 @@ function fallbackImagesFor(id: string, n = 3): string[] {
 export const Route = createFileRoute("/team")({
   head: () => ({
     meta: [
-      { title: "Our Members | A-WIN" },
-      { name: "description", content: "Meet A-WIN members — psychologists, coaches, attorneys, accountants, property and financial specialists, medical pros, entrepreneurs and educators. Search by category or name." },
-      { property: "og:title", content: "A-WIN — Our Members" },
+      { title: "Our Members | A-Win" },
+      { name: "description", content: "Meet A-Win members — psychologists, coaches, attorneys, accountants, property and financial specialists, medical pros, entrepreneurs and educators. Search by category or name." },
+      { property: "og:title", content: "A-Win — Our Members" },
       { property: "og:description", content: "Discover the women behind the African Women Investment Network." },
     ],
   }),
@@ -328,7 +328,7 @@ export function MembersPage() {
           </nav>
           <h1 className="mt-5 font-serif text-white">Our Members</h1>
           <p className="mt-5 max-w-2xl text-white/95 md:text-lg">
-            A-WIN brings together women from all walks of life, united by one goal:
+            A-Win brings together women from all walks of life, united by one goal:
             building wealth together. Whether you are a professional, an entrepreneur,
             a student, or simply someone who wants to change their relationship with
             money, you belong here.
@@ -608,7 +608,7 @@ export function MembersPage() {
                     </div>
                   )}
 
-                  {/* Portfolio grid — falls back to curated A-WIN gallery when the member has no images */}
+                  {/* Portfolio grid — falls back to curated A-Win gallery when the member has no images */}
                   {(() => {
                     const imgs =
                       active.portfolio_images && active.portfolio_images.length > 0

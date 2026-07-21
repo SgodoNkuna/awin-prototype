@@ -3,5 +3,5 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
-  head: () => ({ meta: [{ title: "Admin | A-WIN" }] }),
+  head: () => ({ meta: [{ title: "Admin | A-Win" }] }),
 });

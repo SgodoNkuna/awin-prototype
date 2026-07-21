@@ -18,5 +18,5 @@ export const Route = createFileRoute("/portal")({
       <PortalPage />
     </Suspense>
   ),
-  head: () => ({ meta: [{ title: "Member Portal | A-WIN" }] }),
+  head: () => ({ meta: [{ title: "Member Portal | A-Win" }] }),
 });

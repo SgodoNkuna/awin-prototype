@@ -345,7 +345,7 @@ async function buildRunbookPdf(captures: CapturedExport[]) {
 
   addCoverPage(
     pdf,
-    "A-WIN Website Runbook",
+    "A-Win Website Runbook",
     `Generated ${generatedAt}`,
     [
       `${sorted.length} labeled screenshot capture${sorted.length === 1 ? "" : "s"}`,

@@ -48,7 +48,7 @@ export const createPayfastCheckout = createServerFn({ method: "POST" })
     }
 
     const amountZar = TIER_PRICES_ZAR[data.tier];
-    const itemName = `A-WIN ${TIER_NAMES[data.tier]}`;
+    const itemName = `A-Win ${TIER_NAMES[data.tier]}`;
     const mPaymentId = `awin_${data.tier}_${context.userId}_${Date.now()}`;
 
     // Profile for name + email

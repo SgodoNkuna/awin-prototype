@@ -18,5 +18,5 @@ export const Route = createFileRoute("/admin/billing")({
       <BillingAdminPage />
     </Suspense>
   ),
-  head: () => ({ meta: [{ title: "Billing | Admin | A-WIN" }] }),
+  head: () => ({ meta: [{ title: "Billing | Admin | A-Win" }] }),
 });

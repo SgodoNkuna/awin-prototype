@@ -5,7 +5,7 @@
  * Env:
  *   ZOHO_ZEPTOMAIL_TOKEN  — "Send Mail Token" from ZeptoMail → Mail Agent → Setup Info
  *   ZOHO_MAIL_FROM        — verified sender, e.g. noreply@awin.co.za
- *   ZOHO_MAIL_FROM_NAME   — display name (default "A-WIN")
+ *   ZOHO_MAIL_FROM_NAME   — display name (default "A-Win")
  *   ZOHO_ZEPTOMAIL_URL    — API base (default global; use https://api.zeptomail.eu/v1.1/email for EU DC)
  *
  * Emails fail soft: a delivery failure logs and returns { ok: false } but never
@@ -87,7 +87,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
         Authorization: `Zoho-enczapikey ${token}`,
       },
       body: JSON.stringify({
-        from: { address: from, name: process.env.ZOHO_MAIL_FROM_NAME ?? "A-WIN" },
+        from: { address: from, name: process.env.ZOHO_MAIL_FROM_NAME ?? "A-Win" },
         to: [{ email_address: { address: input.to, name: input.toName ?? input.to } }],
         subject: input.subject,
         htmlbody: input.html,

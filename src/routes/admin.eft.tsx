@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/admin/eft")({
-  head: () => ({ meta: [{ title: "EFT Queue | A-WIN Admin" }] }),
+  head: () => ({ meta: [{ title: "EFT Queue | A-Win Admin" }] }),
   component: EftQueuePage,
 });
 

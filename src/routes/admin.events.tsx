@@ -241,7 +241,7 @@ function EventsAdminPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={editing.is_awin_hosted ?? true} onCheckedChange={(v) => setEditing({ ...editing, is_awin_hosted: v })} />
-                <Label>A-WIN hosts this event (off = a community/partner event — A-WIN members are invited to attend, ticket &amp; payment handled by the host)</Label>
+                <Label>A-Win hosts this event (off = a community/partner event — A-Win members are invited to attend, ticket &amp; payment handled by the host)</Label>
               </div>
             </div>
           )}

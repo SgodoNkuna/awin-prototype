@@ -46,32 +46,19 @@ type TeamMember = {
 };
 
 
-type Tier = {
-  id: string;
-  tier: string;
-  name: string;
-  price_zar: number;
-  benefits: string[];
-  featured: boolean;
-  active: boolean;
-};
-
 function SettingsPage() {
   const [settings, setSettings] = useState<Settings>({});
-  const [tiers, setTiers] = useState<Tier[] | null>(null);
   const [team, setTeam] = useState<TeamMember[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const [s, t, m] = await Promise.all([
+    const [s, m] = await Promise.all([
       supabase.from("site_settings").select("key, value"),
-      supabase.from("membership_tiers").select("*").order("price_zar"),
       supabase.from("team_members").select("*").order("order_index"),
     ]);
     const obj: Settings = {};
     (s.data ?? []).forEach((r) => { obj[r.key] = r.value as Record<string, unknown>; });
     setSettings(obj);
-    setTiers((t.data as Tier[]) ?? []);
     setTeam((m.data as TeamMember[]) ?? []);
     setLoading(false);
   };
@@ -99,13 +86,12 @@ function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-serif text-2xl md:text-3xl">Settings</h1>
-        <p className="text-sm text-muted-foreground">Edit site content, membership tiers and team.</p>
+        <p className="text-sm text-muted-foreground">Edit site content and team.</p>
       </div>
 
       <Tabs defaultValue="content">
         <TabsList className="flex-wrap">
           <TabsTrigger value="content">Content</TabsTrigger>
-          <TabsTrigger value="tiers">Membership Tiers</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="danger" className="text-destructive">Danger Zone</TabsTrigger>
@@ -273,52 +259,6 @@ function SettingsPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="tiers" className="space-y-3 mt-4">
-          {tiers?.map((t, i) => (
-            <Card key={t.id}>
-              <CardContent className="pt-6 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-serif text-lg capitalize">{t.tier}</h3>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={t.featured}
-                      onCheckedChange={(v) => setTiers(tiers.map((x, idx) => idx === i ? { ...x, featured: v } : x))}
-                    />
-                    <Label className="text-xs">Featured</Label>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Display name">
-                    <Input value={t.name} onChange={(e) => setTiers(tiers.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))} />
-                  </Field>
-                  <Field label="Price (ZAR/year)">
-                    <Input type="number" value={t.price_zar} onChange={(e) => setTiers(tiers.map((x, idx) => idx === i ? { ...x, price_zar: Number(e.target.value) } : x))} />
-                  </Field>
-                </div>
-                <Field label="Benefits (one per line)">
-                  <Textarea
-                    rows={4}
-                    value={t.benefits.join("\n")}
-                    onChange={(e) => setTiers(tiers.map((x, idx) => idx === i ? { ...x, benefits: e.target.value.split("\n").filter(Boolean) } : x))}
-                  />
-                </Field>
-                <Button
-                  size="sm"
-                  onClick={async () => {
-                    const { error } = await supabase.from("membership_tiers").update({
-                      name: t.name, price_zar: t.price_zar, benefits: t.benefits, featured: t.featured,
-                    }).eq("id", t.id);
-                    if (error) return toast.error(error.message);
-                    toast.success("Saved");
-                  }}
-                >
-                  <Save className="size-4 mr-2" />Save Tier
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
         </TabsContent>
 
         <TabsContent value="team" className="space-y-3 mt-4">

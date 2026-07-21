@@ -27,13 +27,13 @@ const hikeImg4 = asset("hike-2026/hike-00.45.001.jpeg");
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "A-WIN | African Women Investment Network" },
+      { title: "A-Win | African Women Investment Network" },
       {
         name: "description",
         content:
-          "A-WIN is a community of women building wealth, knowledge, and legacy together through investment, education, and networking.",
+          "A-Win is a community of women building wealth, knowledge, and legacy together through investment, education, and networking.",
       },
-      { property: "og:title", content: "A-WIN | African Women Investment Network" },
+      { property: "og:title", content: "A-Win | African Women Investment Network" },
       {
         property: "og:description",
         content:
@@ -75,7 +75,7 @@ function useHomepageStats() {
   return stats;
 }
 
-// A-WIN follows a single membership model (not multi tier):
+// A-Win follows a single membership model (not multi tier):
 //   R200 / year nominal membership fee + R500 / month collective investment contribution.
 const membership = {
   fee: "R200",
@@ -189,7 +189,7 @@ function Index() {
   ];
   return (
     <>
-      {/* HERO with animated A-WIN logos */}
+      {/* HERO with animated A-Win logos */}
       <LogoHero />
 
 
@@ -211,7 +211,7 @@ function Index() {
           ))}
         </div>
         <p className="mx-auto mt-6 max-w-xl px-4 text-center text-xs italic text-muted-foreground">
-          Numbers grow as our community grows. Updated by A-WIN.
+          Numbers grow as our community grows. Updated by A-Win.
         </p>
       </section>
 
@@ -220,11 +220,11 @@ function Index() {
         <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 md:grid-cols-2">
           <div>
             <span className="text-xs font-semibold uppercase tracking-widest text-accent">
-              About A-WIN
+              About A-Win
             </span>
             <h2 className="mt-3 font-serif text-foreground">Every Woman Belongs Here</h2>
             <p className="mt-5 text-muted-foreground leading-relaxed">
-              A-WIN welcomes every woman, regardless of profession, background,
+              A-Win welcomes every woman, regardless of profession, background,
               or where she is starting from. The common thread is a commitment
               to saving and investing over consumerism and debt. Together we
               break the debt cycle, build collective wealth, and create
@@ -241,7 +241,7 @@ function Index() {
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-primary/20 shadow-[var(--shadow-elegant)]">
             <img
               src={wcwHero}
-              alt="A-WIN women together at a community gathering"
+              alt="A-Win women together at a community gathering"
               className="h-full w-full object-cover"
               loading="lazy"
             />
@@ -264,7 +264,7 @@ function Index() {
             </span>
             <h2 className="mt-3 font-serif">One Membership · Built for Long Term Wealth</h2>
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-              A-WIN follows a single, transparent membership model. A small annual
+              A-Win follows a single, transparent membership model. A small annual
               fee plus a monthly contribution toward collective investments, reviewed
               annually by the community.
             </p>
@@ -281,7 +281,7 @@ function Index() {
                   <span className="text-sm text-muted-foreground">{membership.feeCadence}</span>
                 </div>
                 <p className="mt-4 text-sm text-muted-foreground">
-                  Covers administration, member services and access to the A-WIN community.
+                  Covers administration, member services and access to the A-Win community.
                 </p>
               </CardContent>
             </Card>
@@ -423,7 +423,7 @@ function Index() {
                 </span>
                 <h2 className="mt-3 font-serif">Our Members</h2>
                 <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-                  Real women, real stories. Explore the professionals, entrepreneurs and everyday builders shaping A-WIN.
+                  Real women, real stories. Explore the professionals, entrepreneurs and everyday builders shaping A-Win.
                 </p>
               </div>
               <Link
@@ -495,7 +495,7 @@ function Index() {
       {/* WCW SUMMIT GALLERY */}
       <WCWGallery />
 
-      {/* A-WIN HIKE APRIL 2026 */}
+      {/* A-Win HIKE APRIL 2026 */}
       <HikeGallery />
 
       {/* PORTFOLIO CAROUSEL */}
@@ -514,7 +514,7 @@ function Index() {
             Ready to Start Your Investment Journey?
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-accent-foreground/85">
-            Join hundreds of women already building generational wealth with A-WIN.
+            Join hundreds of women already building generational wealth with A-Win.
           </p>
           <Button
             asChild

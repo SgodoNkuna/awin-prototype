@@ -177,7 +177,7 @@ export function AdminLayout() {
         style={{ background: "#3D8B2F", color: "#FFFFFF" }}
       >
         <div className="px-5 py-4 border-b border-white/10">
-          <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-WIN</div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-Win</div>
           <div className="text-sm font-medium text-white">Admin Console</div>
           <div className="text-xs text-white/70 truncate mt-0.5">{user.email}</div>
         </div>
@@ -207,7 +207,7 @@ export function AdminLayout() {
             >
               <SheetTitle className="sr-only">Admin navigation</SheetTitle>
               <div className="px-5 py-4 border-b border-white/10">
-                <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-WIN</div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-Win</div>
                 <div className="text-sm font-medium text-white">{currentLabel}</div>
                 <div className="text-xs text-white/70 truncate mt-0.5">{user.email}</div>
               </div>

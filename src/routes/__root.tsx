@@ -95,26 +95,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "A-WIN — African Women Investment Network" },
+      { title: "A-Win — African Women Investment Network" },
       {
         name: "description",
         content:
-          "A-WIN empowers African women to build generational wealth through investment education, networking, and mentorship.",
+          "A-Win empowers African women to build generational wealth through investment education, networking, and mentorship.",
       },
-      { name: "author", content: "A-WIN" },
-      { property: "og:title", content: "A-WIN — African Women Investment Network" },
+      { name: "author", content: "A-Win" },
+      { property: "og:title", content: "A-Win — African Women Investment Network" },
       {
         property: "og:description",
         content:
           "Empowering African women to build generational wealth through investment education, community, and access.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "A-WIN" },
+      { property: "og:site_name", content: "A-Win" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "A-WIN — African Women Investment Network" },
-      { name: "description", content: "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
-      { property: "og:description", content: "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
-      { name: "twitter:description", content: "A-WIN is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
+      { name: "twitter:title", content: "A-Win — African Women Investment Network" },
+      { name: "description", content: "A-Win is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
+      { property: "og:description", content: "A-Win is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
+      { name: "twitter:description", content: "A-Win is a women's investment network and stokvel empowering African women to build generational wealth through collective investment, mentorship, and community" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/2cff2693-d322-4fd7-af36-5cc90130733e" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/2cff2693-d322-4fd7-af36-5cc90130733e" },
       {

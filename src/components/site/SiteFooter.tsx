@@ -11,10 +11,10 @@ export function SiteFooter() {
     >
       <div className="container mx-auto grid gap-10 px-4 py-14 text-center md:grid-cols-4 md:gap-8 md:text-left md:py-16 md:px-8">
         <div className="flex flex-col items-center md:items-start">
-          <Link to="/" aria-label="A-WIN home" className="inline-block">
+          <Link to="/" aria-label="A-Win home" className="inline-block">
             <img
               src={logoWhite}
-              alt="A-WIN — African Women Investment Network"
+              alt="A-Win — African Women Investment Network"
               className="h-14 w-auto"
             />
           </Link>
@@ -88,7 +88,7 @@ export function SiteFooter() {
 
       <div className="border-t border-white/15">
         <div className="container mx-auto flex flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-white/60 md:flex-row md:px-8">
-          <p>© {year} A-WIN — African Women Investment Network. All rights reserved.</p>
+          <p>© {year} A-Win — African Women Investment Network. All rights reserved.</p>
           <p>Built by Lusandla Marketing</p>
         </div>
       </div>

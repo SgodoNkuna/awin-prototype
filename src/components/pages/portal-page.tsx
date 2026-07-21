@@ -359,7 +359,7 @@ function PortalPage() {
           <Card>
             <CardHeader>
               <CardTitle>Latest News</CardTitle>
-              <CardDescription>Updates from the A-WIN community.</CardDescription>
+              <CardDescription>Updates from the A-Win community.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3 md:grid-cols-2">
               {news.length === 0 ? (
@@ -450,7 +450,7 @@ function PortalPage() {
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
         <QuickLink to="/members" label="Portfolio" desc="Showcase your business" />
         <QuickLink to="/events" label="Events" desc="Upcoming meetups & masterclasses" />
-        <QuickLink to="/contact" label="Contact A-WIN" desc="Reach the committee" />
+        <QuickLink to="/contact" label="Contact A-Win" desc="Reach the committee" />
       </div>
     </div>
   );
@@ -560,12 +560,12 @@ function StatusCard({ app, profile }: { app: Application; profile: Profile | nul
       )}
       {status === "approved" && (
         <div className="rounded-md bg-green-500/10 p-4 text-sm">
-          🎉 Welcome to A-WIN! Your membership has been approved.
+          🎉 Welcome to A-Win! Your membership has been approved.
         </div>
       )}
       {status === "active" && (
         <div className="rounded-md bg-green-500/10 p-4 text-sm">
-          You're an active A-WIN member. Explore your events, documents and resources below.
+          You're an active A-Win member. Explore your events, documents and resources below.
         </div>
       )}
       {status === "rejected" && (

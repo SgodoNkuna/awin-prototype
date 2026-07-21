@@ -1,11 +1,11 @@
 /**
  * Transactional email templates — SERVER ONLY.
  * Plain-table HTML that renders correctly in Gmail/Outlook/Zoho; brand colours
- * follow the A-WIN token palette in src/styles.css.
+ * follow the A-Win token palette in src/styles.css.
  */
 
 const BRAND = {
-  name: "A-WIN",
+  name: "A-Win",
   color: "#0f4c5c",
   accent: "#e36414",
   site: process.env.PAYFAST_RETURN_URL?.replace(/\/portal.*$/, "") ?? "https://awin.co.za",
@@ -27,7 +27,7 @@ function layout(title: string, bodyHtml: string): string {
   <tr><td style="padding:20px 32px;border-top:1px solid #e7e5e4;">
     <p style="margin:0;font-size:12px;color:#78716c;">
       African Women In Networking &middot; <a href="${BRAND.site}" style="color:${BRAND.color};">${BRAND.site.replace(/^https?:\/\//, "")}</a><br/>
-      This is a transactional message about your A-WIN account.
+      This is a transactional message about your A-Win account.
     </p>
   </td></tr>
 </table>
@@ -49,12 +49,12 @@ const btn = (href: string, label: string) =>
 
 export function applicationReceivedEmail(fullName: string) {
   return {
-    subject: "We received your A-WIN membership application",
+    subject: "We received your A-Win membership application",
     html: layout(
       "Application received",
       p(`Hi ${strong(fullName)},`) +
         p(
-          "Thank you for applying to join A-WIN. Your application is now with our membership committee for review — we aim to respond within 5 working days.",
+          "Thank you for applying to join A-Win. Your application is now with our membership committee for review — we aim to respond within 5 working days.",
         ) +
         p("We'll email you as soon as a decision is made. No action is needed from you right now."),
     ),
@@ -66,12 +66,12 @@ export function membershipActivatedEmail(fullName: string, tier: string, expires
     ? new Date(expiresAt).toLocaleDateString("en-ZA", { year: "numeric", month: "long", day: "numeric" })
     : "12 months from today";
   return {
-    subject: "Welcome to A-WIN — your membership is active",
+    subject: "Welcome to A-Win — your membership is active",
     html: layout(
       "Your membership is active 🎉",
       p(`Hi ${strong(fullName)},`) +
         p(
-          `Your ${strong(tier)} membership is now active and valid until ${strong(expires)}. You have full access to the member portal, events, and the A-WIN community.`,
+          `Your ${strong(tier)} membership is now active and valid until ${strong(expires)}. You have full access to the member portal, events, and the A-Win community.`,
         ) +
         btn(`${BRAND.site}/portal`, "Open the member portal") +
         p("If anything looks wrong, just reply to this email."),
@@ -81,12 +81,12 @@ export function membershipActivatedEmail(fullName: string, tier: string, expires
 
 export function membershipSuspendedEmail(fullName: string) {
   return {
-    subject: "Your A-WIN membership has been suspended",
+    subject: "Your A-Win membership has been suspended",
     html: layout(
       "Membership suspended",
       p(`Hi ${strong(fullName)},`) +
         p(
-          "Your A-WIN membership has been suspended. If you believe this is a mistake, or you'd like to discuss reinstatement, please contact the committee by replying to this email.",
+          "Your A-Win membership has been suspended. If you believe this is a mistake, or you'd like to discuss reinstatement, please contact the committee by replying to this email.",
         ),
     ),
   };
@@ -137,7 +137,7 @@ export function paymentReceiptEmail(
   const amount = `R ${(amountCents / 100).toFixed(2)}`;
   const paidAt = new Date(paidAtIso).toLocaleString("en-ZA", { dateStyle: "long", timeStyle: "short" });
   return {
-    subject: `Payment received — ${amount} (A-WIN membership)`,
+    subject: `Payment received — ${amount} (A-Win membership)`,
     html: layout(
       "Payment receipt",
       p(`Hi ${strong(fullName)},`) +

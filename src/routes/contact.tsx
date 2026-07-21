@@ -21,11 +21,11 @@ export const Route = createFileRoute("/contact")({
   component: ContactPage,
   head: () => ({
     meta: [
-      { title: "Contact A-WIN | Get in Touch" },
+      { title: "Contact A-Win | Get in Touch" },
       {
         name: "description",
         content:
-          "Reach out to A-WIN with questions, partnership ideas, or media enquiries. We respond within 2 business days.",
+          "Reach out to A-Win with questions, partnership ideas, or media enquiries. We respond within 2 business days.",
       },
     ],
   }),
@@ -201,7 +201,7 @@ function ContactPage() {
             <Card className="overflow-hidden">
               <div className="aspect-video bg-muted">
                 <iframe
-                  title="A-WIN office location on map"
+                  title="A-Win office location on map"
                   src="https://www.google.com/maps?q=Centurion%2C+Pretoria%2C+South+Africa&output=embed"
                   className="h-full w-full border-0"
                   loading="lazy"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Crown, HeartHandshake, GraduationCap, Gem, ChevronRight, Sprout, Globe2 } from "lucide-react";
+import { Crown, HeartHandshake, GraduationCap, Gem, ChevronRight, Sprout, Globe2, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About A-WIN — African Women Investment Network" },
+      { title: "About A-Win — African Women Investment Network" },
       {
         name: "description",
         content:
-          "A-WIN is a community of African women empowering each other through investment, financial education and collaboration. Founded 2025, growing every month.",
+          "A-Win is a community of African women empowering each other through investment, financial education and collaboration. Founded 2025, growing every month.",
       },
-      { property: "og:title", content: "About A-WIN" },
+      { property: "og:title", content: "About A-Win" },
       {
         property: "og:description",
         content:
@@ -34,7 +34,7 @@ const values = [
   {
     icon: HeartHandshake,
     title: "Community",
-    body: "We grow stronger together — sisterhood, mentorship and honest money conversations sit at the heart of A-WIN.",
+    body: "We grow stronger together — sisterhood, mentorship and honest money conversations sit at the heart of A-Win.",
   },
   {
     icon: GraduationCap,
@@ -88,7 +88,7 @@ function AboutPage() {
             <ChevronRight className="h-3 w-3" />
             <span className="text-accent">About</span>
           </nav>
-          <h1 className="mt-5 font-serif">About A-WIN</h1>
+          <h1 className="mt-5 font-serif">About A-Win</h1>
           <p className="mt-5 max-w-3xl text-primary-foreground/85 md:text-xl italic">
             Empowering African women, from all walks of life, through investment and collaboration.
           </p>
@@ -102,18 +102,26 @@ function AboutPage() {
           <h2 className="mt-3 font-serif">A community of visionary African women</h2>
           <div className="mt-6 space-y-5 text-lg leading-relaxed text-muted-foreground">
             <p>
-              The African Women Investment Network (A-WIN) is a community of visionary African women
+              The African Women Investment Network (A-Win) is a community of visionary African women
               united by a shared commitment to building wealth, supporting one another, and creating
               sustainable impact through collaboration and collective investment.
             </p>
             <p>
-              A-WIN was founded in <strong className="text-foreground">2025</strong> by a group of
+              A-Win was founded in <strong className="text-foreground">2025</strong> by a group of
               businesswomen. What began as a small, passionate group has grown to{" "}
               <strong className="text-foreground">over fifty members and counting</strong>. Our
               mission is to empower women to grow their wealth, strengthen their businesses, and
               access investment opportunities that drive long term financial independence.
             </p>
           </div>
+          <a
+            href="/events?article=why-i-started-a-win"
+            className="mt-8 inline-flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/5 px-5 py-4 text-sm font-medium text-foreground transition-colors hover:bg-accent/10"
+          >
+            <BookOpen className="size-4 shrink-0 text-accent" />
+            Read founder Phumelele Ndumo's full story, "Why I Started A-Win"
+            <ChevronRight className="size-4 shrink-0 text-accent" />
+          </a>
         </div>
       </section>
 
@@ -127,7 +135,7 @@ function AboutPage() {
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                At A-WIN, we believe every African woman — regardless of her background, location, or
+                At A-Win, we believe every African woman — regardless of her background, location, or
                 income level — deserves access to financial knowledge and investment opportunities.
                 We are intentional about reaching women from townships, rural communities, and all
                 walks of life, because financial empowerment must be inclusive to be truly
@@ -137,7 +145,7 @@ function AboutPage() {
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p>
                 We are on a mission to shift the culture. Too many women prioritise credit and
-                non-essential spending while saving and investing remain an afterthought. A-WIN
+                non-essential spending while saving and investing remain an afterthought. A-Win
                 exists to change that mindset — to build a generation of women who think about
                 investing first and <em>consumer spending</em> second. We are cultivating a movement
                 that replaces short term consumption with medium-to-long term wealth creation.
@@ -176,7 +184,7 @@ function AboutPage() {
           <div className="grid gap-10 md:grid-cols-2">
             <div>
               <span className="text-xs font-semibold uppercase tracking-widest text-accent">Who Can Join</span>
-              <h2 className="mt-3 font-serif">A-WIN is open to any woman who…</h2>
+              <h2 className="mt-3 font-serif">A-Win is open to any woman who…</h2>
               <ul className="mt-6 space-y-3 text-muted-foreground">
                 {[
                   "Shares our vision of financial empowerment, collaboration and long term wealth creation.",
@@ -225,7 +233,7 @@ function AboutPage() {
           <Globe2 className="mx-auto h-10 w-10 text-accent" />
           <h2 className="mt-4 font-serif text-primary-foreground">Join the movement</h2>
           <p className="mt-4 text-primary-foreground/85 leading-relaxed">
-            By joining A-WIN, you become part of a growing movement of African women creating wealth
+            By joining A-Win, you become part of a growing movement of African women creating wealth
             with purpose — women choosing investment over consumer spending, collaboration over
             competition, and long term freedom over short term gratification. Together, we are
             transforming Africa's economic landscape, one investment and one woman at a time.
@@ -276,7 +284,7 @@ function AboutPage() {
       )}
 
       <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
-        <strong className="text-foreground">A-WIN</strong> — African Women Investment Network · Founded 2025
+        <strong className="text-foreground">A-Win</strong> — African Women Investment Network · Founded 2025
       </footer>
     </>
   );

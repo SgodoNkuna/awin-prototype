@@ -20,11 +20,11 @@ export const Route = createFileRoute("/membership")({
   ),
   head: () => ({
     meta: [
-      { title: "Join A-WIN | Membership" },
+      { title: "Join A-Win | Membership" },
       {
         name: "description",
         content:
-          "Become an A-WIN member. Choose from General, Active or Patron tiers and start your investment journey with us.",
+          "Become an A-Win member. Choose from General, Active or Patron tiers and start your investment journey with us.",
       },
     ],
   }),

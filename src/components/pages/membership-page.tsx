@@ -9,6 +9,10 @@ import {
   Loader2,
   ShieldCheck,
   Info,
+  Globe2,
+  Home,
+  HandCoins,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,11 +48,20 @@ export const MEMBERSHIP_MODEL = {
   ],
 } as const;
 
+// Grounded in Phumelele's "Why I started A-Win" — real focus areas the
+// community has named, not invented numbers.
+const INVESTMENT_FOCUS = [
+  { icon: Globe2, title: "Offshore Tax-Free Investing", body: "Access to offshore tax free investment vehicles, curated with a qualified financial advisor." },
+  { icon: Home, title: "Property & Airbnb", body: "Our first collective investment: an Airbnb in Cape Town, guided by members who already run profitable Airbnbs." },
+  { icon: HandCoins, title: "Business Crowdfunding", body: "Members crowdfund each other's businesses and open access to markets for one another." },
+  { icon: BookOpen, title: "Financial Literacy", body: "Workshops and mentorship to grow financial knowledge, so every member invests with confidence." },
+];
+
 const STEPS = [
   { n: 1, title: "Submit Application", icon: PenLine, desc: "Fill out the form below with your details." },
   { n: 2, title: "Committee Review", icon: UserRoundSearch, desc: "Our team reviews within 5 business days." },
   { n: 3, title: "Payment Details", icon: MailCheck, desc: "Receive payment details securely after approval." },
-  { n: 4, title: "Welcome to A-WIN", icon: PartyPopper, desc: "Access your member benefits and community." },
+  { n: 4, title: "Welcome to A-Win", icon: PartyPopper, desc: "Access your member benefits and community." },
 ];
 
 const applicationSchema = z.object({
@@ -59,8 +72,8 @@ const applicationSchema = z.object({
   occupation: z.string().trim().min(1, "Required").max(120),
   employer: z.string().trim().max(120).optional(),
   experience: z.enum(["beginner", "intermediate", "advanced"]),
-  // Repurposed: stores "Where did you hear about A-WIN?" (kept in `motivation` column for backward compatibility).
-  motivation: z.string().trim().min(2, "Please tell us where you heard about A-WIN").max(2000),
+  // Repurposed: stores "Where did you hear about A-Win?" (kept in `motivation` column for backward compatibility).
+  motivation: z.string().trim().min(2, "Please tell us where you heard about A-Win").max(2000),
   referral: z.string().trim().max(120).optional(),
 });
 
@@ -137,7 +150,7 @@ function MembershipPage() {
       if (existingMember) {
         setSubmitting(false);
         setDuplicateWarning(
-          "You are already a registered A-WIN member. Please sign in to access your member portal.",
+          "You are already a registered A-Win member. Please sign in to access your member portal.",
         );
         return;
       }
@@ -193,7 +206,7 @@ function MembershipPage() {
         <div className="container mx-auto px-4 text-center">
           <h1 className="font-bold mb-4">Become a Member</h1>
           <p className="text-base md:text-xl max-w-2xl mx-auto opacity-95 leading-relaxed">
-            You do not need a degree or a professional title to join A-WIN. You
+            You do not need a degree or a professional title to join A-Win. You
             need a commitment to saving, investing, and growing with a community
             of women who have your back. If that sounds like you, you belong here.
           </p>
@@ -207,7 +220,7 @@ function MembershipPage() {
             <span className="text-xs font-semibold uppercase tracking-widest text-accent">Fees &amp; Commitment</span>
             <h2 className="font-bold mt-2">One Membership · Built for Long Term Wealth</h2>
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-              A-WIN follows a single, transparent membership model. Reviewed annually by the community.
+              A-Win follows a single, transparent membership model. Reviewed annually by the community.
             </p>
           </div>
 
@@ -222,7 +235,7 @@ function MembershipPage() {
                   <span className="text-sm text-muted-foreground">{MEMBERSHIP_MODEL.feeCadence}</span>
                 </div>
                 <p className="mt-4 text-sm text-muted-foreground">
-                  Covers administration, member services and access to the A-WIN community.
+                  Covers administration, member services and access to the A-Win community.
                 </p>
               </CardContent>
             </Card>
@@ -275,6 +288,33 @@ function MembershipPage() {
         </div>
       </section>
 
+      {/* How we invest together */}
+      <section className="py-16 md:py-24 bg-muted/30">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="text-center mb-10">
+            <span className="text-xs font-semibold uppercase tracking-widest text-accent">Where Your Money Goes</span>
+            <h2 className="font-bold mt-2">How We Invest Together</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+              Every member's monthly contribution is pooled into collective investment opportunities,
+              chosen and reviewed by the community.
+            </p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {INVESTMENT_FOCUS.map((f) => (
+              <Card key={f.title} className="border-border/60 shadow-[var(--shadow-elegant)]">
+                <CardContent className="p-6">
+                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent">
+                    <f.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-4 font-serif text-base text-foreground">{f.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="py-16 md:py-24 bg-muted/30">
         <div className="container mx-auto px-4">
@@ -304,7 +344,7 @@ function MembershipPage() {
               </div>
               <h3 className="font-serif text-foreground mt-2">What you'll need to complete onboarding</h3>
               <p className="text-sm text-muted-foreground mt-2">
-                Once your application is approved, you'll be guided through these steps to activate your A-WIN membership.
+                Once your application is approved, you'll be guided through these steps to activate your A-Win membership.
               </p>
               <ol className="mt-5 space-y-3">
                 {ONBOARDING.map((item, i) => (
@@ -389,7 +429,7 @@ function MembershipPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="motivation">Where did you hear about A-WIN? *</Label>
+                  <Label htmlFor="motivation">Where did you hear about A-Win? *</Label>
                   <Select name="motivation" defaultValue="Social media">
                     <SelectTrigger id="motivation">
                       <SelectValue />
@@ -397,7 +437,7 @@ function MembershipPage() {
                     <SelectContent>
                       <SelectItem value="Social media">Social media</SelectItem>
                       <SelectItem value="Friend or member referral">Friend or member referral</SelectItem>
-                      <SelectItem value="A-WIN event or workshop">A-WIN event or workshop</SelectItem>
+                      <SelectItem value="A-Win event or workshop">A-Win event or workshop</SelectItem>
                       <SelectItem value="Phumelele Ndumo (Founder)">Phumelele Ndumo (Founder)</SelectItem>
                       <SelectItem value="News / podcast / article">News / podcast / article</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>

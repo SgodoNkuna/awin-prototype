@@ -181,9 +181,10 @@ export function LogoHero() {
           transition={{ duration: 0.8, delay: 0.9 }}
           className="mx-auto mt-6 max-w-2xl text-base md:text-lg text-hero-muted drop-shadow-[0_2px_16px_rgba(0,0,0,0.72)]"
         >
-          A-WIN is a stokvel and investment community born from the Women
-          Creating Wealth programme. We are ordinary South African women
-          choosing to save, invest, and grow, together. Every woman belongs here.
+          A-Win is a stokvel and investment community born from the Graça
+          Machel Trust Women Creating Wealth program. We are ordinary South
+          African women choosing to save, invest, and grow, together. Every
+          woman belongs here.
         </motion.p>
 
         <motion.div
@@ -194,7 +195,7 @@ export function LogoHero() {
         >
           <Link to="/membership">
             <GlassButton size="lg" className="border border-hero-border bg-hero-surface text-hero-foreground shadow-[var(--shadow-gold-glow)]">
-              Join A-WIN
+              Join A-Win
               <ArrowRight className="ml-1 h-4 w-4" />
             </GlassButton>
           </Link>

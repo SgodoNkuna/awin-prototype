@@ -32,7 +32,7 @@ export function HikeGallery() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center">
           <Badge className="bg-accent text-accent-foreground">April 2026</Badge>
-          <h2 className="mt-3 font-serif text-foreground">A-WIN Hike · April 2026</h2>
+          <h2 className="mt-3 font-serif text-foreground">A-Win Hike · April 2026</h2>
           <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
             Fresh air, full hearts. Members walking together — the sisterhood beyond the boardroom.
           </p>

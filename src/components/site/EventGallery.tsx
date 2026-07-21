@@ -26,14 +26,14 @@ const c4 = asset("wcw-coaching/coaching-4.jpeg");
 type Cat = "all" | "hike" | "wcw" | "coaching";
 
 const PHOTOS: { src: string; caption: string; event: string; cat: Cat }[] = [
-  { src: h1, caption: "Sisterhood on the trail", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h2, caption: "By the bridge", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h3, caption: "Team moment", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h4, caption: "Riverside", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h5, caption: "Crossing together", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h7, caption: "Lakeside pause", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h8, caption: "Onward", event: "A-WIN Hike · April 2026", cat: "hike" },
-  { src: h9, caption: "Quiet waters", event: "A-WIN Hike · April 2026", cat: "hike" },
+  { src: h1, caption: "Sisterhood on the trail", event: "A-Win Hike · April 2026", cat: "hike" },
+  { src: h2, caption: "By the bridge", event: "A-Win Hike · April 2026", cat: "hike" },
+  { src: h3, caption: "Team moment", event: "A-Win Hike · April 2026", cat: "hike" },
+  { src: h4, caption: "Riverside", event: "A-Win Hike · April 2026", cat: "hike" },
+  { src: h5, caption: "Crossing together", event: "A-Win Hike · April 2026", cat: "hike" },
+  { src: h7, caption: "Lakeside pause", event: "A-Win Hike · April 2026", cat: "hike" },
+  { src: h8, caption: "Onward", event: "A-Win Hike · April 2026", cat: "hike" },
+  { src: h9, caption: "Quiet waters", event: "A-Win Hike · April 2026", cat: "hike" },
   { src: w1, caption: "WCW gathering", event: "Woman Crush Wednesday", cat: "wcw" },
   { src: w2, caption: "Panel in session", event: "Woman Crush Wednesday", cat: "wcw" },
   { src: w3, caption: "Community", event: "Woman Crush Wednesday", cat: "wcw" },

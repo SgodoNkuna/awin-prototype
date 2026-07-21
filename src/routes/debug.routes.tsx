@@ -17,7 +17,7 @@ const getRuntimeInfo = createServerFn({ method: "GET" }).handler(async () => {
 export const Route = createFileRoute("/debug/routes")({
   loader: () => getRuntimeInfo(),
   component: DebugRoutes,
-  head: () => ({ meta: [{ title: "Debug Routes | A-WIN" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Debug Routes | A-Win" }, { name: "robots", content: "noindex" }] }),
 });
 
 const PAGE_ROUTES = [
