@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import {
   Check,
+  ChevronRight,
   PenLine,
   UserRoundSearch,
   MailCheck,
@@ -202,10 +203,19 @@ function MembershipPage() {
   return (
     <div className="flex flex-col">
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-primary via-primary to-primary/80 py-20 md:py-28 text-primary-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="font-bold mb-4">Become a Member</h1>
-          <p className="text-base md:text-xl max-w-2xl mx-auto opacity-95 leading-relaxed">
+      <section
+        className="relative overflow-hidden px-4 py-24 text-primary-foreground"
+        style={{ background: "var(--gradient-hero)" }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,var(--accent),transparent_55%)] opacity-25" />
+        <div className="relative mx-auto max-w-5xl animate-fade-in">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
+            <Link to="/" className="hover:text-accent transition-colors">Home</Link>
+            <ChevronRight className="h-3 w-3" />
+            <span className="text-accent">Membership</span>
+          </nav>
+          <h1 className="mt-5 font-serif">Become a Member</h1>
+          <p className="mt-5 max-w-2xl text-primary-foreground/85 md:text-lg">
             You do not need a degree or a professional title to join A-Win. You
             need a commitment to saving, investing, and growing with a community
             of women who have your back. If that sounds like you, you belong here.

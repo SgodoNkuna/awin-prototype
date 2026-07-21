@@ -23,9 +23,9 @@ function WordsPullUp({
   return (
     <h1 ref={ref} className={className} aria-label={text}>
       {words.map((word, i) => (
-        <span key={i} className="inline-block overflow-hidden pb-1">
+        <span key={i} className="inline-block overflow-hidden pb-2 md:pb-3">
           <motion.span
-            className="inline-block"
+            className="inline-block leading-[1.2]"
             initial={{ y: "100%", opacity: 0 }}
             animate={isInView ? { y: 0, opacity: 1 } : {}}
             transition={{
@@ -172,7 +172,7 @@ export function LogoHero() {
         <WordsPullUp
           text="African Women Building Wealth Together"
           delay={0.2}
-          className="mt-6 font-serif text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] text-hero-foreground drop-shadow-[0_3px_28px_rgba(0,0,0,0.72)]"
+          className="mt-6 font-serif text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.2] text-hero-foreground drop-shadow-[0_3px_28px_rgba(0,0,0,0.72)]"
         />
 
         <motion.p

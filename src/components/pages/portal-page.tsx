@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { BillingTab } from "@/components/portal/BillingTab";
 import { OnboardingTab } from "@/components/portal/OnboardingTab";
 
@@ -78,6 +79,9 @@ type NewsRow = {
   title: string;
   slug: string;
   excerpt: string | null;
+  content: string | null;
+  cover_image: string | null;
+  author_name: string | null;
   category: string | null;
   published_at: string | null;
 };
@@ -92,6 +96,7 @@ function PortalPage() {
   const [registeredIds, setRegisteredIds] = useState<Set<string>>(new Set());
   const [docs, setDocs] = useState<DocRow[]>([]);
   const [news, setNews] = useState<NewsRow[]>([]);
+  const [readingArticle, setReadingArticle] = useState<NewsRow | null>(null);
   const [savingName, setSavingName] = useState(false);
   const [fullName, setFullName] = useState("");
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -114,7 +119,7 @@ function PortalPage() {
           supabase.from("events").select("id,title,description,event_date,event_time,location,event_type").eq("published", true).gte("event_date", new Date().toISOString().slice(0, 10)).order("event_date").limit(5),
           supabase.from("event_registrations").select("event_id").eq("user_id", user.id),
           supabase.from("documents").select("id,name,folder,file_path,visibility").order("created_at", { ascending: false }).limit(10),
-          supabase.from("news_articles").select("id,title,slug,excerpt,category,published_at").eq("published", true).order("published_at", { ascending: false }).limit(4),
+          supabase.from("news_articles").select("id,title,slug,excerpt,content,cover_image,author_name,category,published_at").eq("published", true).order("published_at", { ascending: false }).limit(4),
         ]);
 
       setProfile(prof as Profile | null);
@@ -366,19 +371,36 @@ function PortalPage() {
                 <p className="text-muted-foreground text-sm">No news posts yet.</p>
               ) : (
                 news.map((n) => (
-                  <div
+                  <button
                     key={n.id}
-                    className="group rounded-lg border bg-card p-4 transition-colors hover:border-primary/40"
+                    type="button"
+                    onClick={() => n.content && setReadingArticle(n)}
+                    disabled={!n.content}
+                    className="group text-left rounded-lg border bg-card p-4 transition-colors hover:border-primary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default overflow-hidden"
                   >
+                    {n.cover_image && (
+                      <div
+                        className="-mx-4 -mt-4 mb-3 aspect-video w-[calc(100%+2rem)] bg-cover bg-center"
+                        style={{ backgroundImage: `url(${n.cover_image})` }}
+                        aria-hidden="true"
+                      />
+                    )}
                     {n.category && <Badge variant="secondary" className="mb-2">{n.category}</Badge>}
                     <p className="font-semibold text-foreground">{n.title}</p>
                     {n.excerpt && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{n.excerpt}</p>}
-                    {n.published_at && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(n.published_at).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
+                    <div className="mt-2 flex items-center justify-between">
+                      {n.published_at && (
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(n.published_at).toLocaleDateString()}
+                        </p>
+                      )}
+                      {n.content && (
+                        <span className="text-xs font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                          Read more →
+                        </span>
+                      )}
+                    </div>
+                  </button>
                 ))
               )}
             </CardContent>
@@ -452,6 +474,45 @@ function PortalPage() {
         <QuickLink to="/events" label="Events" desc="Upcoming meetups & masterclasses" />
         <QuickLink to="/contact" label="Contact A-Win" desc="Reach the committee" />
       </div>
+
+      {/* News article reader */}
+      <Dialog open={!!readingArticle} onOpenChange={(o) => !o && setReadingArticle(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+          {readingArticle && (
+            <>
+              {readingArticle.cover_image && (
+                <div
+                  className="aspect-[21/9] w-full bg-cover bg-center"
+                  style={{ backgroundImage: `url(${readingArticle.cover_image})` }}
+                  aria-hidden="true"
+                />
+              )}
+              <div className="p-6 sm:p-10">
+                <DialogHeader className="text-left">
+                  {readingArticle.category && (
+                    <Badge variant="outline" className="mb-3 self-start">{readingArticle.category}</Badge>
+                  )}
+                  <DialogTitle className="font-serif text-2xl sm:text-3xl leading-tight text-foreground">
+                    {readingArticle.title}
+                  </DialogTitle>
+                  <DialogDescription className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs pt-1">
+                    {readingArticle.author_name && <span>{readingArticle.author_name}</span>}
+                    {readingArticle.published_at && (
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {new Date(readingArticle.published_at).toLocaleDateString()}
+                      </span>
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="prose-reader mt-6 max-w-none font-serif text-[1.05rem] leading-[1.85] text-foreground/90 whitespace-pre-wrap">
+                  {readingArticle.content}
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

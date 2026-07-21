@@ -89,7 +89,17 @@ export function SiteFooter() {
       <div className="border-t border-white/15">
         <div className="container mx-auto flex flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-white/60 md:flex-row md:px-8">
           <p>© {year} A-Win — African Women Investment Network. All rights reserved.</p>
-          <p>Built by Lusandla Marketing</p>
+          <p>
+            Built by{" "}
+            <a
+              href="https://lusandlamarketing.co.za"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#E8960A]"
+            >
+              Lusandla Marketing
+            </a>
+          </p>
         </div>
       </div>
     </footer>

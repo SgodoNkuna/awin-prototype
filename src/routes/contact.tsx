@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Mail, Phone, MapPin, Clock, Loader2, Check } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Loader2, Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -116,10 +116,19 @@ function ContactPage() {
   return (
     <div className="flex flex-col">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary via-primary to-primary/80 py-24 text-primary-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">Get In Touch</h1>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto opacity-90">
+      <section
+        className="relative overflow-hidden px-4 py-24 text-primary-foreground"
+        style={{ background: "var(--gradient-hero)" }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,var(--accent),transparent_55%)] opacity-25" />
+        <div className="relative mx-auto max-w-5xl animate-fade-in">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
+            <Link to="/" className="hover:text-accent transition-colors">Home</Link>
+            <ChevronRight className="h-3 w-3" />
+            <span className="text-accent">Contact</span>
+          </nav>
+          <h1 className="mt-5 font-serif">Get In Touch</h1>
+          <p className="mt-5 max-w-2xl text-primary-foreground/85 md:text-lg">
             Questions, partnerships, or just want to say hello? We'd love to hear from you.
           </p>
         </div>
