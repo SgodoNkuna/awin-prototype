@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  ChevronRight,
   ArrowRight,
+  Facebook,
+  Instagram,
+  Linkedin,
   TrendingUp,
   Globe2,
   GraduationCap,
@@ -20,6 +22,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MinimalistHero } from "@/components/ui/minimalist-hero";
 
 export const Route = createFileRoute("/why-a-win")({
   head: () => ({
@@ -98,75 +101,24 @@ const STATS = [
 function WhyAWinPage() {
   return (
     <>
-      {/* HERO */}
-      <section
-        className="relative overflow-hidden px-4 py-20 text-primary-foreground md:py-28"
-        style={{ background: "var(--gradient-hero)" }}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_25%,var(--accent),transparent_55%)] opacity-25" />
-        <div className="absolute inset-0 bg-primary-deep/10" />
-
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-[1.15fr_0.85fr]">
-          <div className="animate-fade-in">
-            <nav
-              aria-label="Breadcrumb"
-              className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70"
-            >
-              <Link to="/" className="hover:text-accent transition-colors">Home</Link>
-              <ChevronRight className="h-3 w-3" />
-              <span className="text-accent">Why A-Win</span>
-            </nav>
-
-            <span className="mt-6 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-              The story behind the movement
-            </span>
-            <h1 className="mt-4 font-serif leading-[1.12]">
-              Building wealth, together — and the woman who started it.
-            </h1>
-            <p className="mt-5 max-w-xl text-primary-foreground/85 md:text-lg">
-              A-Win is a community of African women choosing investment over debt,
-              collaboration over isolation, and long-term wealth over short-term spending.
-              It began with one financial advisor's conviction that women could do this —
-              together.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                <Link to="/membership">
-                  Join A-Win <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
-              >
-                <a href="/events?article=why-i-started-a-win">Read her full letter</a>
-              </Button>
-            </div>
-          </div>
-
-          <div className="animate-fade-in justify-self-center md:justify-self-end">
-            <div className="relative">
-              <div className="absolute -inset-3 rounded-[2rem] bg-accent/20 blur-2xl" aria-hidden="true" />
-              <img
-                src={FOUNDER_PHOTO}
-                alt="Phumelele Ndumo, Founder of A-Win"
-                className="relative w-64 rounded-[2rem] border-4 border-primary-foreground/20 object-cover shadow-[var(--shadow-gold-glow)] sm:w-72 md:w-full md:max-w-sm"
-              />
-              <div className="relative mx-auto -mt-6 w-max rounded-full bg-background px-5 py-2 text-center shadow-[var(--shadow-elegant)]">
-                <div className="font-serif text-sm font-semibold text-foreground">Phumelele Ndumo</div>
-                <div className="text-[11px] font-medium uppercase tracking-wider text-accent">
-                  Founder &amp; Chairperson
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* HERO — A-Win adaptation of the MinimalistHero pattern */}
+      <MinimalistHero
+        mainText="A-Win is a community of African women choosing investment over debt, collaboration over isolation, and long-term wealth over short-term spending. It began with one financial advisor's conviction that women could do this — together."
+        readMoreLink="#meet-the-founder"
+        readMoreLabel="Meet the founder"
+        imageSrc={FOUNDER_PHOTO}
+        imageAlt="Phumelele Ndumo, Founder of A-Win"
+        overlayText={{ part1: "Wealth,", part2: "together." }}
+        socialLinks={[
+          { icon: Linkedin, href: "https://www.linkedin.com/", label: "LinkedIn" },
+          { icon: Instagram, href: "https://www.instagram.com/", label: "Instagram" },
+          { icon: Facebook, href: "https://www.facebook.com/", label: "Facebook" },
+        ]}
+        locationText="Centurion, South Africa"
+      />
 
       {/* FOUNDER CREDIBILITY */}
-      <section className="border-b border-border bg-secondary/30 py-16 md:py-20">
+      <section id="meet-the-founder" className="border-b border-border bg-secondary/30 py-16 md:py-20">
         <div className="mx-auto max-w-5xl px-4">
           <span className="text-xs font-semibold uppercase tracking-widest text-accent">
             Meet the founder

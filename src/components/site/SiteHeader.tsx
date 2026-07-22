@@ -10,6 +10,7 @@ import logoWhite from "@/assets/awin-logo-white.png";
 const NAV = [
   { to: "/", label: "Home" },
   { to: "/about", label: "About" },
+  { to: "/why-a-win", label: "Why A-Win" },
   { to: "/membership", label: "Membership" },
   { to: "/events", label: "Events & Gallery" },
   { to: "/members", label: "Our Members" },
