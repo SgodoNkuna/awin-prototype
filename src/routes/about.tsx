@@ -267,8 +267,8 @@ function AboutPage() {
                     <div
                       className="mx-auto h-24 w-24 rounded-full bg-cover bg-center"
                       style={{
-                        background: m.profile_card_url || m.photo_url
-                          ? `url(${m.profile_card_url || m.photo_url}) center/cover`
+                        background: m.photo_url || m.profile_card_url
+                          ? `url(${m.photo_url || m.profile_card_url}) center/cover`
                           : "var(--gradient-placeholder)",
                       }}
                       aria-hidden="true"

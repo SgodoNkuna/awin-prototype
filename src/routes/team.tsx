@@ -157,10 +157,10 @@ function CommitteeCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }
       onClick={() => onOpen(m)}
       className="flex w-44 shrink-0 flex-col items-center rounded-2xl border border-border/60 bg-card p-4 text-center shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-52"
     >
-      {m.profile_card_url || m.photo_url ? (
+      {m.photo_url || m.profile_card_url ? (
         <div
           className="size-20 rounded-full bg-cover bg-center ring-2 ring-accent/40 sm:size-24"
-          style={{ backgroundImage: `url(${m.profile_card_url || m.photo_url})` }}
+          style={{ backgroundImage: `url(${m.photo_url || m.profile_card_url})` }}
           aria-hidden="true"
         />
       ) : (
@@ -225,12 +225,9 @@ export function MembersPage() {
     };
   }, [sign]);
 
-  // Only the "main" (executive) committee is excluded from the general
-  // members directory. Everyone else is a member and is listed below.
-  const generalMembers = useMemo(
-    () => (team ?? []).filter((m) => m.committee !== "main"),
-    [team],
-  );
+  // Committee members are pinned above AND listed in the service directory —
+  // they are A-Win members too, filed under their profession (client request, 2026-07-22).
+  const generalMembers = useMemo(() => team ?? [], [team]);
 
   // "Available now" = current talent: a real profile with photo/card AND at least one contact/expertise signal.
   const isAvailable = (m: Member) =>
