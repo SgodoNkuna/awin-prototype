@@ -27,6 +27,7 @@ export function SiteFooter() {
           <h4 className="font-serif text-base font-semibold text-white">Quick Links</h4>
           <ul className="mt-4 space-y-2 text-sm">
             <li><Link to="/about" className="text-white/85 hover:text-[#E8960A]">About</Link></li>
+            <li><Link to="/why-a-win" className="text-white/85 hover:text-[#E8960A]">Why A-Win</Link></li>
             <li><Link to="/membership" className="text-white/85 hover:text-[#E8960A]">Membership</Link></li>
             <li><Link to="/events" className="text-white/85 hover:text-[#E8960A]">Events &amp; Gallery</Link></li>
             <li><Link to="/members" className="text-white/85 hover:text-[#E8960A]">Our Members</Link></li>

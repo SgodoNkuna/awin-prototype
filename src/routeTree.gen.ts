@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WhyAWinRouteImport } from './routes/why-a-win'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PortalRouteImport } from './routes/portal'
@@ -40,6 +41,11 @@ import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast.itn'
 
+const WhyAWinRoute = WhyAWinRouteImport.update({
+  id: '/why-a-win',
+  path: '/why-a-win',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeamRoute = TeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -206,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/team': typeof TeamRoute
+  '/why-a-win': typeof WhyAWinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/committees': typeof AdminCommitteesRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/team': typeof TeamRoute
+  '/why-a-win': typeof WhyAWinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/committees': typeof AdminCommitteesRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/team': typeof TeamRoute
+  '/why-a-win': typeof WhyAWinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/committees': typeof AdminCommitteesRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/portfolio'
     | '/team'
+    | '/why-a-win'
     | '/admin/applications'
     | '/admin/billing'
     | '/admin/committees'
@@ -335,6 +345,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/portfolio'
     | '/team'
+    | '/why-a-win'
     | '/admin/applications'
     | '/admin/billing'
     | '/admin/committees'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/portfolio'
     | '/team'
+    | '/why-a-win'
     | '/admin/applications'
     | '/admin/billing'
     | '/admin/committees'
@@ -400,12 +412,20 @@ export interface RootRouteChildren {
   PortalRoute: typeof PortalRoute
   PortfolioRoute: typeof PortfolioRoute
   TeamRoute: typeof TeamRoute
+  WhyAWinRoute: typeof WhyAWinRoute
   DebugRoutesRoute: typeof DebugRoutesRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/why-a-win': {
+      id: '/why-a-win'
+      path: '/why-a-win'
+      fullPath: '/why-a-win'
+      preLoaderRoute: typeof WhyAWinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/team': {
       id: '/team'
       path: '/team'
@@ -670,6 +690,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalRoute: PortalRoute,
   PortfolioRoute: PortfolioRoute,
   TeamRoute: TeamRoute,
+  WhyAWinRoute: WhyAWinRoute,
   DebugRoutesRoute: DebugRoutesRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
 }

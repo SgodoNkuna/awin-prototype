@@ -114,14 +114,14 @@ function AboutPage() {
               access investment opportunities that drive long term financial independence.
             </p>
           </div>
-          <a
-            href="/events?article=why-i-started-a-win"
+          <Link
+            to="/why-a-win"
             className="mt-8 inline-flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/5 px-5 py-4 text-sm font-medium text-foreground transition-colors hover:bg-accent/10"
           >
             <BookOpen className="size-4 shrink-0 text-accent" />
-            Read founder Phumelele Ndumo's full story, "Why I Started A-Win"
+            Why A-Win — meet founder Phumelele Ndumo and read her story
             <ChevronRight className="size-4 shrink-0 text-accent" />
-          </a>
+          </Link>
         </div>
       </section>
 
