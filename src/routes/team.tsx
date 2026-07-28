@@ -47,8 +47,8 @@ export const Route = createFileRoute("/team")({
   head: () => ({
     meta: [
       { title: "Our Members | A-Win" },
-      { name: "description", content: "Meet A-Win members — psychologists, coaches, attorneys, accountants, property and financial specialists, medical pros, entrepreneurs and educators. Search by category or name." },
-      { property: "og:title", content: "A-Win — Our Members" },
+      { name: "description", content: "Meet A-Win members: psychologists, coaches, attorneys, accountants, property and financial specialists, medical pros, entrepreneurs and educators. Search by category or name." },
+      { property: "og:title", content: "A-Win · Our Members" },
       { property: "og:description", content: "Discover the women behind the African Women Investment Network." },
     ],
   }),
@@ -321,7 +321,7 @@ export function MembersPage() {
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-white/90">
             <Link to="/" className="hover:text-accent">Home</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="text-accent">Our Members</span>
+            <span className="font-medium text-hero-foreground">Our Members</span>
           </nav>
           <h1 className="mt-5 font-serif text-white">Our Members</h1>
           <p className="mt-5 max-w-2xl text-white/95 md:text-lg">

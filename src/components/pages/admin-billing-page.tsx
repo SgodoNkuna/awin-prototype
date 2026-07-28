@@ -386,7 +386,7 @@ function OverrideDialog({
               <SelectContent>
                 {members.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
-                    {m.email} {m.full_name ? `— ${m.full_name}` : ""}
+                    {m.email} {m.full_name ? `· ${m.full_name}` : ""}
                   </SelectItem>
                 ))}
               </SelectContent>

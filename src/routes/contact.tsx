@@ -104,7 +104,7 @@ function ContactPage() {
       return;
     }
     setSent(true);
-    toast.success("Message sent — we'll be in touch.");
+    toast.success("Message sent. We'll be in touch.");
     // Forward to the info@ inbox — fire-and-forget, the DB row is the source of truth.
     void import("@/lib/email.functions").then(({ sendContactNotification }) =>
       sendContactNotification({ data: parsed.data }).catch(() => {}),
@@ -125,10 +125,10 @@ function ContactPage() {
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="text-accent">Contact</span>
+            <span className="font-medium text-hero-foreground">Contact</span>
           </nav>
           <h1 className="mt-5 font-serif">Get In Touch</h1>
-          <p className="mt-5 max-w-2xl text-primary-foreground/85 md:text-lg">
+          <p className="mt-5 max-w-2xl text-primary-foreground/95 md:text-lg">
             Questions, partnerships, or just want to say hello? We'd love to hear from you.
           </p>
         </div>

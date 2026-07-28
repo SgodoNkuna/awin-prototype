@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About A-Win — African Women Investment Network" },
+      { title: "About A-Win · African Women Investment Network" },
       {
         name: "description",
         content:
@@ -34,7 +34,7 @@ const values = [
   {
     icon: HeartHandshake,
     title: "Community",
-    body: "We grow stronger together — sisterhood, mentorship and honest money conversations sit at the heart of A-Win.",
+    body: "We grow stronger together. Sisterhood, mentorship and honest money conversations sit at the heart of A-Win.",
   },
   {
     icon: GraduationCap,
@@ -44,7 +44,7 @@ const values = [
   {
     icon: Gem,
     title: "Legacy",
-    body: "We build wealth that outlives us — for our families, our communities and the generations to come.",
+    body: "We build wealth that outlives us, for our families, our communities and the generations to come.",
   },
 ];
 
@@ -86,10 +86,10 @@ function AboutPage() {
           >
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="text-accent">About</span>
+            <span className="font-medium text-hero-foreground">About</span>
           </nav>
           <h1 className="mt-5 font-serif">About A-Win</h1>
-          <p className="mt-5 max-w-3xl text-primary-foreground/85 md:text-xl italic">
+          <p className="mt-5 max-w-3xl text-primary-foreground/95 md:text-xl italic">
             Empowering African women, from all walks of life, through investment and collaboration.
           </p>
         </div>
@@ -119,7 +119,7 @@ function AboutPage() {
             className="mt-8 inline-flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/5 px-5 py-4 text-sm font-medium text-foreground transition-colors hover:bg-accent/10"
           >
             <BookOpen className="size-4 shrink-0 text-accent" />
-            Why A-Win — meet founder Phumelele Ndumo and read her story
+            Why A-Win: meet founder Phumelele Ndumo and read her story
             <ChevronRight className="size-4 shrink-0 text-accent" />
           </Link>
         </div>
@@ -135,8 +135,8 @@ function AboutPage() {
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                At A-Win, we believe every African woman — regardless of her background, location, or
-                income level — deserves access to financial knowledge and investment opportunities.
+                At A-Win, we believe every African woman, regardless of her background, location, or
+                income level, deserves access to financial knowledge and investment opportunities.
                 We are intentional about reaching women from townships, rural communities, and all
                 walks of life, because financial empowerment must be inclusive to be truly
                 transformative.
@@ -146,7 +146,7 @@ function AboutPage() {
               <p>
                 We are on a mission to shift the culture. Too many women prioritise credit and
                 non-essential spending while saving and investing remain an afterthought. A-Win
-                exists to change that mindset — to build a generation of women who think about
+                exists to change that mindset, to build a generation of women who think about
                 investing first and <em>consumer spending</em> second. We are cultivating a movement
                 that replaces short term consumption with medium-to-long term wealth creation.
               </p>
@@ -190,7 +190,7 @@ function AboutPage() {
                   "Shares our vision of financial empowerment, collaboration and long term wealth creation.",
                   "Can pay the nominal annual membership fee (currently R200/year, reviewed annually).",
                   "Can contribute a minimum of R500/month toward collective investment opportunities.",
-                  "Is a business owner, aspiring entrepreneur, professional, side-hustler — or simply ready to take control of her financial future.",
+                  "Is a business owner, aspiring entrepreneur, professional, side-hustler, or simply ready to take control of her financial future.",
                 ].map((b) => (
                   <li key={b} className="flex gap-3">
                     <Sprout className="h-5 w-5 mt-0.5 flex-none text-accent" />
@@ -232,9 +232,9 @@ function AboutPage() {
         <div className="relative mx-auto max-w-3xl text-center">
           <Globe2 className="mx-auto h-10 w-10 text-accent" />
           <h2 className="mt-4 font-serif text-primary-foreground">Join the movement</h2>
-          <p className="mt-4 text-primary-foreground/85 leading-relaxed">
+          <p className="mt-4 text-primary-foreground/95 leading-relaxed">
             By joining A-Win, you become part of a growing movement of African women creating wealth
-            with purpose — women choosing investment over consumer spending, collaboration over
+            with purpose. Women choosing investment over consumer spending, collaboration over
             competition, and long term freedom over short term gratification. Together, we are
             transforming Africa's economic landscape, one investment and one woman at a time.
           </p>
@@ -284,7 +284,7 @@ function AboutPage() {
       )}
 
       <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
-        <strong className="text-foreground">A-Win</strong> — African Women Investment Network · Founded 2025
+        <strong className="text-foreground">A-Win</strong>, African Women Investment Network · Founded 2025
       </footer>
     </>
   );

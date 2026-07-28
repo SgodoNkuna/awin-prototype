@@ -149,7 +149,9 @@ export const MinimalistHero = ({
           <h1 className="font-serif text-6xl font-semibold leading-[1.05] text-foreground md:text-7xl lg:text-8xl">
             {overlayText.part1}
             <br />
-            <span className="text-accent">{overlayText.part2}</span>
+            {/* primary-deep, not accent: brand orange on the light hero measured
+                2.0:1 and read as washed out at display size. */}
+            <span className="text-primary-deep">{overlayText.part2}</span>
           </h1>
         </motion.div>
       </div>

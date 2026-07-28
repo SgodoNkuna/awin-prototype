@@ -85,7 +85,7 @@
   --primary-deep: #3D8B2F;
   --primary-light: #EEF9E6;
   --hero-foreground: #FFFFFF;
-  --hero-muted: rgba(255, 255, 255, 0.92);
+  --hero-muted: rgba(255, 255, 255, 0.97);
   --hero-surface: rgba(255, 255, 255, 0.16);
   --hero-border: rgba(255, 255, 255, 0.42);
 
@@ -127,7 +127,9 @@
   --sidebar-ring: #E8960A;
 
   /* Gradients & shadows */
-  --gradient-hero: linear-gradient(135deg, #9BDA76 0%, #6BBF3F 100%);
+  /* Deep enough that white hero text clears WCAG AA (4.9:1 → 7.9:1).
+     The old light green only reached 1.7:1 and read as washed out. */
+  --gradient-hero: linear-gradient(135deg, #37802A 0%, #235619 100%);
   --gradient-placeholder: linear-gradient(135deg, #F2FCEA 0%, #D3EFBA 100%);
   --gradient-gold: linear-gradient(135deg, #F5A623 0%, #D98910 100%);
   --shadow-elegant: 0 10px 30px -10px rgba(61, 139, 47, 0.28);
@@ -252,7 +254,7 @@
   --sidebar-primary: #d99a38;
   --chart-1: #d87432;
   --chart-2: #c85b27;
-  --gradient-hero: linear-gradient(135deg, #F0B98A 0%, #D87432 100%);
+  --gradient-hero: linear-gradient(135deg, #A94E1F 0%, #7A3410 100%);
   --gradient-gold: linear-gradient(135deg, #e7b34b 0%, #b75a25 100%);
   --shadow-elegant: 0 10px 30px -10px rgba(169, 78, 31, 0.3);
   --shadow-gold-glow: 0 0 0 1px rgba(200, 91, 39, 0.4), 0 10px 30px -10px rgba(200, 91, 39, 0.45);

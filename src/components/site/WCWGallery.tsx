@@ -19,8 +19,8 @@ const vid4 = asset("wcw/wcw-32-2.mp4");
 // Graça Machel Trust · Women Creating Wealth Program Graduation (November 2024).
 const pairs = [
   {
-    image: { src: wcw1, caption: "1 · Opening — From Debt to Riches book signing" },
-    video: { src: vid1, caption: "1 · Opening — WCW Summit highlight reel" },
+    image: { src: wcw1, caption: "1 · Opening: From Debt to Riches book signing" },
+    video: { src: vid1, caption: "1 · Opening: WCW Summit highlight reel" },
   },
   {
     image: { src: wcw2, caption: "2 · Sisterhood on the floor" },
@@ -62,7 +62,7 @@ export function WCWGallery() {
             Graça Machel Trust · Women Creating Wealth Program Graduation
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-            Moments from the WCW Summit — celebrating A-Win members, mentors and the
+            Moments from the WCW Summit, celebrating A-Win members, mentors and the
             sisterhood building generational wealth across Africa.
           </p>
         </div>

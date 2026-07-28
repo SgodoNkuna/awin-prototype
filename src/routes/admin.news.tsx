@@ -119,7 +119,7 @@ function NewsAdminPage() {
         <div>
           <h1 className="font-serif text-2xl md:text-3xl">News &amp; Insights</h1>
           <p className="text-sm text-muted-foreground">
-            {articles?.length ?? 0} articles — shown on the public Events page and the member portal
+            {articles?.length ?? 0} articles, shown on the public Events page and the member portal
           </p>
         </div>
         <Button onClick={() => setEditing(empty())}>

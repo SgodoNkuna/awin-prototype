@@ -198,10 +198,10 @@ function EventsPage() {
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="text-accent">Events &amp; Gallery</span>
+            <span className="font-medium text-hero-foreground">Events &amp; Gallery</span>
           </nav>
           <h1 className="mt-5 font-serif">Events &amp; Gallery</h1>
-          <p className="mt-5 max-w-2xl text-primary-foreground/85 md:text-lg">
+          <p className="mt-5 max-w-2xl text-primary-foreground/95 md:text-lg">
             Masterclasses, summits and member meetups designed to move you forward as an investor.
           </p>
         </div>
@@ -297,7 +297,7 @@ function EventsPage() {
                       </div>
                       {!e.is_awin_hosted && (
                         <p className="mt-2 text-xs font-medium text-accent-deep">
-                          Not an A-Win event — a community event where A-Win members will be present. Tickets, stall bookings and enquiries go directly to the host (see poster).
+                          Not an A-Win event. A community event where A-Win members will be present. Tickets, stall bookings and enquiries go directly to the host (see poster).
                         </p>
                       )}
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">{e.description}</p>
@@ -387,7 +387,7 @@ function EventsPage() {
                 <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap"><LinkifiedText text={viewingImage.description} /></p>
                 {!viewingImage.is_awin_hosted && (
                   <p className="text-xs font-medium text-accent-deep">
-                    This is not an A-Win event. Ticket, stall and payment enquiries go directly to the host organiser — see the poster above.
+                    This is not an A-Win event. Ticket, stall and payment enquiries go directly to the host organiser. See the poster above.
                   </p>
                 )}
               </div>

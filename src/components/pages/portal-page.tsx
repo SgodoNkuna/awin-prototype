@@ -458,7 +458,7 @@ function PortalPage() {
                 <ul className="space-y-2">
                   {apps.slice(1).map((a) => (
                     <li key={a.id} className="flex justify-between text-sm">
-                      <span className="capitalize">{a.tier} — {new Date(a.created_at).toLocaleDateString()}</span>
+                      <span className="capitalize">{a.tier} · {new Date(a.created_at).toLocaleDateString()}</span>
                       <StatusBadge status={a.status} />
                     </li>
                   ))}

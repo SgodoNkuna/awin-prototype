@@ -14,12 +14,12 @@ export function SiteFooter() {
           <Link to="/" aria-label="A-Win home" className="inline-block">
             <img
               src={logoWhite}
-              alt="A-Win — African Women Investment Network"
+              alt="A-Win · African Women Investment Network"
               className="h-14 w-auto"
             />
           </Link>
           <p className="mt-4 max-w-xs text-sm text-white/85">
-            African Women Investment Network — invest to support women in business.
+            African Women Investment Network. Invest to support women in business.
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export function SiteFooter() {
 
       <div className="border-t border-white/15">
         <div className="container mx-auto flex flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-white/60 md:flex-row md:px-8">
-          <p>© {year} A-Win — African Women Investment Network. All rights reserved.</p>
+          <p>© {year} A-Win · African Women Investment Network. All rights reserved.</p>
           <p>
             Built by{" "}
             <a

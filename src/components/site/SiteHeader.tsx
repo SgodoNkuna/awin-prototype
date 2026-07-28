@@ -42,7 +42,7 @@ export function SiteHeader() {
               />
               <img
                 src={src}
-                alt="A-Win — African Women Investment Network"
+                alt="A-Win · African Women Investment Network"
                 className="relative h-16 w-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.15)] transition-all duration-500 ease-out group-hover:drop-shadow-[0_4px_20px_var(--accent)] md:h-24"
                 style={filter ? { filter } : undefined}
               />
@@ -118,7 +118,7 @@ export function SiteHeader() {
             <div className="flex items-center justify-between px-5 pt-5">
               <img
                 src={logoWhite}
-                alt="A-Win — African Women Investment Network"
+                alt="A-Win · African Women Investment Network"
                 className="h-12 w-auto"
               />
               <button

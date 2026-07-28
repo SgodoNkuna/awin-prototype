@@ -321,7 +321,7 @@ function OnboardingPage() {
                     <Label>Draw your signature *</Label>
                     <SignaturePad value={drawnSignature} onChange={setDrawnSignature} />
                     <p className="mt-1 text-xs text-muted-foreground">
-                      We keep your typed name, drawn signature, timestamp, browser and agreement version as a full audit trail — the equivalent of a wet signature under the ECT Act.
+                      We keep your typed name, drawn signature, timestamp, browser and agreement version as a full audit trail: the equivalent of a wet signature under the ECT Act.
                     </p>
                   </div>
                 </div>

@@ -56,7 +56,7 @@ function DebugRoutes() {
         <h2 className="text-sm font-semibold mb-2">Server handlers</h2>
         <ul className="text-sm space-y-1">
           {SERVER_HANDLERS.map((h) => (
-            <li key={h.path}><code>{h.methods.join(",")} {h.path}</code> — {h.note}</li>
+            <li key={h.path}><code>{h.methods.join(",")} {h.path}</code> · {h.note}</li>
           ))}
         </ul>
       </section>

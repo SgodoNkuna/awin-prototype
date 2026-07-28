@@ -66,7 +66,7 @@ export function EventGallery({ heading = true }: { heading?: boolean }) {
             <Badge className="bg-accent text-accent-foreground">Event gallery</Badge>
             <h2 className="mt-3 font-serif text-foreground">Moments from our community</h2>
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-              Hikes, coaching circles, panels and Woman Crush Wednesdays — the sisterhood in real life.
+              Hikes, coaching circles, panels and Woman Crush Wednesdays: the sisterhood in real life.
             </p>
           </div>
         )}

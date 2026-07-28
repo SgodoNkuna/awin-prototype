@@ -10,7 +10,6 @@ import {
   Users,
   HandCoins,
   Sprout,
-  BookOpen,
   Quote,
   Award,
   Building2,
@@ -31,9 +30,9 @@ export const Route = createFileRoute("/why-a-win")({
       {
         name: "description",
         content:
-          "Why A-Win exists — in the words of founder Phumelele Ndumo: financial advisor, author of \"From Debt to Riches\", and founder of ThuthukaSA. A movement of African women choosing wealth over debt.",
+          "Why A-Win exists, in the words of founder Phumelele Ndumo: financial advisor, author of \"From Debt to Riches\", and founder of ThuthukaSA. A movement of African women choosing wealth over debt.",
       },
-      { property: "og:title", content: "Why A-Win — Building Wealth, Together" },
+      { property: "og:title", content: "Why A-Win · Building Wealth, Together" },
       {
         property: "og:description",
         content:
@@ -62,12 +61,12 @@ const PILLARS = [
   {
     icon: TrendingUp,
     title: "Wealth, not debt",
-    body: "Most women start their careers accumulating debt — store accounts, personal loans, credit cards. A-Win exists to flip that: a culture of discipline, saving and investing over consumerism.",
+    body: "Most women start their careers accumulating debt: store accounts, personal loans, credit cards. A-Win exists to flip that: a culture of discipline, saving and investing over consumerism.",
   },
   {
     icon: Globe2,
     title: "Offshore, tax-free investing",
-    body: "We expose the everyday South African woman to offshore tax-free investment vehicles she would rarely access alone — medium-to-long-term, built for real wealth.",
+    body: "We expose the everyday South African woman to offshore tax-free investment vehicles she would rarely access alone: medium-to-long-term, built for real wealth.",
   },
   {
     icon: GraduationCap,
@@ -82,19 +81,19 @@ const PILLARS = [
   {
     icon: Sprout,
     title: "Entrepreneurship is a team sport",
-    body: "80% of businesses fail within five years — often from isolation. A-Win members open markets to each other, collaborate, and mentor, shortening the road to success.",
+    body: "80% of businesses fail within five years, often from isolation. A-Win members open markets to each other, collaborate, and mentor, shortening the road to success.",
   },
   {
     icon: HandCoins,
     title: "We fund each other",
-    body: "A-Winners crowdfund one another's businesses and apply jointly for funding — because we are women with money, and our collective investments grow every month.",
+    body: "A-Winners crowdfund one another's businesses and apply jointly for funding, because we are women with money, and our collective investments grow every month.",
   },
 ];
 
 const STATS = [
   { figure: "2009", label: "Founder in business since" },
-  { figure: "15", label: "Founding members — GMT Women Creating Wealth alumni" },
-  { figure: "80%", label: "Of businesses fail in 5 years — what we exist to change" },
+  { figure: "15", label: "Founding members from GMT Women Creating Wealth" },
+  { figure: "80%", label: "Of businesses fail in 5 years. What we exist to change" },
   { figure: "R500", label: "Monthly per member, growing collective wealth" },
 ];
 
@@ -103,7 +102,7 @@ function WhyAWinPage() {
     <>
       {/* HERO — A-Win adaptation of the MinimalistHero pattern */}
       <MinimalistHero
-        mainText="A-Win is a community of African women choosing investment over debt, collaboration over isolation, and long-term wealth over short-term spending. It began with one financial advisor's conviction that women could do this — together."
+        mainText="A-Win is a community of African women choosing investment over debt, collaboration over isolation, and long-term wealth over short-term spending. It began with one financial advisor's conviction that women could do this, together."
         readMoreLink="#meet-the-founder"
         readMoreLabel="Meet the founder"
         imageSrc={FOUNDER_PHOTO}
@@ -148,7 +147,7 @@ function WhyAWinPage() {
                 Auditing, and a Masters in Business Leadership.
               </p>
               <p className="mt-4 leading-relaxed text-muted-foreground">
-                She has been in business since 2009 — a long, often lonely journey that shaped
+                She has been in business since 2009, a long and often lonely journey that shaped
                 her belief that women succeed faster when they build together. A-Win is that
                 belief, put into practice.
               </p>
@@ -192,7 +191,7 @@ function WhyAWinPage() {
             </span>
             <h2 className="mt-3 font-serif text-foreground">Six convictions, one movement</h2>
             <p className="mt-4 text-muted-foreground">
-              In her own words: "I am often asked why I started A-Win." These are the reasons —
+              In her own words: "I am often asked why I started A-Win." These are the reasons:
               the change she is building, one member at a time.
             </p>
           </div>
@@ -218,12 +217,13 @@ function WhyAWinPage() {
 
       {/* STAT BAND */}
       <section className="relative overflow-hidden py-16 text-primary-foreground" style={{ background: "var(--gradient-hero)" }}>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,var(--accent),transparent_55%)] opacity-20" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,var(--accent),transparent_55%)] opacity-15" />
         <div className="relative mx-auto grid max-w-6xl gap-8 px-4 sm:grid-cols-2 lg:grid-cols-4">
           {STATS.map((s) => (
             <div key={s.label} className="text-center">
-              <div className="font-serif text-4xl font-semibold text-accent md:text-5xl">{s.figure}</div>
-              <div className="mt-2 text-sm text-primary-foreground/85">{s.label}</div>
+              {/* hero-foreground, not accent: orange on green measured 2.4:1 and vanished */}
+              <div className="font-serif text-4xl font-semibold text-hero-foreground md:text-5xl">{s.figure}</div>
+              <div className="mt-2 text-sm text-hero-muted">{s.label}</div>
             </div>
           ))}
         </div>
@@ -237,7 +237,7 @@ function WhyAWinPage() {
               <span className="text-xs font-semibold uppercase tracking-widest text-accent">
                 Our first collective investment
               </span>
-              <h2 className="mt-3 font-serif text-foreground">A Cape Town Airbnb — owned together</h2>
+              <h2 className="mt-3 font-serif text-foreground">A Cape Town Airbnb, owned together</h2>
               <p className="mt-5 leading-relaxed text-muted-foreground">
                 A-Win's diverse members are its greatest asset. Among the founding group are women
                 from Cape Town who already run profitable Airbnbs in their own right. They are
@@ -245,7 +245,7 @@ function WhyAWinPage() {
                 own collectively.
               </p>
               <p className="mt-4 leading-relaxed text-muted-foreground">
-                It is the model in miniature — harnessing collective knowledge, pooling capital
+                It is the model in miniature: harnessing collective knowledge, pooling capital
                 that grows monthly, and applying jointly for funding as women with money behind them.
               </p>
             </div>
@@ -255,7 +255,7 @@ function WhyAWinPage() {
               <ul className="mt-5 space-y-3 text-sm text-muted-foreground">
                 <li className="flex gap-2"><span className="text-accent">→</span> Members' monthly contributions pooled and invested</li>
                 <li className="flex gap-2"><span className="text-accent">→</span> Guided by members who run Airbnbs profitably</li>
-                <li className="flex gap-2"><span className="text-accent">→</span> Joint funding applications — stronger together</li>
+                <li className="flex gap-2"><span className="text-accent">→</span> Joint funding applications, stronger together</li>
                 <li className="flex gap-2"><span className="text-accent">→</span> Returns that build generational wealth</li>
               </ul>
             </div>
@@ -267,22 +267,48 @@ function WhyAWinPage() {
       <section className="border-y border-border bg-secondary/30 py-16 md:py-20">
         <div className="mx-auto max-w-4xl px-4">
           <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start">
-            <div className="flex h-48 w-36 shrink-0 flex-col justify-between rounded-lg bg-gradient-to-br from-primary via-primary to-primary-deep p-4 text-primary-foreground shadow-[var(--shadow-gold-glow)]">
-              <BookOpen className="h-6 w-6 text-accent" />
-              <div>
-                <div className="font-serif text-lg leading-tight">From Debt to Riches</div>
-                <div className="mt-1 text-[11px] uppercase tracking-wider text-primary-foreground/70">
-                  Steps to Financial Success
+            {/* ponytail: CSS book, not an image — no verified cover file exists yet.
+                Swap this block for an <img> when the real cover art arrives.
+                Colours are fixed hex on purpose: a book is a physical object and
+                must not recolour with the site theme (primary-deep goes light on
+                the white theme and would wash the cover out). */}
+            <div
+              className="relative h-60 w-44 shrink-0 overflow-hidden rounded-l-sm rounded-r-lg shadow-[0_18px_35px_-12px_rgba(0,0,0,0.55)] ring-1 ring-black/25"
+              style={{ background: "linear-gradient(135deg, #2F6B23 0%, #1C4714 100%)" }}
+              role="img"
+              aria-label="From Debt to Riches: Steps to Financial Success, by Phumelele Ndumo"
+            >
+              {/* page edges */}
+              <div className="absolute inset-y-1.5 right-0 w-1.5 rounded-r-lg bg-[linear-gradient(to_right,rgba(0,0,0,0.35),#F3ECD9)]" aria-hidden="true" />
+              {/* spine shading */}
+              <div className="absolute inset-y-0 left-0 w-5 bg-[linear-gradient(to_right,rgba(0,0,0,0.5),transparent)]" aria-hidden="true" />
+              <div className="absolute inset-y-0 left-5 w-px bg-[#F5A623]/30" aria-hidden="true" />
+
+              <div className="relative flex h-full flex-col justify-between py-6 pl-8 pr-5 text-left">
+                <div>
+                  <div className="h-px w-10 bg-[#F5A623]" aria-hidden="true" />
+                  <div className="mt-4 font-serif text-xl leading-tight text-white">
+                    From Debt to Riches
+                  </div>
+                  <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#F7C56A]">
+                    Steps to Financial Success
+                  </div>
+                </div>
+                <div>
+                  <div className="h-px w-6 bg-white/30" aria-hidden="true" />
+                  <div className="mt-2 text-[11px] font-medium tracking-wide text-white">
+                    Phumelele Ndumo
+                  </div>
                 </div>
               </div>
             </div>
             <div>
               <span className="text-xs font-semibold uppercase tracking-widest text-accent">The authority behind the idea</span>
-              <h2 className="mt-3 font-serif text-foreground">She wrote the book on it — literally.</h2>
+              <h2 className="mt-3 font-serif text-foreground">She wrote the book on it, literally.</h2>
               <p className="mt-4 leading-relaxed text-muted-foreground">
                 Phumelele's best-seller <em>"From Debt to Riches: Steps to Financial Success"</em> has
                 helped countless South Africans turn their finances around. A-Win is that same
-                philosophy, made collective — the leap from personal financial success to shared,
+                philosophy, made collective: the leap from personal financial success to shared,
                 community-built wealth.
               </p>
             </div>
@@ -309,8 +335,8 @@ function WhyAWinPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,var(--accent),transparent_60%)] opacity-20" />
         <div className="relative mx-auto max-w-3xl text-center">
           <h2 className="font-serif">Her invitation is simple.</h2>
-          <p className="mx-auto mt-5 max-w-xl text-primary-foreground/85 md:text-lg">
-            "Hopefully after reading this, you too will join us — and if you are not a woman,
+          <p className="mx-auto mt-5 max-w-xl text-primary-foreground/95 md:text-lg">
+            "Hopefully after reading this, you too will join us, and if you are not a woman,
             you will refer your loved ones." Every woman belongs here.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

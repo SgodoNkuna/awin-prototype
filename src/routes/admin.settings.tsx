@@ -280,14 +280,14 @@ function SettingsPage() {
                     <Input value={m.title} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} />
                   </Field>
                 </div>
-                <Field label="Profile Card Image (upload a photo, or paste a URL — shown as the main image)">
+                <Field label="Profile Card Image (upload a photo, or paste a URL; shown as the main image)">
                   <div className="flex gap-2">
                     <Input value={m.profile_card_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, profile_card_url: e.target.value } : x))} />
                     <UploadImageButton onUploaded={(url) => setTeam(team.map((x, idx) => idx === i ? { ...x, profile_card_url: url } : x))} />
                   </div>
                   {m.profile_card_url ? <img src={m.profile_card_url} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
                 </Field>
-                <Field label="Headshot (optional fallback — upload or paste URL)">
+                <Field label="Headshot (optional fallback: upload or paste URL)">
                   <div className="flex gap-2">
                     <Input value={m.photo_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, photo_url: e.target.value } : x))} />
                     <UploadImageButton onUploaded={(url) => setTeam(team.map((x, idx) => idx === i ? { ...x, photo_url: url } : x))} />
@@ -666,7 +666,7 @@ function MirrorStorageCard() {
 
         {preview && preview.mode === "dry" && (
           <div className="rounded-md border bg-background p-3 text-xs space-y-2 max-h-72 overflow-auto">
-            <div className="font-semibold">Dry-run plan — nothing was changed</div>
+            <div className="font-semibold">Dry-run plan: nothing was changed</div>
             <div>Would upload <strong>{preview.uploaded}</strong> objects, update <strong>{preview.updated}</strong> members, {preview.failed} would fail.</div>
             {preview.planned_uploads?.length > 0 && (
               <details>
@@ -694,7 +694,7 @@ function MirrorStorageCard() {
 
         {preview && preview.mode === "purge-dry" && (
           <div className="rounded-md border bg-background p-3 text-xs space-y-2 max-h-72 overflow-auto">
-            <div className="font-semibold">Purge preview — nothing was deleted</div>
+            <div className="font-semibold">Purge preview: nothing was deleted</div>
             <div>{preview.orphaned} of {preview.scanned} objects are not referenced.</div>
             {preview.orphan_keys?.length > 0 && (
               <details open>
@@ -715,7 +715,7 @@ function MirrorStorageCard() {
             <summary className="cursor-pointer text-destructive">{mirrorStatus.failures.length} failures from last mirror</summary>
             <ul className="mt-1 space-y-0.5 max-h-40 overflow-auto">
               {mirrorStatus.failures.slice(0, 50).map((f: any, i: number) => (
-                <li key={i} className="truncate"><code>{f.member_id}</code>: {f.error}{f.remote_url ? ` — ${f.remote_url}` : ""}</li>
+                <li key={i} className="truncate"><code>{f.member_id}</code>: {f.error}{f.remote_url ? ` · ${f.remote_url}` : ""}</li>
               ))}
             </ul>
           </details>

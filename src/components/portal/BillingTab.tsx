@@ -183,7 +183,7 @@ export function BillingTab({ preferredTier }: { preferredTier?: string | null })
                     onClick={() => pay(t)}
                   >
                     {paying && t === tierForPay && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
-                    {label} — {fmtZar(cents)}
+                    {label}: {fmtZar(cents)}
                   </Button>
                 ))}
               </div>
@@ -201,7 +201,7 @@ export function BillingTab({ preferredTier }: { preferredTier?: string | null })
               {data.payments.map((p) => (
                 <div key={p.id} className="flex items-center justify-between border rounded-md p-3 text-sm">
                   <div>
-                    <div className="font-medium capitalize">{p.tier} — {fmtZar(p.amount_cents)}</div>
+                    <div className="font-medium capitalize">{p.tier}: {fmtZar(p.amount_cents)}</div>
                     <div className="text-xs text-muted-foreground">
                       {fmtDate(p.paid_at ?? p.created_at)}
                       {p.pf_payment_id ? ` · ref ${p.pf_payment_id}` : ""}

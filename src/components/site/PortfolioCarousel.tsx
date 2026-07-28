@@ -110,7 +110,7 @@ export function PortfolioCarousel() {
               Member Portfolio
             </h2>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              A rotating look at the women shaping A-Win — click through to their full profile.
+              A rotating look at the women shaping A-Win. Click through to their full profile.
             </p>
           </div>
           <Link

@@ -308,7 +308,7 @@ function MembersPage() {
               </p>
               <div className="grid gap-2">
                 <label className="text-xs font-medium">Reason (audit log, min 5 chars)</label>
-                <Textarea value={promoteReason} onChange={(e) => setPromoteReason(e.target.value)} rows={3} placeholder="e.g. New committee chair — onboarded 2026-06-24" />
+                <Textarea value={promoteReason} onChange={(e) => setPromoteReason(e.target.value)} rows={3} placeholder="e.g. New committee chair, onboarded 2026-06-24" />
               </div>
             </div>
           )}

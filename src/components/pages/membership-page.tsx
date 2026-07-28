@@ -212,10 +212,10 @@ function MembershipPage() {
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="text-accent">Membership</span>
+            <span className="font-medium text-hero-foreground">Membership</span>
           </nav>
           <h1 className="mt-5 font-serif">Become a Member</h1>
-          <p className="mt-5 max-w-2xl text-primary-foreground/85 md:text-lg">
+          <p className="mt-5 max-w-2xl text-primary-foreground/95 md:text-lg">
             You do not need a degree or a professional title to join A-Win. You
             need a commitment to saving, investing, and growing with a community
             of women who have your back. If that sounds like you, you belong here.
@@ -376,7 +376,7 @@ function MembershipPage() {
         <div className="container mx-auto px-4 max-w-2xl">
           <h2 className="font-bold text-center mb-3">Apply Now</h2>
           <p className="text-center text-muted-foreground mb-10">
-            Tell us about yourself — we'll be in touch within 5 business days.
+            Tell us about yourself. We'll be in touch within 5 business days.
           </p>
 
           {submitted ? (
@@ -431,7 +431,7 @@ function MembershipPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="beginner">Beginner — new to investing</SelectItem>
+                      <SelectItem value="beginner">Beginner (new to investing)</SelectItem>
                       <SelectItem value="intermediate">Intermediate</SelectItem>
                       <SelectItem value="advanced">Advanced</SelectItem>
                     </SelectContent>

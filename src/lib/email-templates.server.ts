@@ -54,7 +54,7 @@ export function applicationReceivedEmail(fullName: string) {
       "Application received",
       p(`Hi ${strong(fullName)},`) +
         p(
-          "Thank you for applying to join A-Win. Your application is now with our membership committee for review — we aim to respond within 5 working days.",
+          "Thank you for applying to join A-Win. Your application is now with our membership committee for review. We aim to respond within 5 working days.",
         ) +
         p("We'll email you as soon as a decision is made. No action is needed from you right now."),
     ),
@@ -66,7 +66,7 @@ export function membershipActivatedEmail(fullName: string, tier: string, expires
     ? new Date(expiresAt).toLocaleDateString("en-ZA", { year: "numeric", month: "long", day: "numeric" })
     : "12 months from today";
   return {
-    subject: "Welcome to A-Win — your membership is active",
+    subject: "Welcome to A-Win: your membership is active",
     html: layout(
       "Your membership is active 🎉",
       p(`Hi ${strong(fullName)},`) +
@@ -94,7 +94,7 @@ export function membershipSuspendedEmail(fullName: string) {
 
 export function adminNewApplicationEmail(fullName: string, email: string) {
   return {
-    subject: `New membership application — ${fullName}`,
+    subject: `New membership application: ${fullName}`,
     html: layout(
       "New application received",
       p(`${strong(fullName)} (${esc(email)}) just submitted a membership application.`) +
@@ -106,7 +106,7 @@ export function adminNewApplicationEmail(fullName: string, email: string) {
 
 export function eventRegistrationEmail(fullName: string, email: string, eventTitle: string) {
   return {
-    subject: `New event registration — ${eventTitle}`,
+    subject: `New event registration: ${eventTitle}`,
     html: layout(
       "New event registration",
       p(`${strong(fullName)} (${esc(email)}) registered for ${strong(eventTitle)}.`) +
@@ -117,7 +117,7 @@ export function eventRegistrationEmail(fullName: string, email: string, eventTit
 
 export function contactMessageEmail(name: string, email: string, subject: string, message: string) {
   return {
-    subject: `Website contact — ${subject} — ${name}`,
+    subject: `Website contact: ${subject} · ${name}`,
     html: layout(
       "New contact message",
       p(`${strong(name)} (${esc(email)}) sent a message via the website contact form:`) +
@@ -137,7 +137,7 @@ export function paymentReceiptEmail(
   const amount = `R ${(amountCents / 100).toFixed(2)}`;
   const paidAt = new Date(paidAtIso).toLocaleString("en-ZA", { dateStyle: "long", timeStyle: "short" });
   return {
-    subject: `Payment received — ${amount} (A-Win membership)`,
+    subject: `Payment received: ${amount} (A-Win membership)`,
     html: layout(
       "Payment receipt",
       p(`Hi ${strong(fullName)},`) +

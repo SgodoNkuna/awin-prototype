@@ -16,10 +16,10 @@ export const Route = createFileRoute("/info")({
       { title: "FAQ & Privacy | A-Win" },
       {
         name: "description",
-        content: "Frequently asked questions about A-Win membership, dues and investments — plus our privacy and data policies.",
+        content: "Frequently asked questions about A-Win membership, dues and investments, plus our privacy and data policies.",
       },
-      { property: "og:title", content: "A-Win — FAQ & Privacy" },
-      { property: "og:description", content: "Answers about membership, dues, investing — and how we handle your data." },
+      { property: "og:title", content: "A-Win · FAQ & Privacy" },
+      { property: "og:description", content: "Answers about membership, dues, investing, and how we handle your data." },
     ],
   }),
   component: InfoPage,
@@ -32,19 +32,19 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "How much does it cost?",
-    a: "Annual membership is R200, reviewed each year in line with our needs. Members also commit R500/month toward collective investment opportunities — this is yours, invested in tax free offshore vehicles and other carefully selected instruments.",
+    a: "Annual membership is R200, reviewed each year in line with our needs. Members also commit R500/month toward collective investment opportunities. This is yours, invested in tax free offshore vehicles and other carefully selected instruments.",
   },
   {
     q: "What kind of investments does A-Win access?",
     a: "Offshore tax free investments and other carefully selected growth opportunities tailored for women investors, with a focus on medium-to-long term wealth building. Each member receives a consultation with a qualified financial advisor who recommends a portfolio aligned with her risk appetite and goals.",
   },
   {
-    q: "I've never invested before — is A-Win right for me?",
+    q: "I've never invested before. Is A-Win right for me?",
     a: "Absolutely. A-Win is the perfect place to start. We run regular workshops, mentorship sessions and beginner-friendly content. Our community is here to demystify investing, not gate-keep it.",
   },
   {
     q: "Can I support other members' businesses?",
-    a: "Yes — collaboration is core to A-Win. Members support each other through business referrals, crowdfunding initiatives and intentional buying from member-owned businesses.",
+    a: "Yes. Collaboration is core to A-Win. Members support each other through business referrals, crowdfunding initiatives and intentional buying from member-owned businesses.",
   },
   {
     q: "How do I apply?",
@@ -52,7 +52,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Can I cancel my membership?",
-    a: "Yes. Membership is annual; you may choose not to renew at the end of your year. Funds already invested follow the redemption rules of the underlying investment vehicle — your financial advisor will guide you.",
+    a: "Yes. Membership is annual; you may choose not to renew at the end of your year. Funds already invested follow the redemption rules of the underlying investment vehicle. Your financial advisor will guide you.",
   },
 ];
 
@@ -81,11 +81,11 @@ function InfoPage() {
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
             <Link to="/" className="hover:text-accent">Home</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="text-accent">FAQ & Privacy</span>
+            <span className="font-medium text-hero-foreground">FAQ &amp; Privacy</span>
           </nav>
           <h1 className="mt-5 font-serif">FAQ & Privacy</h1>
-          <p className="mt-5 max-w-2xl text-primary-foreground/85 md:text-lg">
-            Common questions about A-Win — and how we handle your information.
+          <p className="mt-5 max-w-2xl text-primary-foreground/95 md:text-lg">
+            Common questions about A-Win, and how we handle your information.
           </p>
         </div>
       </section>
