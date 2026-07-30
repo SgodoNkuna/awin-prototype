@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Upload, Eye, EyeOff, ArrowUp, ArrowDown, Trash2, ImagePlus } from "lucide-react";
+import { Loader2, Upload, Eye, EyeOff, ArrowUp, ArrowDown, Trash2, ImagePlus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase as sb } from "@/integrations/supabase/client";
 const supabase = sb as any;
@@ -17,10 +17,30 @@ export const Route = createFileRoute("/admin/gallery")({
   component: GalleryAdminPage,
 });
 
-type Category = "hike" | "wcw" | "coaching" | "other";
+// The `category` column is plain text (no fixed list in the database) — these
+// are just seed labels shown even when a category has no photos yet. Admins
+// can add any further category from the "+ New category" button; it appears
+// as a real tab as soon as it has a photo tagged with it.
+const SEED_CATEGORIES: { id: string; label: string }[] = [
+  { id: "hike", label: "Hike 2026" },
+  { id: "wcw", label: "WCW" },
+  { id: "coaching", label: "Coaching" },
+  { id: "other", label: "Other" },
+];
+
+const labelize = (id: string) =>
+  id
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((w) => w[0].toUpperCase() + w.slice(1))
+    .join(" ");
+
+const slugifyCategory = (s: string) =>
+  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
 type Row = {
   id: string;
-  category: Category;
+  category: string;
   storage_path: string;
   caption: string | null;
   event_label: string | null;
@@ -28,24 +48,34 @@ type Row = {
   is_visible: boolean;
 };
 
-const CATS: { id: Category; label: string }[] = [
-  { id: "hike", label: "Hike 2026" },
-  { id: "wcw", label: "WCW" },
-  { id: "coaching", label: "Coaching" },
-  { id: "other", label: "Other" },
-];
-
 const BUCKET = "event-gallery";
 
 function GalleryAdminPage() {
   const { isAdmin } = useAuth();
-  const [cat, setCat] = useState<Category>("hike");
+  const [cat, setCat] = useState<string>("hike");
+  const [categories, setCategories] = useState<{ id: string; label: string }[]>(SEED_CATEGORIES);
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [rows, setRows] = useState<Row[] | null>(null);
   const [caption, setCaption] = useState("");
   const [eventLabel, setEventLabel] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [urls, setUrls] = useState<Record<string, string>>({});
+
+  // Discover any categories already in use (from earlier uploads) so custom
+  // ones added on another visit still show up as tabs here.
+  const loadCategories = useCallback(async () => {
+    const { data } = await supabase.from("event_gallery").select("category");
+    const existing = Array.from(new Set(((data as { category: string }[]) ?? []).map((r) => r.category)));
+    setCategories((current) => {
+      const known = new Set(current.map((c) => c.id));
+      const extra = existing.filter((id) => !known.has(id)).map((id) => ({ id, label: labelize(id) }));
+      return extra.length ? [...current, ...extra] : current;
+    });
+  }, []);
+
+  useEffect(() => { loadCategories(); }, [loadCategories]);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -66,6 +96,16 @@ function GalleryAdminPage() {
   }, [cat]);
 
   useEffect(() => { load(); }, [load]);
+
+  const addCategory = () => {
+    const id = slugifyCategory(newCategoryName);
+    if (!id) return toast.error("Enter a category name");
+    if (categories.some((c) => c.id === id)) return toast.error("That category already exists");
+    setCategories((c) => [...c, { id, label: labelize(id) }]);
+    setCat(id);
+    setNewCategoryName("");
+    setAddingCategory(false);
+  };
 
   const upload = async () => {
     if (!file) return toast.error("Choose an image");
@@ -124,9 +164,29 @@ function GalleryAdminPage() {
         <p className="text-sm text-muted-foreground">Upload, reorder and toggle visibility of gallery images per category.</p>
       </div>
 
-      <Tabs value={cat} onValueChange={(v) => setCat(v as Category)}>
-        <TabsList>{CATS.map((c) => <TabsTrigger key={c.id} value={c.id}>{c.label}</TabsTrigger>)}</TabsList>
-      </Tabs>
+      <div className="flex flex-wrap items-center gap-2">
+        <Tabs value={cat} onValueChange={setCat}>
+          <TabsList>{categories.map((c) => <TabsTrigger key={c.id} value={c.id}>{c.label}</TabsTrigger>)}</TabsList>
+        </Tabs>
+        {addingCategory ? (
+          <div className="flex items-center gap-1.5">
+            <Input
+              autoFocus
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") addCategory(); if (e.key === "Escape") setAddingCategory(false); }}
+              placeholder="New category name"
+              className="h-9 w-44"
+            />
+            <Button size="sm" onClick={addCategory}>Add</Button>
+            <Button size="sm" variant="ghost" onClick={() => { setAddingCategory(false); setNewCategoryName(""); }}>Cancel</Button>
+          </div>
+        ) : (
+          <Button size="sm" variant="outline" onClick={() => setAddingCategory(true)}>
+            <Plus className="size-3.5 mr-1" /> New category
+          </Button>
+        )}
+      </div>
 
       <Card>
         <CardContent className="space-y-3 pt-6">

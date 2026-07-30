@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Search, Download, Loader2, Shield } from "lucide-react";
+import { Search, Download, Loader2, Shield, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { setUserRole } from "@/lib/admin-roles.functions";
+import { Label } from "@/components/ui/label";
+import { setUserRole, deleteMember } from "@/lib/admin-roles.functions";
 
 export const Route = createFileRoute("/admin/members")({
   component: MembersPage,
@@ -44,6 +45,11 @@ function MembersPage() {
   const [promoteReason, setPromoteReason] = useState("");
   const [promoteBusy, setPromoteBusy] = useState(false);
   const callSetRole = useServerFn(setUserRole);
+  const [deleting, setDeleting] = useState<Member | null>(null);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const callDeleteMember = useServerFn(deleteMember);
 
   const load = async () => {
     const { data, error } = await supabase
@@ -229,6 +235,13 @@ function MembersPage() {
                 <Button variant="outline" onClick={() => { setPromoting(detail); setPromoteReason(""); setDetail(null); }}>
                   <Shield className="size-4 mr-2" /> Manage admin role
                 </Button>
+                <Button
+                  variant="outline"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => { setDeleting(detail); setDeleteConfirmEmail(""); setDeleteReason(""); setDetail(null); }}
+                >
+                  <Trash2 className="size-4 mr-2" /> Delete member
+                </Button>
               </div>
             </div>
           )}
@@ -237,6 +250,66 @@ function MembersPage() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      {/* Delete member — requires typing the exact email + a reason, so a single
+          misclick can never delete an account. */}
+      <Dialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Delete Member</DialogTitle>
+            <DialogDescription>
+              This permanently deletes {deleting?.full_name || deleting?.email}'s account and login
+              access. Applications, payments and event registrations they made are kept for records,
+              just no longer linked to a live account. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {deleting && (
+            <div className="space-y-3">
+              <div className="grid gap-1.5">
+                <Label className="text-xs">
+                  Type the member's email to confirm: <span className="font-mono">{deleting.email}</span>
+                </Label>
+                <Input value={deleteConfirmEmail} onChange={(e) => setDeleteConfirmEmail(e.target.value)} autoComplete="off" />
+              </div>
+              <div className="grid gap-1.5">
+                <Label className="text-xs">Reason (audit log, min 5 chars)</Label>
+                <Textarea value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} rows={2} placeholder="e.g. Requested account closure, confirmed via email 2026-07-30" />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              disabled={
+                deleteBusy ||
+                !deleting ||
+                deleteConfirmEmail.trim().toLowerCase() !== (deleting?.email ?? "").trim().toLowerCase() ||
+                deleteReason.trim().length < 5
+              }
+              onClick={async () => {
+                if (!deleting) return;
+                setDeleteBusy(true);
+                try {
+                  await callDeleteMember({
+                    data: { user_id: deleting.id, confirm_email: deleteConfirmEmail.trim(), reason: deleteReason.trim() },
+                  });
+                  toast.success("Member deleted");
+                  setDeleting(null);
+                  load();
+                } catch (e: any) {
+                  toast.error(e.message ?? "Failed to delete member");
+                } finally {
+                  setDeleteBusy(false);
+                }
+              }}
+            >
+              {deleteBusy ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Trash2 className="size-4 mr-2" />}
+              Delete permanently
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>

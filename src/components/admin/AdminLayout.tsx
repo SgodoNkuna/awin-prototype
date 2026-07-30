@@ -12,7 +12,6 @@ import {
   LogOut,
   Loader2,
   CreditCard,
-  FileDown,
   Menu,
   Award,
   Newspaper,
@@ -35,7 +34,6 @@ type AdminPath =
   | "/admin/messages"
   | "/admin/documents"
   | "/admin/billing"
-  | "/admin/exports"
   | "/admin/settings";
 
 type NavItem = {
@@ -81,7 +79,6 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "System",
     items: [
-      { to: "/admin/exports", label: "PDF Export", icon: FileDown },
       { to: "/admin/settings", label: "Settings", icon: Settings },
     ],
   },

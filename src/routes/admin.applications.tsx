@@ -1,14 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Check, X, Eye, Loader2, Send, CheckCircle2, XCircle, Save } from "lucide-react";
+import { Check, X, Eye, Loader2, Send, CheckCircle2, XCircle, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { deleteApplication } from "@/lib/admin-roles.functions";
 
 export const Route = createFileRoute("/admin/applications")({
   component: ApplicationsPage,
@@ -42,6 +46,11 @@ function ApplicationsPage() {
   const [viewing, setViewing] = useState<Application | null>(null);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<Application | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const callDeleteApplication = useServerFn(deleteApplication);
 
   const load = async () => {
     const { data } = await supabase
@@ -232,9 +241,81 @@ function ApplicationsPage() {
                     Reset to Submitted
                   </Button>
                 )}
+                <Button
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive ml-auto"
+                  disabled={!!busy}
+                  onClick={() => {
+                    const a = viewing;
+                    setViewing(null);
+                    setDeleting(a);
+                    setDeleteConfirmName("");
+                    setDeleteReason("");
+                  }}
+                >
+                  <Trash2 className="size-4 mr-1" /> Delete
+                </Button>
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete application — requires typing the applicant's exact name + a
+          reason, so a single misclick can never delete a submission. */}
+      <Dialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Delete Application</DialogTitle>
+            <DialogDescription>
+              This permanently removes {deleting?.full_name}'s application. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {deleting && (
+            <div className="space-y-3">
+              <div className="grid gap-1.5">
+                <Label className="text-xs">
+                  Type the applicant's name to confirm: <span className="font-medium">{deleting.full_name}</span>
+                </Label>
+                <Input value={deleteConfirmName} onChange={(e) => setDeleteConfirmName(e.target.value)} autoComplete="off" />
+              </div>
+              <div className="grid gap-1.5">
+                <Label className="text-xs">Reason (audit log, min 5 chars)</Label>
+                <Textarea value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} rows={2} placeholder="e.g. Duplicate submission, real one already approved" />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              disabled={
+                deleteBusy ||
+                !deleting ||
+                deleteConfirmName.trim().toLowerCase() !== (deleting?.full_name ?? "").trim().toLowerCase() ||
+                deleteReason.trim().length < 5
+              }
+              onClick={async () => {
+                if (!deleting) return;
+                setDeleteBusy(true);
+                try {
+                  await callDeleteApplication({
+                    data: { application_id: deleting.id, confirm_name: deleteConfirmName.trim(), reason: deleteReason.trim() },
+                  });
+                  toast.success("Application deleted");
+                  setDeleting(null);
+                  await load();
+                } catch (e: any) {
+                  toast.error(e.message ?? "Failed to delete application");
+                } finally {
+                  setDeleteBusy(false);
+                }
+              }}
+            >
+              {deleteBusy ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Trash2 className="size-4 mr-2" />}
+              Delete permanently
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
