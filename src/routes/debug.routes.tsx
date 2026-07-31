@@ -24,7 +24,7 @@ const PAGE_ROUTES = [
   "/", "/about", "/membership", "/events", "/portfolio", "/contact",
   "/news", "/team", "/info", "/auth", "/portal",
   "/admin", "/admin/members", "/admin/applications", "/admin/events",
-  "/admin/portfolio", "/admin/messages", "/admin/documents",
+  "/admin/messages", "/admin/documents",
   "/admin/billing", "/admin/exports", "/admin/settings",
 ];
 

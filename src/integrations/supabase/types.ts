@@ -31,6 +31,10 @@ export type Database = {
           occupation: string
           payment_reference: string | null
           phone: string
+          pop_review_notes: string | null
+          pop_reviewed_at: string | null
+          pop_reviewed_by: string | null
+          pop_status: string
           popia_consent: boolean
           popia_consent_at: string | null
           proof_of_payment_path: string | null
@@ -42,6 +46,7 @@ export type Database = {
           signature_ip: unknown
           signature_typed_name: string | null
           signature_user_agent: string | null
+          stamped_document_path: string | null
           status: Database["public"]["Enums"]["application_status"]
           status_updated_at: string
           submitted_at: string
@@ -64,6 +69,10 @@ export type Database = {
           occupation: string
           payment_reference?: string | null
           phone: string
+          pop_review_notes?: string | null
+          pop_reviewed_at?: string | null
+          pop_reviewed_by?: string | null
+          pop_status?: string
           popia_consent?: boolean
           popia_consent_at?: string | null
           proof_of_payment_path?: string | null
@@ -75,6 +84,7 @@ export type Database = {
           signature_ip?: unknown
           signature_typed_name?: string | null
           signature_user_agent?: string | null
+          stamped_document_path?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           status_updated_at?: string
           submitted_at?: string
@@ -97,6 +107,10 @@ export type Database = {
           occupation?: string
           payment_reference?: string | null
           phone?: string
+          pop_review_notes?: string | null
+          pop_reviewed_at?: string | null
+          pop_reviewed_by?: string | null
+          pop_status?: string
           popia_consent?: boolean
           popia_consent_at?: string | null
           proof_of_payment_path?: string | null
@@ -108,6 +122,7 @@ export type Database = {
           signature_ip?: unknown
           signature_typed_name?: string | null
           signature_user_agent?: string | null
+          stamped_document_path?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           status_updated_at?: string
           submitted_at?: string
@@ -221,6 +236,39 @@ export type Database = {
         }
         Relationships: []
       }
+      event_gallery: {
+        Row: {
+          caption: string | null
+          category: string
+          created_at: string
+          event_label: string | null
+          id: string
+          is_visible: boolean
+          sort_order: number
+          storage_path: string
+        }
+        Insert: {
+          caption?: string | null
+          category: string
+          created_at?: string
+          event_label?: string | null
+          id?: string
+          is_visible?: boolean
+          sort_order?: number
+          storage_path: string
+        }
+        Update: {
+          caption?: string | null
+          category?: string
+          created_at?: string
+          event_label?: string | null
+          id?: string
+          is_visible?: boolean
+          sort_order?: number
+          storage_path?: string
+        }
+        Relationships: []
+      }
       event_registrations: {
         Row: {
           created_at: string
@@ -271,6 +319,7 @@ export type Database = {
           event_type: string
           id: string
           image_url: string | null
+          is_awin_hosted: boolean
           location: string
           max_attendees: number | null
           published: boolean
@@ -286,6 +335,7 @@ export type Database = {
           event_type?: string
           id?: string
           image_url?: string | null
+          is_awin_hosted?: boolean
           location: string
           max_attendees?: number | null
           published?: boolean
@@ -301,6 +351,7 @@ export type Database = {
           event_type?: string
           id?: string
           image_url?: string | null
+          is_awin_hosted?: boolean
           location?: string
           max_attendees?: number | null
           published?: boolean
@@ -512,58 +563,44 @@ export type Database = {
           },
         ]
       }
-      portfolio_items: {
+      products: {
         Row: {
-          body: string | null
-          cover_image: string | null
+          active: boolean
+          category: string | null
           created_at: string
+          description: string | null
           id: string
-          member_id: string | null
-          slug: string
-          social_links: Json
-          sort_order: number
-          status: string
-          summary: string | null
-          title: string
+          images: string[]
+          name: string
+          order_index: number
+          price: number | null
           updated_at: string
         }
         Insert: {
-          body?: string | null
-          cover_image?: string | null
+          active?: boolean
+          category?: string | null
           created_at?: string
+          description?: string | null
           id?: string
-          member_id?: string | null
-          slug: string
-          social_links?: Json
-          sort_order?: number
-          status?: string
-          summary?: string | null
-          title: string
+          images?: string[]
+          name: string
+          order_index?: number
+          price?: number | null
           updated_at?: string
         }
         Update: {
-          body?: string | null
-          cover_image?: string | null
+          active?: boolean
+          category?: string | null
           created_at?: string
+          description?: string | null
           id?: string
-          member_id?: string | null
-          slug?: string
-          social_links?: Json
-          sort_order?: number
-          status?: string
-          summary?: string | null
-          title?: string
+          images?: string[]
+          name?: string
+          order_index?: number
+          price?: number | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "portfolio_items_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -608,6 +645,24 @@ export type Database = {
             | null
           suspended?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          count: number
+          key: string
+          window_start: string
+        }
+        Insert: {
+          count?: number
+          key: string
+          window_start?: string
+        }
+        Update: {
+          count?: number
+          key?: string
+          window_start?: string
         }
         Relationships: []
       }
@@ -735,6 +790,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      rate_limit_hit: {
+        Args: { _key: string; _max: number; _window_seconds: number }
         Returns: boolean
       }
     }

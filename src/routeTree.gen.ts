@@ -27,7 +27,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as DebugRoutesRouteImport } from './routes/debug.routes'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
-import { Route as AdminPortfolioRouteImport } from './routes/admin.portfolio'
 import { Route as AdminNewsRouteImport } from './routes/admin.news'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
@@ -131,11 +130,6 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminPortfolioRoute = AdminPortfolioRouteImport.update({
-  id: '/portfolio',
-  path: '/portfolio',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminNewsRoute = AdminNewsRouteImport.update({
   id: '/news',
   path: '/news',
@@ -224,7 +218,6 @@ export interface FileRoutesByFullPath {
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/news': typeof AdminNewsRoute
-  '/admin/portfolio': typeof AdminPortfolioRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
@@ -256,7 +249,6 @@ export interface FileRoutesByTo {
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/news': typeof AdminNewsRoute
-  '/admin/portfolio': typeof AdminPortfolioRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin': typeof AdminIndexRoute
@@ -290,7 +282,6 @@ export interface FileRoutesById {
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/news': typeof AdminNewsRoute
-  '/admin/portfolio': typeof AdminPortfolioRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
@@ -325,7 +316,6 @@ export interface FileRouteTypes {
     | '/admin/members'
     | '/admin/messages'
     | '/admin/news'
-    | '/admin/portfolio'
     | '/admin/settings'
     | '/debug/routes'
     | '/admin/'
@@ -357,7 +347,6 @@ export interface FileRouteTypes {
     | '/admin/members'
     | '/admin/messages'
     | '/admin/news'
-    | '/admin/portfolio'
     | '/admin/settings'
     | '/debug/routes'
     | '/admin'
@@ -390,7 +379,6 @@ export interface FileRouteTypes {
     | '/admin/members'
     | '/admin/messages'
     | '/admin/news'
-    | '/admin/portfolio'
     | '/admin/settings'
     | '/debug/routes'
     | '/admin/'
@@ -545,13 +533,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/portfolio': {
-      id: '/admin/portfolio'
-      path: '/portfolio'
-      fullPath: '/admin/portfolio'
-      preLoaderRoute: typeof AdminPortfolioRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/news': {
       id: '/admin/news'
       path: '/news'
@@ -651,7 +632,6 @@ interface AdminRouteChildren {
   AdminMembersRoute: typeof AdminMembersRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminNewsRoute: typeof AdminNewsRoute
-  AdminPortfolioRoute: typeof AdminPortfolioRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -668,7 +648,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMembersRoute: AdminMembersRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminNewsRoute: AdminNewsRoute,
-  AdminPortfolioRoute: AdminPortfolioRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

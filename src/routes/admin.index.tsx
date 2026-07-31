@@ -6,9 +6,7 @@ import {
   Calendar,
   Mail,
   Plus,
-  FileText,
   ArrowRight,
-  Briefcase,
   FolderOpen,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +24,6 @@ type Stats = {
   pending: number;
   upcoming: number;
   unread: number;
-  portfolio: number;
   documents: number;
 };
 
@@ -44,7 +41,6 @@ function OverviewPage() {
         pending,
         upcoming,
         unread,
-        portfolio,
         documents,
         recentApps,
         recentMsgs,
@@ -56,7 +52,6 @@ function OverviewPage() {
           .select("*", { count: "exact", head: true })
           .gte("event_date", new Date().toISOString().slice(0, 10)),
         supabase.from("contact_messages").select("*", { count: "exact", head: true }).eq("is_read", false),
-        supabase.from("portfolio_items").select("*", { count: "exact", head: true }),
         supabase.from("documents").select("*", { count: "exact", head: true }),
         supabase.from("applications").select("full_name, created_at").order("created_at", { ascending: false }).limit(3),
         supabase.from("contact_messages").select("name, subject, created_at").order("created_at", { ascending: false }).limit(3),
@@ -67,7 +62,6 @@ function OverviewPage() {
         pending: pending.count ?? 0,
         upcoming: upcoming.count ?? 0,
         unread: unread.count ?? 0,
-        portfolio: portfolio.count ?? 0,
         documents: documents.count ?? 0,
       });
 
@@ -106,12 +100,11 @@ function OverviewPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <Stat icon={Users} label="Members" value={stats?.members} to="/admin/members" accent="text-blue-600" />
         <Stat icon={ClipboardList} label="Pending Apps" value={stats?.pending} to="/admin/applications" accent="text-amber-600" />
         <Stat icon={Calendar} label="Upcoming Events" value={stats?.upcoming} to="/admin/events" accent="text-green-600" />
         <Stat icon={Mail} label="Unread Msgs" value={stats?.unread} to="/admin/messages" accent="text-rose-600" />
-        <Stat icon={Briefcase} label="Portfolio Items" value={stats?.portfolio} to="/admin/portfolio" accent="text-purple-600" />
         <Stat icon={FolderOpen} label="Documents" value={stats?.documents} to="/admin/documents" accent="text-cyan-600" />
       </div>
 
@@ -150,7 +143,6 @@ function OverviewPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <QuickAction to="/admin/events" icon={Plus} label="Add Event" />
-            <QuickAction to="/admin/portfolio" icon={FileText} label="Add Portfolio Item" />
             <QuickAction to="/admin/documents" icon={FolderOpen} label="Upload Document" />
             <QuickAction to="/admin/applications" icon={ClipboardList} label="Review Applications" />
             <QuickAction to="/admin/members" icon={Users} label="Manage Members" />
@@ -172,7 +164,7 @@ function Stat({
   label: string;
   value: number | undefined;
   accent: string;
-  to: "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/messages" | "/admin/portfolio" | "/admin/documents";
+  to: "/admin/members" | "/admin/applications" | "/admin/events" | "/admin/messages" | "/admin/documents";
 }) {
   return (
     <Link to={to} className="block transition-transform hover:-translate-y-0.5">
@@ -196,7 +188,7 @@ function QuickAction({
   icon: Icon,
   label,
 }: {
-  to: "/admin/events" | "/admin/portfolio" | "/admin/documents" | "/admin/applications" | "/admin/members";
+  to: "/admin/events" | "/admin/documents" | "/admin/applications" | "/admin/members";
   icon: React.ComponentType<{ className?: string }>;
   label: string;
 }) {
