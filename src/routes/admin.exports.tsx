@@ -56,7 +56,6 @@ const PAGES: readonly ExportPageDef[] = [
   { path: "/admin/members", label: "Members", group: "Admin Console" },
   { path: "/admin/applications", label: "Applications", group: "Admin Console" },
   { path: "/admin/events", label: "Events", group: "Admin Console" },
-  { path: "/admin/portfolio", label: "Portfolio", group: "Admin Console" },
   { path: "/admin/documents", label: "Documents", group: "Admin Console" },
   { path: "/admin/messages", label: "Messages", group: "Admin Console" },
   { path: "/admin/billing", label: "Billing", group: "Admin Console" },
