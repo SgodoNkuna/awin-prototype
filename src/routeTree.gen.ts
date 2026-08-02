@@ -17,6 +17,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as MembershipRouteImport } from './routes/membership'
 import { Route as MembersRouteImport } from './routes/members'
+import { Route as LoaRpaRouteImport } from './routes/loa-rpa'
 import { Route as InfoRouteImport } from './routes/info'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -30,6 +31,7 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminNewsRouteImport } from './routes/admin.news'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
+import { Route as AdminLoaRpaRouteImport } from './routes/admin.loa-rpa'
 import { Route as AdminGalleryRouteImport } from './routes/admin.gallery'
 import { Route as AdminExportsRouteImport } from './routes/admin.exports'
 import { Route as AdminEventsRouteImport } from './routes/admin.events'
@@ -78,6 +80,11 @@ const MembershipRoute = MembershipRouteImport.update({
 const MembersRoute = MembersRouteImport.update({
   id: '/members',
   path: '/members',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoaRpaRoute = LoaRpaRouteImport.update({
+  id: '/loa-rpa',
+  path: '/loa-rpa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InfoRoute = InfoRouteImport.update({
@@ -145,6 +152,11 @@ const AdminMembersRoute = AdminMembersRouteImport.update({
   path: '/members',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLoaRpaRoute = AdminLoaRpaRouteImport.update({
+  id: '/loa-rpa',
+  path: '/loa-rpa',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminGalleryRoute = AdminGalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
@@ -199,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
+  '/loa-rpa': typeof LoaRpaRoute
   '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRoute
@@ -215,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/admin/events': typeof AdminEventsRoute
   '/admin/exports': typeof AdminExportsRoute
   '/admin/gallery': typeof AdminGalleryRoute
+  '/admin/loa-rpa': typeof AdminLoaRpaRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/news': typeof AdminNewsRoute
@@ -230,6 +244,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
+  '/loa-rpa': typeof LoaRpaRoute
   '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRoute
@@ -246,6 +261,7 @@ export interface FileRoutesByTo {
   '/admin/events': typeof AdminEventsRoute
   '/admin/exports': typeof AdminExportsRoute
   '/admin/gallery': typeof AdminGalleryRoute
+  '/admin/loa-rpa': typeof AdminLoaRpaRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/news': typeof AdminNewsRoute
@@ -263,6 +279,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
+  '/loa-rpa': typeof LoaRpaRoute
   '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
   '/news': typeof NewsRoute
@@ -279,6 +296,7 @@ export interface FileRoutesById {
   '/admin/events': typeof AdminEventsRoute
   '/admin/exports': typeof AdminExportsRoute
   '/admin/gallery': typeof AdminGalleryRoute
+  '/admin/loa-rpa': typeof AdminLoaRpaRoute
   '/admin/members': typeof AdminMembersRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/news': typeof AdminNewsRoute
@@ -297,6 +315,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/events'
     | '/info'
+    | '/loa-rpa'
     | '/members'
     | '/membership'
     | '/news'
@@ -313,6 +332,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/exports'
     | '/admin/gallery'
+    | '/admin/loa-rpa'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/news'
@@ -328,6 +348,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/events'
     | '/info'
+    | '/loa-rpa'
     | '/members'
     | '/membership'
     | '/news'
@@ -344,6 +365,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/exports'
     | '/admin/gallery'
+    | '/admin/loa-rpa'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/news'
@@ -360,6 +382,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/events'
     | '/info'
+    | '/loa-rpa'
     | '/members'
     | '/membership'
     | '/news'
@@ -376,6 +399,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/exports'
     | '/admin/gallery'
+    | '/admin/loa-rpa'
     | '/admin/members'
     | '/admin/messages'
     | '/admin/news'
@@ -393,6 +417,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   EventsRoute: typeof EventsRoute
   InfoRoute: typeof InfoRoute
+  LoaRpaRoute: typeof LoaRpaRoute
   MembersRoute: typeof MembersRoute
   MembershipRoute: typeof MembershipRoute
   NewsRoute: typeof NewsRoute
@@ -461,6 +486,13 @@ declare module '@tanstack/react-router' {
       path: '/members'
       fullPath: '/members'
       preLoaderRoute: typeof MembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loa-rpa': {
+      id: '/loa-rpa'
+      path: '/loa-rpa'
+      fullPath: '/loa-rpa'
+      preLoaderRoute: typeof LoaRpaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/info': {
@@ -554,6 +586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMembersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/loa-rpa': {
+      id: '/admin/loa-rpa'
+      path: '/loa-rpa'
+      fullPath: '/admin/loa-rpa'
+      preLoaderRoute: typeof AdminLoaRpaRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/gallery': {
       id: '/admin/gallery'
       path: '/gallery'
@@ -629,6 +668,7 @@ interface AdminRouteChildren {
   AdminEventsRoute: typeof AdminEventsRoute
   AdminExportsRoute: typeof AdminExportsRoute
   AdminGalleryRoute: typeof AdminGalleryRoute
+  AdminLoaRpaRoute: typeof AdminLoaRpaRoute
   AdminMembersRoute: typeof AdminMembersRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminNewsRoute: typeof AdminNewsRoute
@@ -645,6 +685,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminEventsRoute: AdminEventsRoute,
   AdminExportsRoute: AdminExportsRoute,
   AdminGalleryRoute: AdminGalleryRoute,
+  AdminLoaRpaRoute: AdminLoaRpaRoute,
   AdminMembersRoute: AdminMembersRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminNewsRoute: AdminNewsRoute,
@@ -662,6 +703,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   EventsRoute: EventsRoute,
   InfoRoute: InfoRoute,
+  LoaRpaRoute: LoaRpaRoute,
   MembersRoute: MembersRoute,
   MembershipRoute: MembershipRoute,
   NewsRoute: NewsRoute,

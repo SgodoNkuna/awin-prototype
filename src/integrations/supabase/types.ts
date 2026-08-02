@@ -361,6 +361,83 @@ export type Database = {
         }
         Relationships: []
       }
+      loa_rpa_submissions: {
+        Row: {
+          application_id: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          loa_data: Json
+          pdf_path: string | null
+          phone: string | null
+          privacy_consent: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          rpa_data: Json
+          signature_doc_hash: string | null
+          signature_drawn_data: string | null
+          signature_ip: unknown
+          signature_type: string
+          signature_typed_name: string | null
+          signature_user_agent: string | null
+          source: string
+          status: string
+        }
+        Insert: {
+          application_id?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          loa_data?: Json
+          pdf_path?: string | null
+          phone?: string | null
+          privacy_consent?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rpa_data?: Json
+          signature_doc_hash?: string | null
+          signature_drawn_data?: string | null
+          signature_ip?: unknown
+          signature_type: string
+          signature_typed_name?: string | null
+          signature_user_agent?: string | null
+          source?: string
+          status?: string
+        }
+        Update: {
+          application_id?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          loa_data?: Json
+          pdf_path?: string | null
+          phone?: string | null
+          privacy_consent?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rpa_data?: Json
+          signature_doc_hash?: string | null
+          signature_drawn_data?: string | null
+          signature_ip?: unknown
+          signature_type?: string
+          signature_typed_name?: string | null
+          signature_user_agent?: string | null
+          source?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loa_rpa_submissions_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membership_tiers: {
         Row: {
           active: boolean

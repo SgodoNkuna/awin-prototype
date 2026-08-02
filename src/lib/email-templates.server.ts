@@ -104,6 +104,31 @@ export function adminNewApplicationEmail(fullName: string, email: string) {
   };
 }
 
+export function loaRpaReceivedEmail(fullName: string) {
+  return {
+    subject: "We received your LOA & Risk Profile submission",
+    html: layout(
+      "LOA & Risk Profile received",
+      p(`Hi ${strong(fullName)},`) +
+        p(
+          "Thank you for completing your Letter of Authority and Risk Profile Analysis. A signed copy has been generated and is on file with ThuthukaSA (FSP No. 47992).",
+        ) +
+        p("No further action is needed from you right now. The A-Win committee will be in touch if anything further is required."),
+    ),
+  };
+}
+
+export function adminNewLoaRpaEmail(fullName: string, email: string, source: string) {
+  return {
+    subject: `New LOA & RPA submission: ${fullName}`,
+    html: layout(
+      "New LOA & RPA submission",
+      p(`${strong(fullName)} (${esc(email)}) submitted a signed LOA & Risk Profile Analysis via ${strong(source)}.`) +
+        btn(`${BRAND.site}/admin/loa-rpa`, "Review in admin"),
+    ),
+  };
+}
+
 export function eventRegistrationEmail(fullName: string, email: string, eventTitle: string) {
   return {
     subject: `New event registration: ${eventTitle}`,

@@ -470,9 +470,10 @@ function PortalPage() {
       </Tabs>
 
       {/* Quick links */}
-      <div className="mt-8 grid gap-3 sm:grid-cols-3">
+      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <QuickLink to="/members" label="Portfolio" desc="Showcase your business" />
         <QuickLink to="/events" label="Events" desc="Upcoming meetups & masterclasses" />
+        <QuickLink to="/loa-rpa" label="LOA & Risk Profile" desc="Required for your investment" />
         <QuickLink to="/contact" label="Contact A-Win" desc="Reach the committee" />
       </div>
 
