@@ -103,14 +103,14 @@ export function LogoHero() {
   const logoCount = 14;
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollY } = useScroll();
-  const contentY = useTransform(scrollY, [0, 500], [0, 120]);
-  const contentOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const contentY = useTransform(scrollY, [0, 700], [0, 120]);
+  const contentOpacity = useTransform(scrollY, [0, 650], [1, 0]);
   const bgY = useTransform(scrollY, [0, 800], [0, -200]);
 
   return (
     <section
       ref={sectionRef}
-      className="relative isolate flex min-h-[calc(100vh-7rem)] items-center justify-center overflow-hidden px-4 py-20 text-hero-foreground md:min-h-[calc(100vh-8rem)] md:py-24"
+      className="relative isolate flex min-h-[calc(100dvh-7rem)] items-center justify-center overflow-hidden px-4 py-20 text-hero-foreground md:min-h-[calc(100dvh-8rem)] md:py-24"
     >
 
       {/* Brand gradient backdrop */}

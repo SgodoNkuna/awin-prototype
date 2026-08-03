@@ -10,6 +10,7 @@ import {
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
+import favicon from "@/assets/awin-logo-color.png";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { LogoThemeProvider } from "@/lib/logo-theme";
@@ -126,6 +127,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "referrer", content: "strict-origin-when-cross-origin" },
     ],
     links: [
+      { rel: "icon", type: "image/png", href: favicon },
+      { rel: "apple-touch-icon", href: favicon },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
