@@ -20,6 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import {
   Select,
@@ -93,6 +94,7 @@ function MembershipPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+  const [popiaConsent, setPopiaConsent] = useState(false);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -127,6 +129,11 @@ function MembershipPage() {
       const parsed = applicationSchema.safeParse(raw);
       if (!parsed.success) {
         toast.error(parsed.error.issues[0]?.message ?? "Please check the form");
+        return;
+      }
+
+      if (!popiaConsent) {
+        toast.error("Please consent to POPIA data processing to continue.");
         return;
       }
 
@@ -171,6 +178,8 @@ function MembershipPage() {
         ...parsed.data,
         tier: "active",
         user_id: user?.id ?? null,
+        popia_consent: true,
+        popia_consent_at: new Date().toISOString(),
       });
       setSubmitting(false);
 
@@ -185,6 +194,7 @@ function MembershipPage() {
         return;
       }
       setSubmitted(true);
+      setPopiaConsent(false);
       toast.success("Application received!");
       // Confirmation email — fire and forget, submission already succeeded.
       void import("@/lib/email.functions").then(({ sendApplicationReceivedEmail }) =>
@@ -192,7 +202,7 @@ function MembershipPage() {
       );
       (e.target as HTMLFormElement).reset();
     },
-    [user?.id],
+    [user?.id, popiaConsent],
   );
 
 
@@ -469,7 +479,20 @@ function MembershipPage() {
                   </div>
                 )}
 
-                <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+                <label className="flex items-start gap-3 rounded-lg border border-border p-4 cursor-pointer hover:bg-secondary/30">
+                  <Checkbox
+                    checked={popiaConsent}
+                    onCheckedChange={(v) => setPopiaConsent(!!v)}
+                    className="mt-0.5"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    I consent to A-Win processing my personal information (name, ID number, contact
+                    details) for the purpose of reviewing this application, in terms of the Protection
+                    of Personal Information Act (POPIA).
+                  </span>
+                </label>
+
+                <Button type="submit" size="lg" className="w-full" disabled={submitting || !popiaConsent}>
                   {submitting && <Loader2 className="size-4 animate-spin mr-2" />}
                   Submit Application
                 </Button>
