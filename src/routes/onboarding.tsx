@@ -383,11 +383,27 @@ function OnboardingPage() {
                   <p className="mx-auto max-w-md text-sm text-muted-foreground">
                     Your onboarding has been submitted. The Main Committee will verify your proof of payment and confirm your membership by email within 5 working days.
                   </p>
+
+                  <div className="mx-auto mt-4 max-w-md rounded-xl border border-accent/40 bg-accent/10 p-5 text-left">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-accent">
+                      <ShieldCheck className="size-4" /> One more step
+                    </div>
+                    <h3 className="mt-2 font-serif text-lg text-foreground">Complete your Letter of Authority &amp; Risk Profile</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Required by ThuthukaSA (FSP No. 47992) so we can guide your investment appropriately. Takes about 5 minutes.
+                    </p>
+                    <Button asChild className="mt-4 w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                      <Link to="/loa-rpa">
+                        Start LOA &amp; Risk Profile <ChevronRight className="ml-1 size-4" />
+                      </Link>
+                    </Button>
+                  </div>
+
                   <div className="flex justify-center gap-3 pt-2">
                     <Button asChild variant="outline">
                       <Link to="/">Back to home</Link>
                     </Button>
-                    <Button asChild>
+                    <Button asChild variant="outline">
                       <Link to="/portal">Go to my portal</Link>
                     </Button>
                   </div>
