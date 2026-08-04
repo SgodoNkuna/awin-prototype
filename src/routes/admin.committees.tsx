@@ -100,8 +100,8 @@ function CommitteesPage() {
           </p>
         </div>
         <Button asChild variant="outline" size="sm">
-          <Link to="/admin/members">
-            Add or edit members <ExternalLink className="ml-2 size-3.5" />
+          <Link to="/admin/settings" search={{ tab: "team" }}>
+            Add or edit member profiles <ExternalLink className="ml-2 size-3.5" />
           </Link>
         </Button>
       </div>
@@ -123,7 +123,7 @@ function CommitteesPage() {
             <CardContent className="space-y-2">
               {list.length === 0 && (
                 <p className="text-sm text-muted-foreground italic">
-                  No members assigned. Assign a member from the Members admin page.
+                  No members assigned. Set a member's committee in Settings → Team &amp; Members.
                 </p>
               )}
               {list.map((m, idx) => (

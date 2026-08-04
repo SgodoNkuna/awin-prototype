@@ -171,7 +171,7 @@ function BillingAdminPage() {
                       <TableRow>
                         <TableHead>When</TableHead>
                         <TableHead>Email</TableHead>
-                        <TableHead>Tier</TableHead>
+                        <TableHead>Payment Type</TableHead>
                         <TableHead>Amount</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>PF ref</TableHead>
@@ -182,7 +182,7 @@ function BillingAdminPage() {
                         <TableRow key={p.id}>
                           <TableCell className="text-xs">{fmtDate(p.created_at)}</TableCell>
                           <TableCell className="text-sm">{p.email ?? "—"}</TableCell>
-                          <TableCell className="text-sm capitalize">{p.tier}</TableCell>
+                          <TableCell className="text-sm">{p.tier === "general" ? "Joining Fee" : p.tier === "active" ? "Monthly Contribution" : p.tier}</TableCell>
                           <TableCell className="text-sm">{fmtZar(p.amount_cents)}</TableCell>
                           <TableCell>{statusBadge(p.status)}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">{p.pf_payment_id ?? "—"}</TableCell>
@@ -346,14 +346,14 @@ function OverrideDialog({
   onSubmit: (p: {
     user_id: string;
     action: "activate" | "suspend";
-    tier?: "general" | "active" | "patron";
+    tier?: "general" | "active";
     expires_at?: string;
     reason: string;
   }) => Promise<void>;
 }) {
   const [userId, setUserId] = useState("");
   const [action, setAction] = useState<"activate" | "suspend">("activate");
-  const [tier, setTier] = useState<"general" | "active" | "patron">("active");
+  const [tier, setTier] = useState<"general" | "active">("active");
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -404,13 +404,12 @@ function OverrideDialog({
           </div>
           {action === "activate" && (
             <div>
-              <Label>Tier</Label>
-              <Select value={tier} onValueChange={(v) => setTier(v as "general" | "active" | "patron")}>
+              <Label>Payment Type</Label>
+              <Select value={tier} onValueChange={(v) => setTier(v as "general" | "active")}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="patron">Patron</SelectItem>
+                  <SelectItem value="general">Joining Fee</SelectItem>
+                  <SelectItem value="active">Monthly Contribution</SelectItem>
                 </SelectContent>
               </Select>
             </div>

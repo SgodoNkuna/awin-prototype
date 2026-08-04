@@ -19,7 +19,7 @@ export const Route = createFileRoute("/admin/members")({
   component: MembersPage,
 });
 
-type TierName = "general" | "active" | "patron";
+type TierName = "general" | "active";
 type Member = {
   id: string;
   email: string | null;
@@ -31,7 +31,11 @@ type Member = {
   created_at: string;
 };
 
-const TIERS = ["general", "active", "patron"] as const;
+const TIERS = ["general", "active"] as const;
+const TIER_LABELS: Record<TierName, string> = {
+  general: "Joining Fee",
+  active: "Monthly Contribution",
+};
 
 function MembersPage() {
   const [members, setMembers] = useState<Member[] | null>(null);
@@ -84,11 +88,11 @@ function MembersPage() {
   };
 
   const exportCsv = () => {
-    const headers = ["Name", "Email", "Tier", "Status", "Joined", "Suspended"];
+    const headers = ["Name", "Email", "Payment Type", "Status", "Joined", "Suspended"];
     const rows = filtered.map((m) => [
       m.full_name ?? "",
       m.email ?? "",
-      m.membership_tier ?? "",
+      m.membership_tier ? TIER_LABELS[m.membership_tier] : "",
       m.membership_status,
       m.joined_at ?? "",
       m.suspended ? "Yes" : "No",
@@ -134,11 +138,11 @@ function MembersPage() {
               </SelectContent>
             </Select>
             <Select value={tierFilter} onValueChange={setTierFilter}>
-              <SelectTrigger><SelectValue placeholder="Tier" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Payment type" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All tiers</SelectItem>
-                <SelectItem value="none">No tier</SelectItem>
-                {TIERS.map((t) => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}
+                <SelectItem value="all">All payment types</SelectItem>
+                <SelectItem value="none">Not set</SelectItem>
+                {TIERS.map((t) => <SelectItem key={t} value={t}>{TIER_LABELS[t]}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={suspendedFilter} onValueChange={setSuspendedFilter}>
@@ -167,7 +171,7 @@ function MembersPage() {
                   <tr className="text-left border-b text-xs uppercase tracking-wide text-muted-foreground">
                     <th className="py-2 pr-3 font-medium">Name</th>
                     <th className="py-2 pr-3 font-medium">Email</th>
-                    <th className="py-2 pr-3 font-medium">Tier</th>
+                    <th className="py-2 pr-3 font-medium">Payment Type</th>
                     <th className="py-2 pr-3 font-medium">Status</th>
                     <th className="py-2 pr-3 font-medium">Joined</th>
                     <th className="py-2 font-medium">Actions</th>
@@ -182,7 +186,7 @@ function MembersPage() {
                     >
                       <td className="py-3 pr-3 font-medium">{m.full_name || "—"}</td>
                       <td className="py-3 pr-3 text-muted-foreground">{m.email}</td>
-                      <td className="py-3 pr-3 capitalize">{m.membership_tier ?? "—"}</td>
+                      <td className="py-3 pr-3">{m.membership_tier ? TIER_LABELS[m.membership_tier] : "—"}</td>
                       <td className="py-3 pr-3"><StatusPill status={m.membership_status} suspended={m.suspended} /></td>
                       <td className="py-3 pr-3 text-muted-foreground">
                         {m.joined_at ? new Date(m.joined_at).toLocaleDateString() : "—"}
@@ -221,7 +225,7 @@ function MembersPage() {
           {detail && (
             <div className="mt-6 space-y-4 px-4 text-sm">
               <div className="grid grid-cols-2 gap-3">
-                <Info label="Tier" value={detail.membership_tier ?? "—"} />
+                <Info label="Payment Type" value={detail.membership_tier ? TIER_LABELS[detail.membership_tier] : "—"} />
                 <Info label="Status" value={detail.membership_status} />
                 <Info label="Suspended" value={detail.suspended ? "Yes" : "No"} />
                 <Info label="Joined" value={detail.joined_at ? new Date(detail.joined_at).toLocaleDateString() : "—"} />
@@ -322,7 +326,7 @@ function MembersPage() {
                 <p className="text-xs text-muted-foreground">{editing.email}</p>
               </div>
               <div className="grid gap-2">
-                <label className="text-xs font-medium">Membership Tier</label>
+                <label className="text-xs font-medium">Payment Type</label>
                 <Select
                   value={editing.membership_tier ?? "none"}
                   onValueChange={(v) => setEditing({ ...editing, membership_tier: v === "none" ? null : (v as TierName) })}
@@ -330,7 +334,7 @@ function MembersPage() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
-                    {TIERS.map((t) => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}
+                    {TIERS.map((t) => <SelectItem key={t} value={t}>{TIER_LABELS[t]}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
