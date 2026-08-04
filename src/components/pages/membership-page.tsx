@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import {
   Check,
@@ -91,6 +91,7 @@ const SUPPORT_EMAIL = "phumelele@thuthuka-sa.co.za";
 
 function MembershipPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
@@ -99,6 +100,11 @@ function MembershipPage() {
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+      if (!user) {
+        toast.error("Please create an account or sign in first — it's how we confirm your email and keep your application connected to you.");
+        navigate({ to: "/auth" });
+        return;
+      }
       setDuplicateWarning(null);
       const fd = new FormData(e.currentTarget);
       const { sanitizeText, sanitizeOptionalText, sanitizeEmail, sanitizeIdNumber, sanitizePhone, isDuplicateError } =
@@ -202,7 +208,7 @@ function MembershipPage() {
       );
       (e.target as HTMLFormElement).reset();
     },
-    [user?.id, popiaConsent],
+    [user, popiaConsent, navigate],
   );
 
 
@@ -406,6 +412,14 @@ function MembershipPage() {
             </Card>
           ) : (
             <>
+              {!user && (
+                <div className="mb-5 rounded-lg border border-accent/40 bg-accent/10 p-4 text-sm">
+                  You'll need to{" "}
+                  <Link to="/auth" className="font-semibold underline">sign in or create an account</Link>{" "}
+                  before submitting — this confirms your email and keeps your application, and later your
+                  onboarding, linked to you. You can fill in the form first.
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
@@ -492,7 +506,7 @@ function MembershipPage() {
                   </span>
                 </label>
 
-                <Button type="submit" size="lg" className="w-full" disabled={submitting || !popiaConsent}>
+                <Button type="submit" size="lg" className="w-full" disabled={submitting || !popiaConsent || !user}>
                   {submitting && <Loader2 className="size-4 animate-spin mr-2" />}
                   Submit Application
                 </Button>
