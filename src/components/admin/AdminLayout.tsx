@@ -40,6 +40,7 @@ type NavItem = {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
+  search?: Record<string, string>;
 };
 
 type NavGroup = { label: string; items: NavItem[] };
@@ -53,6 +54,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "People",
     items: [
       { to: "/admin/members", label: "Members", icon: Users },
+      { to: "/admin/settings", label: "Team Profiles", icon: Award, search: { tab: "team" } },
       { to: "/admin/committees", label: "Committees", icon: Award },
       { to: "/admin/applications", label: "Applications", icon: ClipboardList },
       { to: "/admin/eft", label: "EFT Queue", icon: CreditCard },
@@ -89,6 +91,7 @@ export function AdminLayout() {
   const { user, loading, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const search = useRouterState({ select: (s) => s.location.search as Record<string, string> });
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -110,8 +113,14 @@ export function AdminLayout() {
     );
   }
 
-  const isActive = (item: NavItem) =>
-    item.exact ? path === item.to : path === item.to || path.startsWith(item.to + "/");
+  const isActive = (item: NavItem) => {
+    const pathMatches = item.exact ? path === item.to : path === item.to || path.startsWith(item.to + "/");
+    if (!pathMatches) return false;
+    if (item.search) return Object.entries(item.search).every(([k, v]) => search[k] === v);
+    // ponytail: only /admin/settings has a sibling nav item keyed on a search param today
+    if (item.to === "/admin/settings") return search.tab !== "team";
+    return true;
+  };
 
   const currentLabel = FLAT_NAV.find(isActive)?.label ?? "Admin";
 
@@ -129,6 +138,7 @@ export function AdminLayout() {
                 <Link
                   key={item.to}
                   to={item.to}
+                  search={item.search}
                   onClick={onNav}
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors min-h-11",

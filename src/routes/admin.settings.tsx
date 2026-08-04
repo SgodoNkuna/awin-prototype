@@ -17,6 +17,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MEMBER_CATEGORIES } from "@/lib/member-categories";
 
 export const Route = createFileRoute("/admin/settings")({
   validateSearch: z.object({
@@ -56,6 +59,7 @@ function SettingsPage() {
   const [settings, setSettings] = useState<Settings>({});
   const [team, setTeam] = useState<TeamMember[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dialogMember, setDialogMember] = useState<TeamMember | null>(null);
 
   const load = async () => {
     const [s, m] = await Promise.all([
@@ -273,153 +277,67 @@ function SettingsPage() {
             don't require a login — for real member accounts, see <a href="/admin/members" className="underline">Members</a>.
           </p>
           <MirrorStorageCard />
-          <Button
-            size="sm"
-            onClick={() => setTeam([...(team ?? []), { name: "", title: "", bio: "", photo_url: "", profile_card_url: "", order_index: team?.length ?? 0, published: true, category: "", expertise: [], location: "", contact_email: "", website: "", linkedin_url: "", social_url: "", portfolio_images: [], committee: null, committee_position: null, committee_order: 0 }])}
-          >
-            <Plus className="size-4 mr-2" />Add Member
-          </Button>
-          {team?.map((m, i) => (
-            <Card key={m.id ?? `new-${i}`}>
-              <CardContent className="pt-6 space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Name">
-                    <Input value={m.name} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))} />
-                  </Field>
-                  <Field label="Title">
-                    <Input value={m.title} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} />
-                  </Field>
-                </div>
-                <Field label="Profile Card Image (upload a photo, or paste a URL; shown as the main image)">
-                  <div className="flex gap-2">
-                    <Input value={m.profile_card_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, profile_card_url: e.target.value } : x))} />
-                    <UploadImageButton onUploaded={(url) => setTeam(team.map((x, idx) => idx === i ? { ...x, profile_card_url: url } : x))} />
-                  </div>
-                  {m.profile_card_url ? <img src={m.profile_card_url} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
-                </Field>
-                <Field label="Headshot (optional fallback: upload or paste URL)">
-                  <div className="flex gap-2">
-                    <Input value={m.photo_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, photo_url: e.target.value } : x))} />
-                    <UploadImageButton onUploaded={(url) => setTeam(team.map((x, idx) => idx === i ? { ...x, photo_url: url } : x))} />
-                  </div>
-                </Field>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Category">
-                    <Input value={m.category ?? ""} placeholder="Finance & Accounting" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, category: e.target.value } : x))} />
-                  </Field>
-                  <Field label="Location">
-                    <Input value={m.location ?? ""} placeholder="Johannesburg, ZA" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, location: e.target.value } : x))} />
-                  </Field>
-                </div>
-                <Field label="Expertise (comma-separated)">
-                  <Input value={(m.expertise ?? []).join(", ")} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, expertise: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) } : x))} />
-                </Field>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Contact email">
-                    <Input value={m.contact_email ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, contact_email: e.target.value } : x))} />
-                  </Field>
-                  <Field label="Website">
-                    <Input value={m.website ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, website: e.target.value } : x))} />
-                  </Field>
-                </div>
-                <Field label="Bio">
-                  <Textarea rows={2} value={m.bio ?? ""} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, bio: e.target.value } : x))} />
-                </Field>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="LinkedIn URL">
-                    <Input value={m.linkedin_url ?? ""} placeholder="https://linkedin.com/in/…" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, linkedin_url: e.target.value } : x))} />
-                  </Field>
-                  <Field label="Other social URL">
-                    <Input value={m.social_url ?? ""} placeholder="https://instagram.com/…" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, social_url: e.target.value } : x))} />
-                  </Field>
-                </div>
-                <Field label="Portfolio image URLs (comma-separated)">
-                  <Textarea
-                    rows={2}
-                    value={(m.portfolio_images ?? []).join(", ")}
-                    placeholder="https://…/a.jpg, https://…/b.jpg"
-                    onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, portfolio_images: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) } : x))}
-                  />
-                </Field>
-                <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-3">
-                  <Label className="text-xs font-semibold uppercase tracking-wider text-accent">Committee placement</Label>
-                  <div className="grid grid-cols-3 gap-3">
-                    <Field label="Committee">
-                      <select
-                        className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                        value={m.committee ?? ""}
-                        onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, committee: e.target.value || null } : x))}
-                      >
-                        <option value="">None (general member)</option>
-                        <option value="main">Main Committee</option>
-                        <option value="property">Property Investment Committee</option>
-                        <option value="website">Website Committee</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </Field>
-                    <Field label="Position">
-                      <Input value={m.committee_position ?? ""} placeholder="Chairman, Secretary…" onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, committee_position: e.target.value } : x))} />
-                    </Field>
-                    <Field label="Order">
-                      <Input type="number" value={m.committee_order ?? 0} onChange={(e) => setTeam(team.map((x, idx) => idx === i ? { ...x, committee_order: Number(e.target.value) } : x))} />
-                    </Field>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={async () => {
-                      const { sanitizeText, sanitizeOptionalText, sanitizeUrl } = await import("@/lib/sanitize");
-                      const cleanEmail = (m.contact_email ?? "").trim().toLowerCase() || null;
-                      const payload = {
-                        name: sanitizeText(m.name),
-                        title: sanitizeText(m.title),
-                        bio: sanitizeOptionalText(m.bio),
-                        photo_url: sanitizeUrl(m.photo_url),
-                        profile_card_url: sanitizeUrl(m.profile_card_url),
-                        order_index: m.order_index,
-                        published: m.published,
-                        category: sanitizeOptionalText(m.category),
-                        expertise: m.expertise && m.expertise.length ? m.expertise.map((s) => sanitizeText(s)).filter(Boolean) : null,
-                        location: sanitizeOptionalText(m.location),
-                        contact_email: cleanEmail,
-                        website: sanitizeUrl(m.website),
-                        linkedin_url: sanitizeUrl(m.linkedin_url),
-                        social_url: sanitizeUrl(m.social_url),
-                        portfolio_images: m.portfolio_images && m.portfolio_images.length ? m.portfolio_images.map((s) => sanitizeUrl(s)).filter((u): u is string => !!u) : [],
-                        committee: m.committee ? sanitizeText(m.committee) : null,
-                        committee_position: sanitizeOptionalText(m.committee_position),
-                        committee_order: m.committee_order ?? 0,
-                      } as any;
-                      const { error } = m.id
-                        ? await supabase.from("team_members").update(payload).eq("id", m.id)
-                        : await supabase.from("team_members").insert(payload);
-                      if (error) return toast.error(error.message);
-                      toast.success("Saved");
-                      load();
-                    }}
-                  >
-                    <Save className="size-4 mr-2" />Save
-                  </Button>
 
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-sm font-medium text-muted-foreground">
+              {team?.length ?? 0} profile{team?.length === 1 ? "" : "s"}
+            </p>
+            <Button
+              size="sm"
+              onClick={() => setDialogMember({
+                name: "", title: "", bio: "", photo_url: "", profile_card_url: "",
+                order_index: team?.length ?? 0, published: true, category: "", expertise: [],
+                location: "", contact_email: "", website: "", linkedin_url: "", social_url: "",
+                portfolio_images: [], committee: null, committee_position: null, committee_order: 0,
+              })}
+            >
+              <Plus className="size-4 mr-2" />Add Member
+            </Button>
+          </div>
 
-                  {m.id && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={async () => {
-                        if (!confirm("Delete this team member?")) return;
-                        await supabase.from("team_members").delete().eq("id", m.id!);
-                        load();
-                      }}
-                    >
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
+          <div className="space-y-2">
+            {team?.length === 0 && (
+              <p className="text-sm text-muted-foreground italic py-6 text-center">No member profiles yet — click Add Member to create one.</p>
+            )}
+            {team?.map((m) => (
+              <div key={m.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
+                <div className="size-11 shrink-0 rounded-full bg-muted overflow-hidden flex items-center justify-center text-xs font-semibold">
+                  {m.profile_card_url || m.photo_url ? (
+                    <img src={m.profile_card_url || m.photo_url || ""} alt="" className="size-full object-cover" />
+                  ) : (
+                    (m.name || "?").split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase()
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium truncate">{m.name || "(no name)"}</div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {m.title || "—"}{m.category ? ` · ${m.category}` : ""}
+                  </div>
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => setDialogMember(m)}>Edit</Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  onClick={async () => {
+                    if (!confirm(`Delete ${m.name || "this member"}? This cannot be undone.`)) return;
+                    const { error } = await supabase.from("team_members").delete().eq("id", m.id!);
+                    if (error) return toast.error(error.message);
+                    toast.success("Deleted");
+                    load();
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <TeamMemberDialog
+            member={dialogMember}
+            onClose={() => setDialogMember(null)}
+            onSaved={() => { setDialogMember(null); load(); }}
+          />
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-4 mt-4">
@@ -499,6 +417,192 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <Label className="text-xs">{label}</Label>
       {children}
     </div>
+  );
+}
+
+/** Add/edit dialog for a single public "Our Members" profile card. */
+function TeamMemberDialog({
+  member,
+  onClose,
+  onSaved,
+}: {
+  member: TeamMember | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [draft, setDraft] = useState<TeamMember | null>(member);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setDraft(member);
+  }, [member]);
+
+  if (!draft) return null;
+  const isNew = !draft.id;
+
+  const set = <K extends keyof TeamMember>(key: K, value: TeamMember[K]) =>
+    setDraft((d) => (d ? { ...d, [key]: value } : d));
+
+  const save = async () => {
+    if (!draft.name.trim() || !draft.title.trim()) {
+      toast.error("Name and title are required");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { sanitizeText, sanitizeOptionalText, sanitizeUrl } = await import("@/lib/sanitize");
+      const cleanEmail = (draft.contact_email ?? "").trim().toLowerCase() || null;
+      const payload = {
+        name: sanitizeText(draft.name),
+        title: sanitizeText(draft.title),
+        bio: sanitizeOptionalText(draft.bio),
+        photo_url: sanitizeUrl(draft.photo_url),
+        profile_card_url: sanitizeUrl(draft.profile_card_url),
+        order_index: draft.order_index,
+        published: draft.published,
+        category: sanitizeOptionalText(draft.category),
+        expertise: draft.expertise && draft.expertise.length ? draft.expertise.map((s) => sanitizeText(s)).filter(Boolean) : null,
+        location: sanitizeOptionalText(draft.location),
+        contact_email: cleanEmail,
+        website: sanitizeUrl(draft.website),
+        linkedin_url: sanitizeUrl(draft.linkedin_url),
+        social_url: sanitizeUrl(draft.social_url),
+        portfolio_images: draft.portfolio_images && draft.portfolio_images.length ? draft.portfolio_images.map((s) => sanitizeUrl(s)).filter((u): u is string => !!u) : [],
+        committee: draft.committee ? sanitizeText(draft.committee) : null,
+        committee_position: sanitizeOptionalText(draft.committee_position),
+        committee_order: draft.committee_order ?? 0,
+      } as any;
+      const { error } = draft.id
+        ? await supabase.from("team_members").update(payload).eq("id", draft.id)
+        : await supabase.from("team_members").insert(payload);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Saved");
+      onSaved();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{isNew ? "Add Member" : `Edit ${draft.name || "Member"}`}</DialogTitle>
+          <DialogDescription>Public profile card shown on the "Our Members" page. No login required.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Name *">
+              <Input value={draft.name} onChange={(e) => set("name", e.target.value)} placeholder="Jane Nokuthula Dlamini" />
+            </Field>
+            <Field label="Title *">
+              <Input value={draft.title} onChange={(e) => set("title", e.target.value)} placeholder="Financial Advisor" />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Profile Card Image (main image)">
+              <div className="flex gap-2">
+                <Input value={draft.profile_card_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => set("profile_card_url", e.target.value)} />
+                <UploadImageButton onUploaded={(url) => set("profile_card_url", url)} />
+              </div>
+              {draft.profile_card_url ? <img src={draft.profile_card_url} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
+            </Field>
+            <Field label="Headshot (fallback)">
+              <div className="flex gap-2">
+                <Input value={draft.photo_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => set("photo_url", e.target.value)} />
+                <UploadImageButton onUploaded={(url) => set("photo_url", url)} />
+              </div>
+              {draft.photo_url ? <img src={draft.photo_url} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Category">
+              <Select value={draft.category ?? ""} onValueChange={(v) => set("category", v)}>
+                <SelectTrigger><SelectValue placeholder="Choose a category" /></SelectTrigger>
+                <SelectContent>
+                  {MEMBER_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Location">
+              <Input value={draft.location ?? ""} placeholder="Johannesburg, ZA" onChange={(e) => set("location", e.target.value)} />
+            </Field>
+          </div>
+
+          <Field label="Expertise (comma-separated)">
+            <Input
+              value={(draft.expertise ?? []).join(", ")}
+              onChange={(e) => set("expertise", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
+            />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Contact email">
+              <Input value={draft.contact_email ?? ""} onChange={(e) => set("contact_email", e.target.value)} />
+            </Field>
+            <Field label="Website">
+              <Input value={draft.website ?? ""} onChange={(e) => set("website", e.target.value)} />
+            </Field>
+          </div>
+
+          <Field label="Bio">
+            <Textarea rows={3} value={draft.bio ?? ""} onChange={(e) => set("bio", e.target.value)} />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="LinkedIn URL">
+              <Input value={draft.linkedin_url ?? ""} placeholder="https://linkedin.com/in/…" onChange={(e) => set("linkedin_url", e.target.value)} />
+            </Field>
+            <Field label="Other social URL">
+              <Input value={draft.social_url ?? ""} placeholder="https://instagram.com/…" onChange={(e) => set("social_url", e.target.value)} />
+            </Field>
+          </div>
+
+          <Field label="Portfolio image URLs (comma-separated)">
+            <Textarea
+              rows={2}
+              value={(draft.portfolio_images ?? []).join(", ")}
+              placeholder="https://…/a.jpg, https://…/b.jpg"
+              onChange={(e) => set("portfolio_images", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
+            />
+          </Field>
+
+          <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-3">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-accent">Committee placement</Label>
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="Committee">
+                <select
+                  className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  value={draft.committee ?? ""}
+                  onChange={(e) => set("committee", e.target.value || null)}
+                >
+                  <option value="">None (general member)</option>
+                  <option value="main">Main Committee</option>
+                  <option value="property">Property Investment Committee</option>
+                  <option value="website">Website Committee</option>
+                  <option value="other">Other</option>
+                </select>
+              </Field>
+              <Field label="Position">
+                <Input value={draft.committee_position ?? ""} placeholder="Chairman, Secretary…" onChange={(e) => set("committee_position", e.target.value)} />
+              </Field>
+              <Field label="Order">
+                <Input type="number" value={draft.committee_order ?? 0} onChange={(e) => set("committee_order", Number(e.target.value))} />
+              </Field>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Save className="size-4 mr-2" />}
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
