@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ChevronRight, Search, Mail, Globe, MapPin, Linkedin, X, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { signPortfolioUrls } from "@/lib/portfolio-storage.functions";
+import { MEMBER_CATEGORIES } from "@/lib/member-categories";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -75,29 +76,7 @@ type Member = {
   committee_order: number | null;
 };
 
-const CATEGORIES = [
-  "All",
-  "Psychologists",
-  "Coaches",
-  "Attorneys",
-  "Accountants",
-  "Property Specialists",
-  "Financial Advisors",
-  "Medical Professionals",
-  "Entrepreneurs",
-  "Educators",
-  "Marketing & PR",
-  "Technology & Digital",
-  "Creatives & Designers",
-  "Consultants",
-  "Healthcare & Wellness",
-  "Hospitality & Events",
-  "Retail & Fashion",
-  "Construction & Trades",
-  "Non Profit & Community",
-  "Students",
-  "Other",
-] as const;
+const CATEGORIES = ["All", ...MEMBER_CATEGORIES] as const;
 
 const COMMITTEES = [
   { key: "main", label: "Main Committee" },
