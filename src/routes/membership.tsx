@@ -24,7 +24,7 @@ export const Route = createFileRoute("/membership")({
       {
         name: "description",
         content:
-          "Become an A-Win member. Choose from General, Active or Patron tiers and start your investment journey with us.",
+          "Become an A-Win member. One membership model, R200 annual fee plus R500 monthly contribution — start your investment journey with us.",
       },
     ],
   }),

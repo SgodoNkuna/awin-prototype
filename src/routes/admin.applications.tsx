@@ -86,7 +86,7 @@ function ApplicationsPage() {
       await supabase
         .from("profiles")
         .update({
-          membership_tier: a.tier as "general" | "active" | "patron",
+          membership_tier: a.tier as "general" | "active",
           membership_status: "active",
           joined_at: new Date().toISOString(),
         })
@@ -139,7 +139,6 @@ function ApplicationsPage() {
                 <thead>
                   <tr className="text-left border-b text-xs uppercase tracking-wide text-muted-foreground">
                     <th className="py-2 pr-3 font-medium">Applicant</th>
-                    <th className="py-2 pr-3 font-medium">Tier</th>
                     <th className="py-2 pr-3 font-medium">Submitted</th>
                     <th className="py-2 pr-3 font-medium">Status</th>
                     <th className="py-2 font-medium">Actions</th>
@@ -152,7 +151,6 @@ function ApplicationsPage() {
                         <div>{a.full_name}</div>
                         <div className="text-xs text-muted-foreground">{a.email}</div>
                       </td>
-                      <td className="py-3 pr-3 capitalize">{a.tier}</td>
                       <td className="py-3 pr-3 text-muted-foreground">
                         {new Date(a.submitted_at ?? a.created_at).toLocaleDateString()}
                       </td>
@@ -186,7 +184,6 @@ function ApplicationsPage() {
               <Row label="Occupation" value={viewing.occupation} />
               <Row label="Employer" value={viewing.employer || "—"} />
               <Row label="Experience" value={viewing.experience} />
-              <Row label="Tier applied" value={viewing.tier} />
 
               <div>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Motivation</div>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Plus, Trash2, Loader2, Save, CloudUpload, Eye, Trash } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import {
   mirrorPortfolioAssets,
@@ -18,6 +19,9 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/admin/settings")({
+  validateSearch: z.object({
+    tab: z.enum(["content", "team", "notifications", "danger"]).optional(),
+  }),
   component: SettingsPage,
 });
 
@@ -47,6 +51,8 @@ type TeamMember = {
 
 
 function SettingsPage() {
+  const search = Route.useSearch();
+  const [activeTab, setActiveTab] = useState(search.tab ?? "content");
   const [settings, setSettings] = useState<Settings>({});
   const [team, setTeam] = useState<TeamMember[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,10 +95,10 @@ function SettingsPage() {
         <p className="text-sm text-muted-foreground">Edit site content and team.</p>
       </div>
 
-      <Tabs defaultValue="content">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <TabsList className="flex-wrap">
           <TabsTrigger value="content">Content</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="team">Team &amp; Members</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="danger" className="text-destructive">Danger Zone</TabsTrigger>
         </TabsList>
@@ -262,6 +268,10 @@ function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="team" className="space-y-3 mt-4">
+          <p className="text-sm text-muted-foreground">
+            These are public profile cards shown on the "Our Members" page (photo, title, bio, category). They
+            don't require a login — for real member accounts, see <a href="/admin/members" className="underline">Members</a>.
+          </p>
           <MirrorStorageCard />
           <Button
             size="sm"
