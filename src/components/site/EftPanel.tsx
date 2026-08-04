@@ -77,11 +77,10 @@ export function EftPanel({
   const [copied, setCopied] = useState<string | null>(null);
   const BANK = useBankDetails();
 
-  const reference = useMemo(() => {
-    const ref = buildEftReference(fullName, userSeed);
-    onReferenceChange?.(ref);
-    return ref;
-  }, [fullName, userSeed, onReferenceChange]);
+  const reference = useMemo(() => buildEftReference(fullName, userSeed), [fullName, userSeed]);
+  useEffect(() => {
+    onReferenceChange?.(reference);
+  }, [reference, onReferenceChange]);
 
   const amount = purpose === "entry" ? "R200.00" : "R500.00";
 
