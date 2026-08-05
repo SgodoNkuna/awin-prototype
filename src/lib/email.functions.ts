@@ -81,6 +81,24 @@ export const sendContactNotification = createServerFn({ method: "POST" })
     return sendEmail({ to: "info@awin.co.za", toName: "A-Win Info", ...mail });
   });
 
+/**
+ * Authenticated: confirm a password change to the account owner, and alert
+ * the committee inbox. Fires only after Supabase has already accepted the
+ * new password — this is a notification, not a gate.
+ */
+export const sendPasswordChangedEmail = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) =>
+    z.object({ email: z.string().email(), fullName: z.string().trim().min(1).max(200) }).parse(i),
+  )
+  .handler(async ({ data }) => {
+    const { sendEmail } = await import("./email.server");
+    const { passwordChangedEmail, adminPasswordChangedEmail } = await import("./email-templates.server");
+    const mail = passwordChangedEmail(data.fullName);
+    const adminMail = adminPasswordChangedEmail(data.fullName, data.email);
+    void sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...adminMail });
+    return sendEmail({ to: data.email, toName: data.fullName, ...mail });
+  });
+
 /** Public: notify the committee that someone registered for an event. */
 export const sendEventRegistrationNotification = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) =>

@@ -152,6 +152,28 @@ export function contactMessageEmail(name: string, email: string, subject: string
   };
 }
 
+export function passwordChangedEmail(fullName: string) {
+  return {
+    subject: "Your A-Win password was changed",
+    html: layout(
+      "Password changed",
+      p(`Hi ${strong(fullName)},`) +
+        p("This confirms your A-Win account password was just changed.") +
+        p("If you made this change, no action is needed. If you did NOT make this change, please contact the committee immediately by replying to this email."),
+    ),
+  };
+}
+
+export function adminPasswordChangedEmail(fullName: string, email: string) {
+  return {
+    subject: `Password changed: ${fullName}`,
+    html: layout(
+      "Account password changed",
+      p(`${strong(fullName)} (${esc(email)}) just changed their account password.`),
+    ),
+  };
+}
+
 export function paymentReceiptEmail(
   fullName: string,
   amountCents: number,

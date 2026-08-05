@@ -7,6 +7,8 @@ interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  forcePasswordChange: boolean;
+  clearForcePasswordChange: () => void;
   signOut: () => Promise<void>;
 }
 
@@ -16,16 +18,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [forcePasswordChange, setForcePasswordChange] = useState(false);
 
   useEffect(() => {
     const loadRole = async (userId: string) => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle();
-      setIsAdmin(!!data);
+      const [{ data: roleRow }, { data: profileRow }] = await Promise.all([
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .eq("role", "admin")
+          .maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("force_password_change")
+          .eq("id", userId)
+          .maybeSingle(),
+      ]);
+      setIsAdmin(!!roleRow);
+      setForcePasswordChange(!!profileRow?.force_password_change);
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
@@ -36,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         void loadRole(s.user.id).finally(() => setLoading(false));
       } else {
         setIsAdmin(false);
+        setForcePasswordChange(false);
         setLoading(false);
       }
     });
@@ -63,6 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         loading,
         isAdmin,
+        forcePasswordChange,
+        clearForcePasswordChange: () => setForcePasswordChange(false),
         signOut,
       }}
     >
