@@ -77,8 +77,10 @@ function OnboardingPage() {
   const [userEmail, setUserEmail] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [docHash, setDocHash] = useState<string>("");
+  const [resuming, setResuming] = useState(true);
 
   // Form state
+  const [applicationId, setApplicationId] = useState<string | null>(null);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [idNumber, setIdNumber] = useState("");
@@ -90,16 +92,55 @@ function OnboardingPage() {
   const [agree, setAgree] = useState(false);
   const [popFile, setPopFile] = useState<File | null>(null);
   const [paymentRef, setPaymentRef] = useState("");
+  const [alreadyHasProof, setAlreadyHasProof] = useState(false);
+  const [hadProofFromApply, setHadProofFromApply] = useState(false);
   const [drawnSignature, setDrawnSignature] = useState("");
   const [purpose, setPurpose] = useState<"entry" | "monthly">("entry");
   const [stampAcknowledged, setStampAcknowledged] = useState(false);
 
+  // Load the applicant's own account + carry forward whatever Apply Now
+  // already collected — so this page updates that same application record
+  // instead of creating a disconnected duplicate, and never re-asks for
+  // details, consent or proof of payment already on file.
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id ?? null);
+    let cancelled = false;
+    sha256(AGREEMENT_TEXT).then((h) => !cancelled && setDocHash(h));
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (cancelled) return;
+      const uid = data.user?.id ?? null;
+      setUserId(uid);
       setUserEmail(data.user?.email ?? "");
+      if (!uid) { setResuming(false); return; }
+
+      const { data: app } = await supabase
+        .from("applications")
+        .select("id, full_name, phone, id_number, occupation, employer, motivation, popia_consent, proof_of_payment_path, payment_reference")
+        .eq("user_id", uid)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+
+      if (app) {
+        setApplicationId(app.id);
+        setFullName(app.full_name ?? "");
+        setPhone(app.phone ?? "");
+        setIdNumber(app.id_number ?? "");
+        setOccupation(app.occupation ?? "");
+        setEmployer(app.employer ?? "");
+        setMotivation(app.motivation ?? "");
+        setPopia(!!app.popia_consent);
+        setPaymentRef(app.payment_reference ?? "");
+        setAlreadyHasProof(!!app.proof_of_payment_path);
+        setHadProofFromApply(!!app.proof_of_payment_path);
+
+        const detailsDone = !!(app.full_name && app.phone && app.id_number && app.occupation && (app.motivation?.length ?? 0) > 0);
+        if (detailsDone && app.popia_consent) setStep(2); // straight to Sign — details + consent already on file
+        else if (detailsDone) setStep(1);
+      }
+      setResuming(false);
     });
-    sha256(AGREEMENT_TEXT).then(setDocHash);
+    return () => { cancelled = true; };
   }, []);
 
   const nameMatches = useMemo(
@@ -113,7 +154,7 @@ function OnboardingPage() {
   const step0Valid = fullName.trim().length > 2 && phoneValid && idValid && occupation.trim().length > 1 && motivation.trim().length > 20;
   const step1Valid = popia;
   const step2Valid = agree && nameMatches && drawnSignature.length > 0;
-  const step3Valid = !!popFile && paymentRef.trim().length > 2;
+  const step3Valid = alreadyHasProof || (!!popFile && paymentRef.trim().length > 2);
   const step4Valid = stampAcknowledged;
 
   const canGoNext =
@@ -133,17 +174,8 @@ function OnboardingPage() {
     if (!step3Valid) return;
     setSubmitting(true);
     try {
-      // 1. Upload proof of payment to private bucket under userId prefix
-      const ext = popFile!.name.split(".").pop()?.toLowerCase() || "bin";
-      const path = `${userId}/pop-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("onboarding-uploads")
-        .upload(path, popFile!, { upsert: false, contentType: popFile!.type || undefined });
-      if (upErr) throw upErr;
-
-      // 2. Insert application row with e-signature audit trail
       const nowIso = new Date().toISOString();
-      const { error: insErr } = await supabase.from("applications").insert({
+      const payload: Record<string, unknown> = {
         user_id: userId,
         full_name: fullName.trim(),
         email: userEmail,
@@ -151,10 +183,8 @@ function OnboardingPage() {
         id_number: idNumber.replace(/\s+/g, ""),
         occupation: occupation.trim(),
         employer: employer.trim() || null,
-        experience: "beginner" as any,
         motivation: motivation.trim(),
-        tier: "general" as any,
-        status: "pending" as any,
+        status: "pending",
         agreement_version: AGREEMENT_VERSION,
         agreement_accepted_at: nowIso,
         signature_typed_name: typedSignature.trim(),
@@ -162,11 +192,31 @@ function OnboardingPage() {
         signature_doc_hash: docHash,
         popia_consent: true,
         popia_consent_at: nowIso,
-        proof_of_payment_path: path,
-        proof_of_payment_uploaded_at: nowIso,
-        payment_reference: paymentRef.trim(),
-      } as any);
-      if (insErr) throw insErr;
+      };
+      if (!applicationId) {
+        payload.experience = "beginner";
+        payload.tier = "general";
+      }
+
+      // Only touch proof-of-payment fields if the applicant chose a new
+      // file here — if they already uploaded it during Apply Now, leave
+      // that record as-is instead of re-asking them to upload again.
+      if (popFile) {
+        const ext = popFile.name.split(".").pop()?.toLowerCase() || "bin";
+        const path = `${userId}/pop-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("onboarding-uploads")
+          .upload(path, popFile, { upsert: false, contentType: popFile.type || undefined });
+        if (upErr) throw upErr;
+        payload.proof_of_payment_path = path;
+        payload.proof_of_payment_uploaded_at = nowIso;
+        payload.payment_reference = paymentRef.trim();
+      }
+
+      const { error } = applicationId
+        ? await supabase.from("applications").update(payload as never).eq("id", applicationId)
+        : await supabase.from("applications").insert(payload as never);
+      if (error) throw error;
 
       setStep(5);
       toast.success("Onboarding submitted. We will review and be in touch.");
@@ -195,7 +245,8 @@ function OnboardingPage() {
           <Badge className="bg-white/15 text-white hover:bg-white/15">Membership Onboarding</Badge>
           <h1 className="mt-4 font-serif text-white">Join the sisterhood in one flow</h1>
           <p className="mt-3 max-w-2xl text-white/90">
-            Complete your personal details, consent to our privacy terms, sign the membership agreement, and upload your proof of payment. It takes about 5 minutes.
+            Just a couple of things left: sign the membership agreement and confirm your details.
+            Anything you already gave us when you applied is filled in for you.
           </p>
         </div>
       </section>
@@ -232,9 +283,22 @@ function OnboardingPage() {
 
           <Card className="border-border/60 shadow-[var(--shadow-elegant)]">
             <CardContent className="p-6 md:p-8 space-y-6">
+              {resuming ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+              <>
               {!userId && step < 5 && (
                 <div className="rounded-lg border border-accent/40 bg-accent/10 p-4 text-sm">
                   You will need to <button className="font-semibold underline" onClick={requireLogin}>sign in</button> before submitting. You can fill everything in first.
+                </div>
+              )}
+
+              {(applicationId && step > 0) && step < 5 && (
+                <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs text-foreground/80">
+                  <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <p>We've carried over what you already told us when you applied — just review and continue.</p>
                 </div>
               )}
 
@@ -330,18 +394,42 @@ function OnboardingPage() {
               {step === 3 && (
                 <div className="space-y-4">
                   <h2 className="font-serif text-2xl text-foreground">Pay by EFT</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Copy the details below into your banking app, then upload your proof of payment. Your reference is generated automatically so the treasurer can auto-match your payment.
-                  </p>
-                  <EftPanel
-                    fullName={fullName}
-                    userSeed={userId ?? userEmail}
-                    purpose={purpose}
-                    onPurposeChange={setPurpose}
-                    file={popFile}
-                    onFileChange={setPopFile}
-                    onReferenceChange={setPaymentRef}
-                  />
+                  {alreadyHasProof && !popFile ? (
+                    <>
+                      <div className="flex items-start gap-3 rounded-lg border border-primary/40 bg-primary/5 p-4 text-sm">
+                        <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                        <div>
+                          <p className="font-medium text-foreground">Proof of payment already received</p>
+                          <p className="mt-0.5 text-muted-foreground">
+                            You uploaded this when you applied — no need to do it again. Reference: <span className="font-mono">{paymentRef || "—"}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => setAlreadyHasProof(false)}>
+                        Upload a different proof of payment
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Copy the details below into your banking app, then upload your proof of payment. Your reference is generated automatically so the treasurer can auto-match your payment.
+                      </p>
+                      <EftPanel
+                        fullName={fullName}
+                        userSeed={userId ?? userEmail}
+                        purpose={purpose}
+                        onPurposeChange={setPurpose}
+                        file={popFile}
+                        onFileChange={setPopFile}
+                        onReferenceChange={setPaymentRef}
+                      />
+                      {hadProofFromApply && (
+                        <Button variant="ghost" size="sm" onClick={() => { setAlreadyHasProof(true); setPopFile(null); }}>
+                          Never mind, keep my original proof of payment
+                        </Button>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
 
@@ -438,6 +526,8 @@ function OnboardingPage() {
                     </Button>
                   )}
                 </div>
+              )}
+              </>
               )}
             </CardContent>
           </Card>
