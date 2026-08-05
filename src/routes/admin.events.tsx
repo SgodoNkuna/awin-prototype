@@ -105,13 +105,12 @@ function EventsAdminPage() {
     const margin = 40;
     pdf.setFillColor(61, 139, 47);
     pdf.rect(0, 0, pdf.internal.pageSize.getWidth(), 60, "F");
+    const { AWIN_LOGO_WHITE_PNG_BASE64 } = await import("@/lib/awin-logo-base64");
+    pdf.addImage(AWIN_LOGO_WHITE_PNG_BASE64, "PNG", margin, 12, 36, 36);
     pdf.setTextColor(255, 255, 255);
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(14);
-    pdf.text("A-Win", margin, 28);
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "normal");
-    pdf.text("African Women Investment Network", margin, 44);
+    pdf.text("African Women Investment Network", margin + 44, 34);
     pdf.setTextColor(20, 20, 20);
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(16);

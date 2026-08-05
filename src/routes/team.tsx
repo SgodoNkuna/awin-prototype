@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { asset } from "@/lib/cdn";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronRight, Search, Mail, Globe, MapPin, Linkedin, X, ExternalLink } from "lucide-react";
@@ -21,28 +20,6 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-const wcw1 = asset("wcw/wcw-1.jpeg");
-const wcw2 = asset("wcw/wcw-2.jpeg");
-const wcw3 = asset("wcw/wcw-3.jpeg");
-const wcw4 = asset("wcw/wcw-4.jpeg");
-const wcw5 = asset("wcw/wcw-5.jpeg");
-const wcw6 = asset("wcw/wcw-6.jpeg");
-const hike1 = asset("hike-2026/hike-00.44.5844.jpeg");
-const hike2 = asset("hike-2026/hike-00.44.5911.jpeg");
-const hike3 = asset("hike-2026/hike-00.44.5922.jpeg");
-const coach1 = asset("wcw-coaching/coaching-1.jpeg");
-const coach2 = asset("wcw-coaching/coaching-2.jpeg");
-
-const FALLBACK_POOL: string[] = [wcw1, wcw2, wcw3, wcw4, wcw5, wcw6, hike1, hike2, hike3, coach1, coach2];
-
-// Deterministic per-id pick so a member's fallback gallery is stable across renders.
-function fallbackImagesFor(id: string, n = 3): string[] {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  const out: string[] = [];
-  for (let i = 0; i < n; i++) out.push(FALLBACK_POOL[(hash + i * 7) % FALLBACK_POOL.length]);
-  return out;
-}
 
 export const Route = createFileRoute("/team")({
   head: () => ({
@@ -607,31 +584,28 @@ export function MembersPage() {
                     </div>
                   )}
 
-                  {/* Portfolio grid — falls back to curated A-Win gallery when the member has no images */}
-                  {(() => {
-                    const imgs =
-                      active.portfolio_images && active.portfolio_images.length > 0
-                        ? active.portfolio_images
-                        : fallbackImagesFor(active.id);
-                    return (
-                      <div className="mt-8">
-                        <div className="text-xs font-semibold uppercase tracking-widest text-accent">
-                          Portfolio
-                        </div>
-                        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                          {imgs.map((src, i) => (
-                            <img
-                              key={i}
-                              src={src}
-                              alt={`${active.name} portfolio ${i + 1}`}
-                              className="aspect-square w-full rounded-lg border border-border object-cover"
-                              loading="lazy"
-                            />
-                          ))}
-                        </div>
+                  {/* Portfolio grid — only shown once a member has real images of their
+                      own on file. Previously this fell back to unrelated stock photos
+                      (hikes, WCW events) from a shared pool, which misleadingly showed
+                      up as if they were that member's own work. */}
+                  {active.portfolio_images && active.portfolio_images.length > 0 && (
+                    <div className="mt-8">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+                        Portfolio
                       </div>
-                    );
-                  })()}
+                      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {active.portfolio_images.map((src, i) => (
+                          <img
+                            key={i}
+                            src={src}
+                            alt={`${active.name} portfolio ${i + 1}`}
+                            className="aspect-square w-full rounded-lg border border-border object-cover"
+                            loading="lazy"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -5,8 +5,8 @@
  * Clause 7, the typed name is what constitutes the e-signature under the
  * ECT Act; the drawn signature is a UI-only visual aid and isn't persisted.
  */
+import { AWIN_LOGO_WHITE_PNG_BASE64 } from "./awin-logo-base64";
 const AWIN_HEADER = {
-  name: "A-Win",
   tagline: "African Women Investment Network",
 };
 
@@ -14,13 +14,11 @@ function drawHeader(pdf: import("jspdf").jsPDF, title: string) {
   const pageW = pdf.internal.pageSize.getWidth();
   pdf.setFillColor(61, 139, 47);
   pdf.rect(0, 0, pageW, 60, "F");
+  pdf.addImage(AWIN_LOGO_WHITE_PNG_BASE64, "PNG", 40, 12, 36, 36);
   pdf.setTextColor(255, 255, 255);
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(14);
-  pdf.text(AWIN_HEADER.name, 40, 28);
   pdf.setFontSize(9);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(AWIN_HEADER.tagline, 40, 44);
+  pdf.text(AWIN_HEADER.tagline, 84, 34);
   pdf.setTextColor(20, 20, 20);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(16);
