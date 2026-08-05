@@ -16,7 +16,8 @@ import {
   Eye,
   Send,
   ChevronLeft,
-  CreditCard} from "lucide-react";
+  CreditCard,
+  AlertTriangle} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
@@ -68,6 +69,14 @@ type EventRow = {
   event_type: string | null;
 };
 
+type EventChangeRow = {
+  id: string;
+  summary: string;
+  changed_at: string;
+  event_id: string;
+  events: { title: string } | null;
+};
+
 type DocRow = {
   id: string;
   name: string;
@@ -96,6 +105,7 @@ function PortalPage() {
   const [apps, setApps] = useState<Application[] | null>(null);
   const [events, setEvents] = useState<EventRow[]>([]);
   const [registeredIds, setRegisteredIds] = useState<Set<string>>(new Set());
+  const [eventChanges, setEventChanges] = useState<EventChangeRow[]>([]);
   const [docs, setDocs] = useState<DocRow[]>([]);
   const [news, setNews] = useState<NewsRow[]>([]);
   const [readingArticle, setReadingArticle] = useState<NewsRow | null>(null);
@@ -128,7 +138,18 @@ function PortalPage() {
       setFullName((prof as Profile | null)?.full_name ?? "");
       setApps((appsData as Application[]) ?? []);
       setEvents((ev as EventRow[]) ?? []);
-      setRegisteredIds(new Set((regs ?? []).map((r: { event_id: string }) => r.event_id)));
+      const eventIds = (regs ?? []).map((r: { event_id: string }) => r.event_id);
+      setRegisteredIds(new Set(eventIds));
+
+      if (eventIds.length > 0) {
+        const { data: changes } = await supabase
+          .from("event_changes")
+          .select("id, summary, changed_at, event_id, events(title)")
+          .in("event_id", eventIds)
+          .order("changed_at", { ascending: false })
+          .limit(10);
+        setEventChanges((changes as unknown as EventChangeRow[]) ?? []);
+      }
       setDocs((dc as DocRow[]) ?? []);
       setNews((nw as NewsRow[]) ?? []);
     })();
@@ -273,7 +294,26 @@ function PortalPage() {
 
 
         {/* EVENTS */}
-        <TabsContent value="events" className="mt-4">
+        <TabsContent value="events" className="mt-4 space-y-4">
+          {eventChanges.length > 0 && (
+            <Card className="border-amber-400/50 bg-amber-500/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <AlertTriangle className="size-4 text-amber-600" /> Event changes
+                </CardTitle>
+                <CardDescription>An event you registered for has been updated.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {eventChanges.map((c) => (
+                  <div key={c.id} className="rounded-lg border border-amber-400/40 bg-background p-3 text-sm">
+                    <p className="font-medium text-foreground">{c.events?.title ?? "An event"}</p>
+                    <p className="mt-0.5 text-muted-foreground">{c.summary}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{new Date(c.changed_at).toLocaleString()}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
           <Card>
             <CardHeader>
               <CardTitle>Upcoming Events</CardTitle>

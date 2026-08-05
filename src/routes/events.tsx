@@ -312,26 +312,30 @@ function EventsPage() {
                         </p>
                       )}
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">{e.description}</p>
-                      {(() => {
+                      {/* Fixed min-height so a card's button area (single button vs. the taller
+                          confirmed-state badge+button) never changes the grid row's height and
+                          shifts neighbouring cards when someone registers or cancels. */}
+                      <div className="mt-5 flex min-h-[88px] flex-col justify-end">
+                        {(() => {
                         const my = myRsvps[e.id];
                         const isConfirmed = my?.status === "confirmed";
                         if (!e.is_awin_hosted) {
                           return (
-                            <Button className="mt-5 w-full" variant="outline" onClick={() => setViewingImage(e)}>
+                            <Button className="w-full" variant="outline" onClick={() => setViewingImage(e)}>
                               View poster &amp; details
                             </Button>
                           );
                         }
                         if (isPast) {
                           return (
-                            <Button className="mt-5 w-full" variant="outline" disabled>
+                            <Button className="w-full" variant="outline" disabled>
                               Event Ended
                             </Button>
                           );
                         }
                         if (isConfirmed) {
                           return (
-                            <div className="mt-5 space-y-2">
+                            <div className="space-y-2">
                               <div className="flex items-center justify-center gap-2 rounded-md bg-green-100 px-3 py-2 text-sm font-medium text-green-800 dark:bg-green-900/30 dark:text-green-200">
                                 <CheckCircle2 className="size-4" />
                                 You are registered
@@ -350,13 +354,14 @@ function EventsPage() {
                         }
                         return (
                           <Button
-                            className="mt-5 w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                            className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
                             onClick={() => setRegistering(e)}
                           >
                             {my?.status === "cancelled" ? "Re-register" : "Register"}
                           </Button>
                         );
-                      })()}
+                        })()}
+                      </div>
                     </CardContent>
                   </Card>
                 );

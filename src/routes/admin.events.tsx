@@ -173,11 +173,39 @@ function EventsAdminPage() {
       published: editing.published ?? false,
       is_awin_hosted: editing.is_awin_hosted ?? true,
     };
+
+    // Detect date/time/location changes on an existing event so registered
+    // members can be alerted — compare against what was loaded before editing.
+    const before = editing.id ? events?.find((e) => e.id === editing.id) : null;
+    const changeNotes: string[] = [];
+    if (before) {
+      if (before.event_date !== payload.event_date) {
+        changeNotes.push(`Date changed from ${new Date(before.event_date).toLocaleDateString()} to ${new Date(payload.event_date).toLocaleDateString()}`);
+      }
+      if ((before.event_time ?? "") !== (payload.event_time ?? "")) {
+        changeNotes.push(`Time changed from ${before.event_time || "TBC"} to ${payload.event_time || "TBC"}`);
+      }
+      if (before.location !== payload.location) {
+        changeNotes.push(`Location changed from "${before.location}" to "${payload.location}"`);
+      }
+    }
+
     const { error } = editing.id
       ? await supabase.from("events").update(payload).eq("id", editing.id)
       : await supabase.from("events").insert(payload);
     if (error) return toast.error(error.message);
-    toast.success("Event saved");
+
+    if (editing.id && changeNotes.length > 0) {
+      const { data: userData } = await supabase.auth.getUser();
+      await supabase.from("event_changes").insert({
+        event_id: editing.id,
+        summary: changeNotes.join(". "),
+        changed_by: userData.user?.id ?? null,
+      });
+      toast.success(`Event saved — registered members will see: ${changeNotes.join(". ")}`);
+    } else {
+      toast.success("Event saved");
+    }
     setEditing(null);
     load();
   };

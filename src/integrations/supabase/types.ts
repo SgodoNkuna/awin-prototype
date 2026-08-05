@@ -236,6 +236,38 @@ export type Database = {
         }
         Relationships: []
       }
+      event_changes: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          event_id: string
+          id: string
+          summary: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          event_id: string
+          id?: string
+          summary: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          event_id?: string
+          id?: string
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_changes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_gallery: {
         Row: {
           caption: string | null
