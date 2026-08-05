@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { BillingTab } from "@/components/portal/BillingTab";
 import { OnboardingTab } from "@/components/portal/OnboardingTab";
+import { SignedDocumentsCard } from "@/components/portal/SignedDocumentsCard";
 import { LinkifiedText } from "@/components/site/LinkifiedText";
 
 
@@ -323,7 +324,8 @@ function PortalPage() {
         </TabsContent>
 
         {/* DOCUMENTS */}
-        <TabsContent value="documents" className="mt-4">
+        <TabsContent value="documents" className="mt-4 space-y-4">
+          {user?.id && <SignedDocumentsCard userId={user.id} />}
           <Card>
             <CardHeader>
               <CardTitle>Member Documents</CardTitle>

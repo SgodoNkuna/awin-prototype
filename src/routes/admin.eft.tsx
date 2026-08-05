@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Check, X, Eye, FileText, Copy, ExternalLink } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Loader2, Check, X, Eye, FileText, Copy, ExternalLink, Stamp } from "lucide-react";
 import { toast } from "sonner";
 import { supabase as sb } from "@/integrations/supabase/client";
 const supabase = sb as any;
@@ -11,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { generateStampedDocument } from "@/lib/stamp-membership.functions";
 
 export const Route = createFileRoute("/admin/eft")({
   head: () => ({ meta: [{ title: "EFT Queue | A-Win Admin" }] }),
@@ -28,6 +30,8 @@ type Row = {
   pop_status: PopStatus;
   pop_reviewed_at: string | null;
   pop_review_notes: string | null;
+  signature_typed_name: string | null;
+  stamped_document_path: string | null;
   created_at: string;
 };
 
@@ -39,11 +43,13 @@ function EftQueuePage() {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [stamping, setStamping] = useState(false);
+  const callGenerateStamp = useServerFn(generateStampedDocument);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
       .from("applications")
-      .select("id, full_name, email, payment_reference, proof_of_payment_path, proof_of_payment_uploaded_at, pop_status, pop_reviewed_at, pop_review_notes, created_at")
+      .select("id, full_name, email, payment_reference, proof_of_payment_path, proof_of_payment_uploaded_at, pop_status, pop_reviewed_at, pop_review_notes, signature_typed_name, stamped_document_path, created_at")
       .not("proof_of_payment_path", "is", null)
       .order("proof_of_payment_uploaded_at", { ascending: false });
     if (error) toast.error(error.message);
@@ -84,8 +90,38 @@ function EftQueuePage() {
     setBusy(null);
     if (error) return toast.error(error.message, { id: tid });
     toast.success(`Marked ${status.replace("_", " ")}`, { id: tid });
+
+    // Once payment is verified, generate the stamped certificate if the
+    // applicant has already signed. If they haven't signed yet, this is a
+    // no-op here — the "Generate stamped document" button in the dialog
+    // covers the reverse ordering once they do.
+    if (status === "verified" && r.signature_typed_name && !r.stamped_document_path) {
+      void callGenerateStamp({ data: { application_id: r.id } }).catch(() => {});
+    }
+
     await load();
     setViewing(null);
+  };
+
+  const downloadStamp = async (r: Row) => {
+    if (!r.stamped_document_path) return;
+    const { data, error } = await supabase.storage.from("onboarding-uploads").createSignedUrl(r.stamped_document_path, 300);
+    if (error || !data) return toast.error(error?.message ?? "Could not sign PDF URL");
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const generateStamp = async (r: Row) => {
+    setStamping(true);
+    const tid = toast.loading("Generating stamped document…");
+    try {
+      await callGenerateStamp({ data: { application_id: r.id } });
+      toast.success("Stamped document generated", { id: tid });
+      await load();
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not generate document", { id: tid });
+    } finally {
+      setStamping(false);
+    }
   };
 
   const count = (s: PopStatus) => rows?.filter((r) => r.pop_status === s).length ?? 0;
@@ -212,6 +248,24 @@ function EftQueuePage() {
                 {viewing.pop_status !== "pending_review" && (
                   <Button variant="ghost" disabled={!!busy} onClick={() => setStatus(viewing, "pending_review")}>
                     Reset to pending
+                  </Button>
+                )}
+              </div>
+
+              <div className="rounded-lg border bg-muted/20 p-3">
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <Stamp className="size-3.5" /> Stamped certificate
+                </div>
+                {!viewing.signature_typed_name ? (
+                  <p className="text-xs text-muted-foreground">This applicant hasn't signed the membership agreement yet — nothing to stamp.</p>
+                ) : viewing.stamped_document_path ? (
+                  <Button size="sm" variant="outline" onClick={() => downloadStamp(viewing)}>
+                    <FileText className="mr-1 size-4" /> Download stamped document
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" disabled={stamping} onClick={() => generateStamp(viewing)}>
+                    {stamping ? <Loader2 className="mr-1 size-4 animate-spin" /> : <Stamp className="mr-1 size-4" />}
+                    Generate stamped document
                   </Button>
                 )}
               </div>
