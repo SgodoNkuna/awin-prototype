@@ -15,6 +15,7 @@ import {
   Menu,
   Award,
   Newspaper,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ type AdminPath =
   | "/admin/committees"
   | "/admin/applications"
   | "/admin/eft"
+  | "/admin/loa-rpa"
   | "/admin/events"
   | "/admin/gallery"
   | "/admin/news"
@@ -58,6 +60,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/admin/committees", label: "Committees", icon: Award },
       { to: "/admin/applications", label: "Applications", icon: ClipboardList },
       { to: "/admin/eft", label: "EFT Queue", icon: CreditCard },
+      { to: "/admin/loa-rpa", label: "LOA & Risk Profile", icon: ShieldCheck },
     ],
   },
   {

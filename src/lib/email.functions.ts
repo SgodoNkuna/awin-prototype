@@ -27,6 +27,36 @@ export const sendApplicationReceivedEmail = createServerFn({ method: "POST" })
     return sendEmail({ to: data.email, toName: data.fullName, ...mail });
   });
 
+/**
+ * Public: applicant confirmation email after a successful LOA/RPA submission.
+ * The submission row and PDF are already written client-side (RLS-permitted
+ * insert/upload) before this is called — this only sends the two emails.
+ */
+export const sendLoaRpaReceivedEmail = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) =>
+    z
+      .object({
+        email: z.string().email(),
+        fullName: z.string().trim().min(1).max(200),
+        source: z.enum(["whatsapp", "website"]),
+      })
+      .parse(i),
+  )
+  .handler(async ({ data }) => {
+    const { sendEmail, adminNotifyEnabled, rateLimitOk } = await import("./email.server");
+    // Abuse guard: at most 3 LOA/RPA emails per address per hour.
+    if (!(await rateLimitOk(`loarpa:${data.email.toLowerCase()}`, 3, 3600))) {
+      return { ok: false as const, error: "rate limited" };
+    }
+    const { loaRpaReceivedEmail, adminNewLoaRpaEmail } = await import("./email-templates.server");
+    const mail = loaRpaReceivedEmail(data.fullName);
+    if (await adminNotifyEnabled("new_loa_rpa")) {
+      const adminMail = adminNewLoaRpaEmail(data.fullName, data.email, data.source);
+      void sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...adminMail });
+    }
+    return sendEmail({ to: data.email, toName: data.fullName, ...mail });
+  });
+
 /** Public: forward a contact-form message to the info inbox. */
 export const sendContactNotification = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) =>

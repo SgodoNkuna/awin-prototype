@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Check,
   ChevronRight,
@@ -14,6 +14,8 @@ import {
   Home,
   HandCoins,
   BookOpen,
+  Wallet,
+  Lightbulb,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,6 +35,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { EftPanel } from "@/components/site/EftPanel";
+import { cn } from "@/lib/utils";
 
 // SINGLE MEMBERSHIP MODEL — must stay in sync with index.tsx and about.tsx.
 // Verified by tests/content-consistency.test.ts.
@@ -89,13 +93,95 @@ const ONBOARDING = [
 
 const SUPPORT_EMAIL = "phumelele@thuthuka-sa.co.za";
 
+const APPLY_STEPS = [
+  { n: 0, title: "Your Details", icon: PenLine },
+  { n: 1, title: "Proof of Payment", icon: Wallet },
+  { n: 2, title: "Done", icon: Check },
+] as const;
+
 function MembershipPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [popiaConsent, setPopiaConsent] = useState(false);
+
+  // Multi-step apply flow: 0 = details, 1 = proof of payment, 2 = done.
+  const [step, setStep] = useState<0 | 1 | 2>(0);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [applicantName, setApplicantName] = useState("");
+  const [appStatus, setAppStatus] = useState<string | null>(null);
+  const [resuming, setResuming] = useState(true);
+  const [popFile, setPopFile] = useState<File | null>(null);
+  const [paymentPurpose, setPaymentPurpose] = useState<"entry" | "monthly">("entry");
+  const [paymentReference, setPaymentReference] = useState("");
+  const [savingPayment, setSavingPayment] = useState(false);
+
+  // Resume an in-progress application for a returning, logged-in applicant.
+  useEffect(() => {
+    if (!user) { setResuming(false); return; }
+    let cancelled = false;
+    supabase
+      .from("applications")
+      .select("id, full_name, status, proof_of_payment_path, payment_reference")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        if (data) {
+          setApplicationId(data.id);
+          setApplicantName(data.full_name ?? "");
+          setAppStatus(data.status);
+          setPaymentReference(data.payment_reference ?? "");
+          setStep(data.proof_of_payment_path ? 2 : 1);
+        }
+        setResuming(false);
+      });
+    // Keyed on the stable id, not the `user` object — useAuth() returns a
+    // fresh `session?.user` object on every AuthProvider render, which would
+    // otherwise re-run this fetch and clobber in-progress edits below. The
+    // `cancelled` guard stops a stale run (e.g. React StrictMode's double
+    // effect invocation in dev) from resolving after this one and clobbering
+    // state a later effect (like EftPanel's) already corrected.
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  const savePayment = useCallback(
+    async (advance: boolean) => {
+      if (!applicationId || !user) return;
+      setSavingPayment(true);
+      try {
+        const patch: Record<string, unknown> = { payment_reference: paymentReference };
+        if (popFile) {
+          const ext = popFile.name.split(".").pop()?.toLowerCase() || "bin";
+          if (popFile.size > 8 * 1024 * 1024) throw new Error("File must be under 8 MB");
+          const path = `${user.id}/pop-${Date.now()}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from("onboarding-uploads")
+            .upload(path, popFile, { upsert: false, contentType: popFile.type || undefined });
+          if (upErr) throw upErr;
+          patch.proof_of_payment_path = path;
+          patch.proof_of_payment_uploaded_at = new Date().toISOString();
+        }
+        const { error } = await supabase.from("applications").update(patch as never).eq("id", applicationId);
+        if (error) throw error;
+        if (advance && patch.proof_of_payment_path) {
+          setStep(2);
+          toast.success("Proof of payment received!");
+        } else {
+          toast.success("Progress saved — come back anytime to finish uploading your proof of payment.");
+        }
+      } catch (err: any) {
+        toast.error(err.message ?? "Could not save. Please try again.");
+      } finally {
+        setSavingPayment(false);
+      }
+    },
+    [applicationId, user, popFile, paymentReference],
+  );
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -180,17 +266,21 @@ function MembershipPage() {
       }
 
       // tier column kept for backward compatibility; single model always stores "active".
-      const { error } = await supabase.from("applications").insert({
-        ...parsed.data,
-        tier: "active",
-        user_id: user?.id ?? null,
-        popia_consent: true,
-        popia_consent_at: new Date().toISOString(),
-      });
+      const { data: inserted, error } = await supabase
+        .from("applications")
+        .insert({
+          ...parsed.data,
+          tier: "active",
+          user_id: user?.id ?? null,
+          popia_consent: true,
+          popia_consent_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
       setSubmitting(false);
 
-      if (error) {
-        if (isDuplicateError(error)) {
+      if (error || !inserted) {
+        if (error && isDuplicateError(error)) {
           setDuplicateWarning(
             `An application with this email address or ID number already exists. Please contact ${SUPPORT_EMAIL} if you need assistance.`,
           );
@@ -199,14 +289,15 @@ function MembershipPage() {
         toast.error("Could not submit. Please try again.");
         return;
       }
-      setSubmitted(true);
+      setApplicationId(inserted.id);
+      setApplicantName(parsed.data.full_name);
       setPopiaConsent(false);
-      toast.success("Application received!");
+      setStep(1);
+      toast.success("Details saved — now let's get your proof of payment sorted.");
       // Confirmation email — fire and forget, submission already succeeded.
       void import("@/lib/email.functions").then(({ sendApplicationReceivedEmail }) =>
         sendApplicationReceivedEmail({ data: { email: cleanEmail, fullName: parsed.data.full_name } }).catch(() => {}),
       );
-      (e.target as HTMLFormElement).reset();
     },
     [user, popiaConsent, navigate],
   );
@@ -391,27 +482,63 @@ function MembershipPage() {
       <section id="application" className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 max-w-2xl">
           <h2 className="font-bold text-center mb-3">Apply Now</h2>
-          <p className="text-center text-muted-foreground mb-10">
-            Tell us about yourself. We'll be in touch within 5 business days.
+          <p className="text-center text-muted-foreground mb-8">
+            Three quick steps. You can save your progress and come back anytime.
           </p>
 
-          {submitted ? (
+          {resuming ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : appStatus === "approved" ? (
             <Card>
               <CardContent className="pt-6 text-center space-y-4">
                 <div className="size-16 rounded-full bg-accent/20 text-accent flex items-center justify-center mx-auto">
-                  <Check className="size-8" />
+                  <PartyPopper className="size-8" />
                 </div>
-                <h3 className="text-2xl font-semibold">Application received!</h3>
+                <h3 className="text-2xl font-semibold">You're already approved!</h3>
                 <p className="text-muted-foreground">
-                  We will review your application and contact you within 5 business days.
+                  Head over to onboarding to sign your membership agreement and finish setting up.
                 </p>
-                <Button asChild variant="outline">
-                  <Link to="/">Back to Home</Link>
-                </Button>
+                <Button asChild><Link to="/onboarding">Continue to Onboarding</Link></Button>
+              </CardContent>
+            </Card>
+          ) : appStatus === "rejected" ? (
+            <Card>
+              <CardContent className="pt-6 text-center space-y-4">
+                <h3 className="text-2xl font-semibold">Application not approved</h3>
+                <p className="text-muted-foreground">
+                  Your previous application wasn't approved. If you believe this is a mistake, please
+                  contact <a className="underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+                </p>
               </CardContent>
             </Card>
           ) : (
             <>
+              {/* Step indicator */}
+              <ol className="mb-8 flex items-center justify-center gap-2">
+                {APPLY_STEPS.map((s, i) => (
+                  <li key={s.n} className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        "flex size-9 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors",
+                        step > s.n
+                          ? "border-primary bg-primary text-white"
+                          : step === s.n
+                            ? "border-accent bg-accent text-accent-foreground"
+                            : "border-border bg-background text-muted-foreground",
+                      )}
+                    >
+                      {step > s.n ? <Check className="size-4" /> : <s.icon className="size-4" />}
+                    </div>
+                    <span className={cn("hidden text-xs font-medium sm:inline", step === s.n ? "text-accent-deep" : "text-muted-foreground")}>
+                      {s.title}
+                    </span>
+                    {i < APPLY_STEPS.length - 1 && <ChevronRight className="size-4 text-muted-foreground" />}
+                  </li>
+                ))}
+              </ol>
+
               {!user && (
                 <div className="mb-5 rounded-lg border border-accent/40 bg-accent/10 p-4 text-sm">
                   You'll need to{" "}
@@ -420,104 +547,178 @@ function MembershipPage() {
                   onboarding, linked to you. You can fill in the form first.
                 </div>
               )}
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="full_name">Full Name *</Label>
-                    <Input id="full_name" name="full_name" required maxLength={120} />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input id="email" name="email" type="email" required maxLength={255} />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone *</Label>
-                    <Input id="phone" name="phone" required maxLength={30} />
-                  </div>
-                  <div>
-                    <Label htmlFor="id_number">ID Number *</Label>
-                    <Input id="id_number" name="id_number" required maxLength={50} />
-                  </div>
-                  <div>
-                    <Label htmlFor="occupation">Occupation *</Label>
-                    <Input id="occupation" name="occupation" required maxLength={120} />
-                  </div>
-                  <div>
-                    <Label htmlFor="employer">Employer</Label>
-                    <Input id="employer" name="employer" maxLength={120} />
-                  </div>
-                </div>
 
-                <div>
-                  <Label htmlFor="experience">Investment Experience *</Label>
-                  <Select name="experience" defaultValue="beginner">
-                    <SelectTrigger id="experience">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="beginner">Beginner (new to investing)</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="motivation">Where did you hear about A-Win? *</Label>
-                  <Select name="motivation" defaultValue="Social media">
-                    <SelectTrigger id="motivation">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Social media">Social media</SelectItem>
-                      <SelectItem value="Friend or member referral">Friend or member referral</SelectItem>
-                      <SelectItem value="A-Win event or workshop">A-Win event or workshop</SelectItem>
-                      <SelectItem value="Phumelele Ndumo (Founder)">Phumelele Ndumo (Founder)</SelectItem>
-                      <SelectItem value="News / podcast / article">News / podcast / article</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="referral">Who referred you? (optional)</Label>
-                  <Input id="referral" name="referral" maxLength={120} placeholder="Name of the person who told you" />
-                </div>
-
-                {duplicateWarning && (
-                  <div
-                    role="alert"
-                    className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-500/50 dark:bg-amber-950/40 dark:text-amber-100"
-                  >
-                    {duplicateWarning}
+              {step === 0 && (
+                <>
+                  <div className="mb-5 flex items-start gap-2 rounded-lg border border-accent/30 bg-accent/5 p-3 text-xs text-foreground/80">
+                    <Lightbulb className="mt-0.5 size-4 shrink-0 text-accent-deep" />
+                    <p>Tip: have your ID number and cellphone handy — it takes about 2 minutes.</p>
                   </div>
-                )}
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="full_name">Full Name *</Label>
+                        <Input id="full_name" name="full_name" required maxLength={120} />
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email *</Label>
+                        <Input id="email" name="email" type="email" required maxLength={255} />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone *</Label>
+                        <Input id="phone" name="phone" required maxLength={30} />
+                      </div>
+                      <div>
+                        <Label htmlFor="id_number">ID Number *</Label>
+                        <Input id="id_number" name="id_number" required maxLength={50} />
+                      </div>
+                      <div>
+                        <Label htmlFor="occupation">Occupation *</Label>
+                        <Input id="occupation" name="occupation" required maxLength={120} />
+                      </div>
+                      <div>
+                        <Label htmlFor="employer">Employer</Label>
+                        <Input id="employer" name="employer" maxLength={120} />
+                      </div>
+                    </div>
 
-                <label className="flex items-start gap-3 rounded-lg border border-border p-4 cursor-pointer hover:bg-secondary/30">
-                  <Checkbox
-                    checked={popiaConsent}
-                    onCheckedChange={(v) => setPopiaConsent(!!v)}
-                    className="mt-0.5"
+                    <div>
+                      <Label htmlFor="experience">Investment Experience *</Label>
+                      <Select name="experience" defaultValue="beginner">
+                        <SelectTrigger id="experience">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="beginner">Beginner (new to investing)</SelectItem>
+                          <SelectItem value="intermediate">Intermediate</SelectItem>
+                          <SelectItem value="advanced">Advanced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="motivation">Where did you hear about A-Win? *</Label>
+                      <Select name="motivation" defaultValue="Social media">
+                        <SelectTrigger id="motivation">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Social media">Social media</SelectItem>
+                          <SelectItem value="Friend or member referral">Friend or member referral</SelectItem>
+                          <SelectItem value="A-Win event or workshop">A-Win event or workshop</SelectItem>
+                          <SelectItem value="Phumelele Ndumo (Founder)">Phumelele Ndumo (Founder)</SelectItem>
+                          <SelectItem value="News / podcast / article">News / podcast / article</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="referral">Who referred you? (optional)</Label>
+                      <Input id="referral" name="referral" maxLength={120} placeholder="Name of the person who told you" />
+                    </div>
+
+                    {duplicateWarning && (
+                      <div
+                        role="alert"
+                        className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-500/50 dark:bg-amber-950/40 dark:text-amber-100"
+                      >
+                        {duplicateWarning}
+                      </div>
+                    )}
+
+                    <label className="flex items-start gap-3 rounded-lg border border-border p-4 cursor-pointer hover:bg-secondary/30">
+                      <Checkbox
+                        checked={popiaConsent}
+                        onCheckedChange={(v) => setPopiaConsent(!!v)}
+                        className="mt-0.5"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        I consent to A-Win processing my personal information (name, ID number, contact
+                        details) for the purpose of reviewing this application, in terms of the Protection
+                        of Personal Information Act (POPIA).
+                      </span>
+                    </label>
+
+                    <Button type="submit" size="lg" className="w-full" disabled={submitting || !popiaConsent || !user}>
+                      {submitting && <Loader2 className="size-4 animate-spin mr-2" />}
+                      Continue <ChevronRight className="ml-1 size-4" />
+                    </Button>
+                  </form>
+                </>
+              )}
+
+              {step === 1 && (
+                <div className="space-y-5">
+                  <div className="flex items-start gap-2 rounded-lg border border-accent/30 bg-accent/5 p-3 text-xs text-foreground/80">
+                    <Lightbulb className="mt-0.5 size-4 shrink-0 text-accent-deep" />
+                    <p>
+                      Tip: pay by EFT using the reference below, then upload your proof here. Not ready to
+                      pay right now? Use <strong>Save &amp; Continue Later</strong> below — we'll pick up right
+                      where you left off next time you visit this page.
+                    </p>
+                  </div>
+                  <EftPanel
+                    fullName={applicantName}
+                    userSeed={user?.id}
+                    purpose={paymentPurpose}
+                    onPurposeChange={setPaymentPurpose}
+                    file={popFile}
+                    onFileChange={setPopFile}
+                    onReferenceChange={setPaymentReference}
                   />
-                  <span className="text-sm text-muted-foreground">
-                    I consent to A-Win processing my personal information (name, ID number, contact
-                    details) for the purpose of reviewing this application, in terms of the Protection
-                    of Personal Information Act (POPIA).
-                  </span>
-                </label>
+                  <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="lg"
+                      onClick={() => savePayment(false)}
+                      disabled={savingPayment}
+                    >
+                      {savingPayment ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
+                      Save &amp; Continue Later
+                    </Button>
+                    <Button
+                      type="button"
+                      size="lg"
+                      className="ml-auto"
+                      onClick={() => savePayment(true)}
+                      disabled={savingPayment || !popFile}
+                    >
+                      {savingPayment ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
+                      Continue <ChevronRight className="ml-1 size-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
 
-                <Button type="submit" size="lg" className="w-full" disabled={submitting || !popiaConsent || !user}>
-                  {submitting && <Loader2 className="size-4 animate-spin mr-2" />}
-                  Submit Application
-                </Button>
-              </form>
+              {step === 2 && (
+                <Card>
+                  <CardContent className="pt-6 text-center space-y-4">
+                    <div className="size-16 rounded-full bg-accent/20 text-accent flex items-center justify-center mx-auto">
+                      <Check className="size-8" />
+                    </div>
+                    <h3 className="text-2xl font-semibold">You're all set{applicantName ? `, ${applicantName.split(" ")[0]}` : ""}!</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      Your application and proof of payment are in. The committee reviews within 5 business
+                      days — once approved, you'll complete your Letter of Authority, Risk Profile and FICA
+                      documents to finish onboarding.
+                    </p>
+                    <Button asChild variant="outline">
+                      <Link to="/">Back to Home</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
 
-              <div className="mt-6 flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-                <ShieldCheck className="size-5 text-accent shrink-0 mt-0.5" />
-                <p>
-                  Payment information is shared securely with verified applicants only. Our team will contact you with payment details after your application is reviewed.
-                </p>
-              </div>
+              {step < 2 && (
+                <div className="mt-6 flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+                  <ShieldCheck className="size-5 text-accent shrink-0 mt-0.5" />
+                  <p>
+                    Your details and proof of payment are shared securely and reviewed by the committee only.
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>
