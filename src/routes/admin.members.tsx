@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { setUserRole, deleteMember } from "@/lib/admin-roles.functions";
+import { requestSetUserRole, requestDeleteMember } from "@/lib/admin-roles.functions";
 import { getErrorMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/admin/members")({
@@ -49,12 +49,12 @@ function MembersPage() {
   const [promoting, setPromoting] = useState<Member | null>(null);
   const [promoteReason, setPromoteReason] = useState("");
   const [promoteBusy, setPromoteBusy] = useState(false);
-  const callSetRole = useServerFn(setUserRole);
+  const callSetRole = useServerFn(requestSetUserRole);
   const [deleting, setDeleting] = useState<Member | null>(null);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
   const [deleteReason, setDeleteReason] = useState("");
   const [deleteBusy, setDeleteBusy] = useState(false);
-  const callDeleteMember = useServerFn(deleteMember);
+  const callDeleteMember = useServerFn(requestDeleteMember);
 
   const load = async () => {
     const { data, error } = await supabase
@@ -265,7 +265,8 @@ function MembersPage() {
             <DialogDescription>
               This permanently deletes {deleting?.full_name || deleting?.email}'s account and login
               access. Applications, payments and event registrations they made are kept for records,
-              just no longer linked to a live account. This cannot be undone.
+              just no longer linked to a live account. This cannot be undone. This request needs
+              approval from a different admin before it takes effect (see Admin → Approvals).
             </DialogDescription>
           </DialogHeader>
           {deleting && (
@@ -299,9 +300,8 @@ function MembersPage() {
                   await callDeleteMember({
                     data: { user_id: deleting.id, confirm_email: deleteConfirmEmail.trim(), reason: deleteReason.trim() },
                   });
-                  toast.success("Member deleted");
+                  toast.success("Deletion request submitted — needs approval from a different admin");
                   setDeleting(null);
-                  load();
                 } catch (e: any) {
                   toast.error(getErrorMessage(e, "Failed to delete member"));
                 } finally {
@@ -310,7 +310,7 @@ function MembersPage() {
               }}
             >
               {deleteBusy ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Trash2 className="size-4 mr-2" />}
-              Delete permanently
+              Request deletion
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -384,6 +384,9 @@ function MembersPage() {
                 <br />
                 <span className="text-xs text-muted-foreground">{promoting.email}</span>
               </p>
+              <p className="text-xs text-muted-foreground">
+                This requires approval from a different admin before it takes effect (see Admin → Approvals).
+              </p>
               <div className="grid gap-2">
                 <label className="text-xs font-medium">Reason (audit log, min 5 chars)</label>
                 <Textarea value={promoteReason} onChange={(e) => setPromoteReason(e.target.value)} rows={3} placeholder="e.g. New committee chair, onboarded 2026-06-24" />
@@ -400,7 +403,7 @@ function MembersPage() {
                 setPromoteBusy(true);
                 try {
                   await callSetRole({ data: { user_id: promoting.id, role: "admin", action: "revoke", reason: promoteReason.trim() } });
-                  toast.success("Admin role revoked");
+                  toast.success("Revoke request submitted — needs approval from a different admin");
                   setPromoting(null);
                 } catch (e: any) { toast.error(getErrorMessage(e, "Failed")); }
                 finally { setPromoteBusy(false); }
@@ -413,7 +416,7 @@ function MembersPage() {
                 setPromoteBusy(true);
                 try {
                   await callSetRole({ data: { user_id: promoting.id, role: "admin", action: "grant", reason: promoteReason.trim() } });
-                  toast.success("Promoted to admin");
+                  toast.success("Promotion request submitted — needs approval from a different admin");
                   setPromoting(null);
                 } catch (e: any) { toast.error(getErrorMessage(e, "Failed")); }
                 finally { setPromoteBusy(false); }

@@ -40,6 +40,7 @@ import { Route as AdminEftRouteImport } from './routes/admin.eft'
 import { Route as AdminDocumentsRouteImport } from './routes/admin.documents'
 import { Route as AdminCommitteesRouteImport } from './routes/admin.committees'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
+import { Route as AdminApprovalsRouteImport } from './routes/admin.approvals'
 import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast.itn'
 
@@ -198,6 +199,11 @@ const AdminBillingRoute = AdminBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminApprovalsRoute = AdminApprovalsRouteImport.update({
+  id: '/approvals',
+  path: '/approvals',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminApplicationsRoute = AdminApplicationsRouteImport.update({
   id: '/applications',
   path: '/applications',
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof TeamRoute
   '/why-a-win': typeof WhyAWinRoute
   '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/approvals': typeof AdminApprovalsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/committees': typeof AdminCommitteesRoute
   '/admin/documents': typeof AdminDocumentsRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByTo {
   '/team': typeof TeamRoute
   '/why-a-win': typeof WhyAWinRoute
   '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/approvals': typeof AdminApprovalsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/committees': typeof AdminCommitteesRoute
   '/admin/documents': typeof AdminDocumentsRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/team': typeof TeamRoute
   '/why-a-win': typeof WhyAWinRoute
   '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/approvals': typeof AdminApprovalsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/committees': typeof AdminCommitteesRoute
   '/admin/documents': typeof AdminDocumentsRoute
@@ -335,6 +344,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/why-a-win'
     | '/admin/applications'
+    | '/admin/approvals'
     | '/admin/billing'
     | '/admin/committees'
     | '/admin/documents'
@@ -369,6 +379,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/why-a-win'
     | '/admin/applications'
+    | '/admin/approvals'
     | '/admin/billing'
     | '/admin/committees'
     | '/admin/documents'
@@ -404,6 +415,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/why-a-win'
     | '/admin/applications'
+    | '/admin/approvals'
     | '/admin/billing'
     | '/admin/committees'
     | '/admin/documents'
@@ -662,6 +674,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBillingRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/approvals': {
+      id: '/admin/approvals'
+      path: '/approvals'
+      fullPath: '/admin/approvals'
+      preLoaderRoute: typeof AdminApprovalsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/applications': {
       id: '/admin/applications'
       path: '/applications'
@@ -681,6 +700,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminApplicationsRoute: typeof AdminApplicationsRoute
+  AdminApprovalsRoute: typeof AdminApprovalsRoute
   AdminBillingRoute: typeof AdminBillingRoute
   AdminCommitteesRoute: typeof AdminCommitteesRoute
   AdminDocumentsRoute: typeof AdminDocumentsRoute
@@ -698,6 +718,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminApplicationsRoute: AdminApplicationsRoute,
+  AdminApprovalsRoute: AdminApprovalsRoute,
   AdminBillingRoute: AdminBillingRoute,
   AdminCommitteesRoute: AdminCommitteesRoute,
   AdminDocumentsRoute: AdminDocumentsRoute,

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { deleteApplication } from "@/lib/admin-roles.functions";
+import { requestDeleteApplication } from "@/lib/admin-roles.functions";
 
 export const Route = createFileRoute("/admin/applications")({
   component: ApplicationsPage,
@@ -50,7 +50,7 @@ function ApplicationsPage() {
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [deleteReason, setDeleteReason] = useState("");
   const [deleteBusy, setDeleteBusy] = useState(false);
-  const callDeleteApplication = useServerFn(deleteApplication);
+  const callDeleteApplication = useServerFn(requestDeleteApplication);
 
   const load = async () => {
     const { data } = await supabase
@@ -265,7 +265,8 @@ function ApplicationsPage() {
           <DialogHeader>
             <DialogTitle className="text-destructive">Delete Application</DialogTitle>
             <DialogDescription>
-              This permanently removes {deleting?.full_name}'s application. This cannot be undone.
+              This permanently removes {deleting?.full_name}'s application. This cannot be undone. This
+              request needs approval from a different admin before it takes effect (see Admin → Approvals).
             </DialogDescription>
           </DialogHeader>
           {deleting && (
@@ -299,18 +300,17 @@ function ApplicationsPage() {
                   await callDeleteApplication({
                     data: { application_id: deleting.id, confirm_name: deleteConfirmName.trim(), reason: deleteReason.trim() },
                   });
-                  toast.success("Application deleted");
+                  toast.success("Deletion request submitted — needs approval from a different admin");
                   setDeleting(null);
-                  await load();
                 } catch (e: any) {
-                  toast.error(e.message ?? "Failed to delete application");
+                  toast.error(e.message ?? "Failed to submit deletion request");
                 } finally {
                   setDeleteBusy(false);
                 }
               }}
             >
               {deleteBusy ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Trash2 className="size-4 mr-2" />}
-              Delete permanently
+              Request deletion
             </Button>
           </DialogFooter>
         </DialogContent>

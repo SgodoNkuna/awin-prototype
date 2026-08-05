@@ -16,6 +16,7 @@ import {
   Award,
   Newspaper,
   ShieldCheck,
+  UserCheck,
 } from "lucide-react";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ type AdminPath =
   | "/admin/messages"
   | "/admin/documents"
   | "/admin/billing"
+  | "/admin/approvals"
   | "/admin/settings";
 
 type NavItem = {
@@ -82,6 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "System",
     items: [
+      { to: "/admin/approvals", label: "Approvals", icon: UserCheck },
       { to: "/admin/settings", label: "Settings", icon: Settings },
     ],
   },
