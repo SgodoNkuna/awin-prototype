@@ -14,6 +14,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescrip
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { setUserRole, deleteMember } from "@/lib/admin-roles.functions";
+import { getErrorMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/admin/members")({
   component: MembersPage,
@@ -302,7 +303,7 @@ function MembersPage() {
                   setDeleting(null);
                   load();
                 } catch (e: any) {
-                  toast.error(e.message ?? "Failed to delete member");
+                  toast.error(getErrorMessage(e, "Failed to delete member"));
                 } finally {
                   setDeleteBusy(false);
                 }
@@ -401,7 +402,7 @@ function MembersPage() {
                   await callSetRole({ data: { user_id: promoting.id, role: "admin", action: "revoke", reason: promoteReason.trim() } });
                   toast.success("Admin role revoked");
                   setPromoting(null);
-                } catch (e: any) { toast.error(e.message ?? "Failed"); }
+                } catch (e: any) { toast.error(getErrorMessage(e, "Failed")); }
                 finally { setPromoteBusy(false); }
               }}
             >Revoke admin</Button>
@@ -414,7 +415,7 @@ function MembersPage() {
                   await callSetRole({ data: { user_id: promoting.id, role: "admin", action: "grant", reason: promoteReason.trim() } });
                   toast.success("Promoted to admin");
                   setPromoting(null);
-                } catch (e: any) { toast.error(e.message ?? "Failed"); }
+                } catch (e: any) { toast.error(getErrorMessage(e, "Failed")); }
                 finally { setPromoteBusy(false); }
               }}
             >{promoteBusy ? <Loader2 className="size-4 animate-spin" /> : "Promote to admin"}</Button>

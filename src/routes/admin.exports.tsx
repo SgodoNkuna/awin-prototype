@@ -16,6 +16,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AWIN_LOGO_WHITE_PNG_BASE64 } from "@/lib/awin-logo-base64";
 import {
   buildExportSafeCss,
   buildScreenshotCaption,
@@ -287,10 +288,11 @@ function addCoverPage(pdf: import("jspdf").jsPDF, title: string, subtitle: strin
   const pageH = pdf.internal.pageSize.getHeight();
   pdf.setFillColor(32, 75, 48);
   pdf.rect(0, 0, pageW, pageH, "F");
+  pdf.addImage(AWIN_LOGO_WHITE_PNG_BASE64, "PNG", 54, 50, 48, 48);
   pdf.setTextColor(255, 250, 240);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(28);
-  pdf.text(title, 54, 122, { maxWidth: pageW - 108 });
+  pdf.text(title, 54, 138, { maxWidth: pageW - 108 });
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(12);
   pdf.text(subtitle, 54, 158, { maxWidth: pageW - 108 });
