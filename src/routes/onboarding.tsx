@@ -97,24 +97,27 @@ function OnboardingPage() {
   const [drawnSignature, setDrawnSignature] = useState("");
   const [purpose, setPurpose] = useState<"entry" | "monthly">("entry");
   const [stampAcknowledged, setStampAcknowledged] = useState(false);
+  const [alreadySigned, setAlreadySigned] = useState(false);
+  const [loaRpaDone, setLoaRpaDone] = useState(false);
 
   // Load the applicant's own account + carry forward whatever Apply Now
   // already collected — so this page updates that same application record
   // instead of creating a disconnected duplicate, and never re-asks for
-  // details, consent or proof of payment already on file.
+  // details, consent, a signature or proof of payment already on file.
   useEffect(() => {
     let cancelled = false;
     sha256(AGREEMENT_TEXT).then((h) => !cancelled && setDocHash(h));
     supabase.auth.getUser().then(async ({ data }) => {
       if (cancelled) return;
       const uid = data.user?.id ?? null;
+      const email = data.user?.email ?? "";
       setUserId(uid);
-      setUserEmail(data.user?.email ?? "");
+      setUserEmail(email);
       if (!uid) { setResuming(false); return; }
 
       const { data: app } = await supabase
         .from("applications")
-        .select("id, full_name, phone, id_number, occupation, employer, motivation, popia_consent, proof_of_payment_path, payment_reference")
+        .select("id, full_name, phone, id_number, occupation, employer, motivation, popia_consent, proof_of_payment_path, payment_reference, signature_typed_name, agreement_accepted_at")
         .eq("user_id", uid)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -135,8 +138,27 @@ function OnboardingPage() {
         setHadProofFromApply(!!app.proof_of_payment_path);
 
         const detailsDone = !!(app.full_name && app.phone && app.id_number && app.occupation && (app.motivation?.length ?? 0) > 0);
-        if (detailsDone && app.popia_consent) setStep(2); // straight to Sign — details + consent already on file
-        else if (detailsDone) setStep(1);
+        const signDone = !!(app.signature_typed_name && app.agreement_accepted_at);
+        if (signDone) {
+          // The agreement is already signed and submitted — don't ask again.
+          // Land straight on the confirmation screen instead of the wizard.
+          setAlreadySigned(true);
+          setTypedSignature(app.signature_typed_name ?? "");
+          setAgree(true);
+          setStep(5);
+        } else if (detailsDone && app.popia_consent) {
+          setStep(2); // straight to Sign — details + consent already on file
+        } else if (detailsDone) {
+          setStep(1);
+        }
+
+        const { data: loaRow } = await supabase
+          .from("loa_rpa_submissions")
+          .select("id")
+          .eq("application_id", app.id)
+          .limit(1)
+          .maybeSingle();
+        if (!cancelled) setLoaRpaDone(!!loaRow);
       }
       setResuming(false);
     });
@@ -467,25 +489,41 @@ function OnboardingPage() {
                   <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-primary/15 text-primary">
                     <Check className="size-8" />
                   </div>
-                  <h2 className="font-serif text-2xl text-foreground">You're all set</h2>
+                  <h2 className="font-serif text-2xl text-foreground">
+                    {alreadySigned ? "You've already completed this" : "You're all set"}
+                  </h2>
                   <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                    Your onboarding has been submitted. The Main Committee will verify your proof of payment and confirm your membership by email within 5 working days.
+                    {alreadySigned
+                      ? "Your membership agreement is signed and on file. The Main Committee will verify your proof of payment and confirm your membership by email within 5 working days."
+                      : "Your onboarding has been submitted. The Main Committee will verify your proof of payment and confirm your membership by email within 5 working days."}
                   </p>
 
-                  <div className="mx-auto mt-4 max-w-md rounded-xl border border-accent/40 bg-accent/10 p-5 text-left">
-                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-accent">
-                      <ShieldCheck className="size-4" /> One more step
+                  {loaRpaDone ? (
+                    <div className="mx-auto mt-4 max-w-md rounded-xl border border-primary/30 bg-primary/5 p-5 text-left">
+                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
+                        <Check className="size-4" /> Also done
+                      </div>
+                      <h3 className="mt-2 font-serif text-lg text-foreground">Letter of Authority &amp; Risk Profile</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Already submitted — nothing more needed here.
+                      </p>
                     </div>
-                    <h3 className="mt-2 font-serif text-lg text-foreground">Complete your Letter of Authority &amp; Risk Profile</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Required by ThuthukaSA (FSP No. 47992) so we can guide your investment appropriately. Takes about 5 minutes.
-                    </p>
-                    <Button asChild className="mt-4 w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                      <Link to="/loa-rpa">
-                        Start LOA &amp; Risk Profile <ChevronRight className="ml-1 size-4" />
-                      </Link>
-                    </Button>
-                  </div>
+                  ) : (
+                    <div className="mx-auto mt-4 max-w-md rounded-xl border border-accent/40 bg-accent/10 p-5 text-left">
+                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-accent">
+                        <ShieldCheck className="size-4" /> One more step
+                      </div>
+                      <h3 className="mt-2 font-serif text-lg text-foreground">Complete your Letter of Authority &amp; Risk Profile</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Required by ThuthukaSA (FSP No. 47992) so we can guide your investment appropriately. Takes about 5 minutes.
+                      </p>
+                      <Button asChild className="mt-4 w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                        <Link to="/loa-rpa">
+                          Start LOA &amp; Risk Profile <ChevronRight className="ml-1 size-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
 
                   <div className="flex justify-center gap-3 pt-2">
                     <Button asChild variant="outline">
