@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Copy, Pencil, Users, Loader2 } from "lucide-react";
+import { Plus, Trash2, Copy, Pencil, Users, Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -82,6 +82,68 @@ function EventsAdminPage() {
     if (error) return toast.error(error.message);
     toast.success("Registration cancelled");
     if (viewingRegs) loadRegs(viewingRegs.id);
+  };
+
+  const exportRegsCsv = () => {
+    if (!viewingRegs) return;
+    const headers = ["Name", "Email", "Phone", "Status", "Registered"];
+    const rows = regs.map((r) => [r.full_name, r.email, r.phone ?? "", r.status, new Date(r.created_at).toLocaleString()]);
+    const csv = [headers, ...rows].map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${viewingRegs.title.replace(/[^a-z0-9]+/gi, "-")}-attendees.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportRegsPdf = async () => {
+    if (!viewingRegs) return;
+    const { jsPDF } = await import("jspdf");
+    const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+    const margin = 40;
+    pdf.setFillColor(61, 139, 47);
+    pdf.rect(0, 0, pdf.internal.pageSize.getWidth(), 60, "F");
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(14);
+    pdf.text("A-Win", margin, 28);
+    pdf.setFontSize(9);
+    pdf.setFont("helvetica", "normal");
+    pdf.text("African Women Investment Network", margin, 44);
+    pdf.setTextColor(20, 20, 20);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
+    pdf.text(`Attendees: ${viewingRegs.title}`, margin, 90);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
+    pdf.setTextColor(90, 90, 90);
+    pdf.text(`${regs.filter((r) => r.status === "confirmed").length} confirmed of ${regs.length} total`, margin, 108);
+
+    let y = 140;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+    pdf.setTextColor(90, 90, 90);
+    pdf.text("NAME", margin, y);
+    pdf.text("EMAIL", margin + 150, y);
+    pdf.text("STATUS", margin + 340, y);
+    pdf.text("REGISTERED", margin + 410, y);
+    y += 6;
+    pdf.setDrawColor(220, 220, 220);
+    pdf.line(margin, y, pdf.internal.pageSize.getWidth() - margin, y);
+    y += 16;
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(20, 20, 20);
+    for (const r of regs) {
+      if (y > 780) { pdf.addPage(); y = 60; }
+      pdf.text(r.full_name.slice(0, 28), margin, y);
+      pdf.text(r.email.slice(0, 32), margin + 150, y);
+      pdf.text(r.status, margin + 340, y);
+      pdf.text(new Date(r.created_at).toLocaleDateString(), margin + 410, y);
+      y += 18;
+    }
+    pdf.save(`${viewingRegs.title.replace(/[^a-z0-9]+/gi, "-")}-attendees.pdf`);
   };
 
   const reinstateReg = async (id: string) => {
@@ -262,9 +324,21 @@ function EventsAdminPage() {
             const confirmed = regs.filter((r) => r.status === "confirmed").length;
             const cancelled = regs.filter((r) => r.status === "cancelled").length;
             return (
-              <div className="flex flex-wrap gap-2 -mt-1">
-                <Badge>{confirmed} confirmed</Badge>
-                {cancelled > 0 && <Badge variant="outline">{cancelled} cancelled</Badge>}
+              <div className="flex flex-wrap items-center justify-between gap-2 -mt-1">
+                <div className="flex flex-wrap gap-2">
+                  <Badge>{confirmed} confirmed</Badge>
+                  {cancelled > 0 && <Badge variant="outline">{cancelled} cancelled</Badge>}
+                </div>
+                {regs.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={exportRegsCsv}>
+                      <Download className="size-3.5 mr-1" /> CSV
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={exportRegsPdf}>
+                      <Download className="size-3.5 mr-1" /> PDF
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           })()}

@@ -253,6 +253,16 @@ export function MembersPage() {
     return map;
   }, [filtered]);
 
+  const byLocation = useMemo(() => {
+    const counts = new Map<string, number>();
+    generalMembers.forEach((m) => {
+      const key = (m.location || "").trim();
+      if (!key) return;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    });
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  }, [generalMembers]);
+
   const directoryAZ = useMemo(() => {
     const groups = new Map<string, Member[]>();
     (filtered ?? []).forEach((m) => {
@@ -341,6 +351,19 @@ export function MembersPage() {
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             Some of our members offer professional services. Use the filter below to connect with them.
           </p>
+
+          {byLocation.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <MapPin className="size-3.5" /> Where our members are
+              </span>
+              {byLocation.map(([loc, count]) => (
+                <Badge key={loc} variant="secondary" className="font-normal">
+                  {loc} · {count}
+                </Badge>
+              ))}
+            </div>
+          )}
 
           <div className="relative mt-5 w-full">
             <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
