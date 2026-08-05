@@ -9,6 +9,7 @@ import {
   mirrorPortfolioAssets,
   purgeOrphanPortfolioObjects,
   getPortfolioMirrorStatus,
+  signPortfolioUrls,
 } from "@/lib/portfolio-storage.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,12 @@ function SettingsPage() {
   const [team, setTeam] = useState<TeamMember[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [dialogMember, setDialogMember] = useState<TeamMember | null>(null);
+  // Display-only: storage-key image fields resolved to signed URLs, keyed by
+  // the raw key. `team` itself always keeps the real stored value (a storage
+  // key or a public URL) so editing/saving never writes a temporary signed
+  // URL back into the database.
+  const [imageDisplayMap, setImageDisplayMap] = useState<Record<string, string>>({});
+  const sign = useServerFn(signPortfolioUrls);
 
   const load = async () => {
     const [s, m] = await Promise.all([
@@ -69,10 +76,30 @@ function SettingsPage() {
     const obj: Settings = {};
     (s.data ?? []).forEach((r) => { obj[r.key] = r.value as Record<string, unknown>; });
     setSettings(obj);
-    setTeam((m.data as TeamMember[]) ?? []);
+
+    const rows = (m.data as TeamMember[]) ?? [];
+    setTeam(rows);
     setLoading(false);
+
+    // Some rows store a private-bucket storage key instead of a full URL
+    // (after a real mirror run) — resolve those to signed URLs so previews
+    // and thumbnails actually render, without touching the saved value.
+    const keys = new Set<string>();
+    for (const row of rows) {
+      if (row.photo_url) keys.add(row.photo_url);
+      if (row.profile_card_url) keys.add(row.profile_card_url);
+    }
+    if (keys.size === 0) return;
+    try {
+      const res = await sign({ data: { keys: [...keys] } });
+      setImageDisplayMap(res.urls);
+    } catch (e) {
+      console.error("signPortfolioUrls failed", e);
+    }
   };
   useEffect(() => { load(); }, []);
+
+  const displayImage = (v: string | null) => (v && imageDisplayMap[v]) || v;
 
   const updateSetting = (key: string, value: Record<string, unknown>) =>
     setSettings({ ...settings, [key]: value });
@@ -303,7 +330,7 @@ function SettingsPage() {
               <div key={m.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
                 <div className="size-11 shrink-0 rounded-full bg-muted overflow-hidden flex items-center justify-center text-xs font-semibold">
                   {m.profile_card_url || m.photo_url ? (
-                    <img src={m.profile_card_url || m.photo_url || ""} alt="" className="size-full object-cover" />
+                    <img src={displayImage(m.profile_card_url) || displayImage(m.photo_url) || ""} alt="" className="size-full object-cover" />
                   ) : (
                     (m.name || "?").split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase()
                   )}
@@ -335,6 +362,7 @@ function SettingsPage() {
 
           <TeamMemberDialog
             member={dialogMember}
+            displayImage={displayImage}
             onClose={() => setDialogMember(null)}
             onSaved={() => { setDialogMember(null); load(); }}
           />
@@ -423,10 +451,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 /** Add/edit dialog for a single public "Our Members" profile card. */
 function TeamMemberDialog({
   member,
+  displayImage,
   onClose,
   onSaved,
 }: {
   member: TeamMember | null;
+  displayImage: (v: string | null) => string | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -506,14 +536,14 @@ function TeamMemberDialog({
                 <Input value={draft.profile_card_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => set("profile_card_url", e.target.value)} />
                 <UploadImageButton onUploaded={(url) => set("profile_card_url", url)} />
               </div>
-              {draft.profile_card_url ? <img src={draft.profile_card_url} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
+              {draft.profile_card_url ? <img src={displayImage(draft.profile_card_url) ?? undefined} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
             </Field>
             <Field label="Headshot (fallback)">
               <div className="flex gap-2">
                 <Input value={draft.photo_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => set("photo_url", e.target.value)} />
                 <UploadImageButton onUploaded={(url) => set("photo_url", url)} />
               </div>
-              {draft.photo_url ? <img src={draft.photo_url} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
+              {draft.photo_url ? <img src={displayImage(draft.photo_url) ?? undefined} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
             </Field>
           </div>
 
@@ -686,6 +716,7 @@ function MirrorStorageCard() {
   const [busy, setBusy] = useState<null | "mirror" | "dry" | "purge" | "purge-dry">(null);
   const [status, setStatus] = useState<any>(null);
   const [preview, setPreview] = useState<any>(null);
+  const [expanded, setExpanded] = useState(false);
 
   const refresh = async () => {
     try { setStatus(await loadStatus()); } catch { /* ignore */ }
@@ -721,12 +752,19 @@ function MirrorStorageCard() {
 
   return (
     <Card className="border-accent/40 bg-accent/5">
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 p-4 text-left"
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold">
           <CloudUpload className="size-4" /> Portfolio storage sync
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+          {mirrorStatus?.failed > 0 && <span className="text-xs font-normal text-destructive">({mirrorStatus.failed} failed)</span>}
+        </span>
+        <span className="text-xs text-muted-foreground">{expanded ? "Hide" : "Show"}</span>
+      </button>
+      {expanded && (
+      <CardContent className="space-y-4 pt-0">
         <p className="text-sm text-muted-foreground">
           Mirrors every remote member photo, card and portfolio image into the private <code>member-portfolios</code> bucket and rewrites the database to use storage keys. The site then renders via signed URLs so Vercel and Supabase stay in sync.
         </p>
@@ -835,6 +873,7 @@ function MirrorStorageCard() {
           </details>
         )}
       </CardContent>
+      )}
     </Card>
   );
 }
