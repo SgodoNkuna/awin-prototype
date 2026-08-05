@@ -19,7 +19,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MEMBER_CATEGORIES } from "@/lib/member-categories";
 
 export const Route = createFileRoute("/admin/settings")({
@@ -550,12 +549,15 @@ function TeamMemberDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Category">
-              <Select value={draft.category ?? ""} onValueChange={(v) => set("category", v)}>
-                <SelectTrigger><SelectValue placeholder="Choose a category" /></SelectTrigger>
-                <SelectContent>
-                  {MEMBER_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Input
+                list="member-category-options"
+                value={draft.category ?? ""}
+                onChange={(e) => set("category", e.target.value)}
+                placeholder="Choose or type a new category"
+              />
+              <datalist id="member-category-options">
+                {MEMBER_CATEGORIES.map((c) => <option key={c} value={c} />)}
+              </datalist>
             </Field>
             <Field label="Location">
               <Input value={draft.location ?? ""} placeholder="Johannesburg, ZA" onChange={(e) => set("location", e.target.value)} />
