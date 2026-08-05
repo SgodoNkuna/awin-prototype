@@ -115,12 +115,23 @@ function EventsPage() {
   }, [registering, user]);
 
   const now = Date.now();
-  const filtered = (events ?? []).filter((e) => {
-    const ts = new Date(e.event_date).getTime();
-    if (filter === "upcoming") return ts >= now;
-    if (filter === "past") return ts < now;
-    return true;
-  });
+  const filtered = (events ?? [])
+    .filter((e) => {
+      const ts = new Date(e.event_date).getTime();
+      if (filter === "upcoming") return ts >= now;
+      if (filter === "past") return ts < now;
+      return true;
+    })
+    // "All" mixes upcoming and past — always show upcoming first (soonest
+    // first), then past events (most recent first), never past-before-future.
+    .sort((a, b) => {
+      const aTs = new Date(a.event_date).getTime();
+      const bTs = new Date(b.event_date).getTime();
+      const aPast = aTs < now;
+      const bPast = bTs < now;
+      if (aPast !== bPast) return aPast ? 1 : -1;
+      return aPast ? bTs - aTs : aTs - bTs;
+    });
 
   const submitRegistration = async () => {
     if (!registering) return;
