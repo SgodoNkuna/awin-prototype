@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus, Trash2, Loader2, Save, CloudUpload, Eye, Trash } from "lucide-react";
+import { Plus, Trash2, Loader2, Save, CloudUpload, Eye, Trash, Copy, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -457,6 +457,39 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+const PORTFOLIO_PROMPTS = [
+  {
+    title: "1. Write the portfolio bio",
+    text: `Write a short professional portfolio bio for [Name], a [occupation/title] and A-Win member. Include: what they do and who they serve, 2-3 concrete achievements or credentials, their investment/business focus area, and one sentence on why they joined A-Win. Keep it under 120 words, warm but professional tone, no em-dashes. End with a one-line quote in their own voice.`,
+  },
+  {
+    title: "2. Extract it into form fields",
+    text: `Take the portfolio text below and split it into these exact fields for the A-Win member profile form: Name | Title | Category (one of: Finance & Accounting, Legal & Governance, Health & Wellness, or best-fit) | Bio (2-3 sentences) | Location | Expertise (comma-separated tags, max 5). Output as a labeled list, one field per line, no extra commentary.\n\n[paste portfolio text here]`,
+  },
+];
+
+function CopyPromptBlock({ title, text }: { title: string; text: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success("Prompt copied");
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div className="rounded-md border border-border bg-muted/30 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-semibold">{title}</span>
+        <Button size="sm" variant="outline" onClick={copy}>
+          {copied ? <Check className="size-3.5 mr-1.5 text-primary" /> : <Copy className="size-3.5 mr-1.5" />}
+          {copied ? "Copied" : "Copy"}
+        </Button>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground whitespace-pre-wrap">{text}</p>
+    </div>
+  );
+}
+
 /** Add/edit dialog for a single public "Our Members" profile card. */
 function TeamMemberDialog({
   member,
@@ -594,6 +627,19 @@ function TeamMemberDialog({
               <Input value={draft.website ?? ""} onChange={(e) => set("website", e.target.value)} />
             </Field>
           </div>
+
+          {isNew && (
+            <details className="rounded-md border border-accent/30 bg-accent/5">
+              <summary className="flex cursor-pointer items-center gap-1.5 p-2.5 text-xs font-medium text-accent-deep">
+                <Sparkles className="size-3.5" /> AI prompts for writing this profile
+              </summary>
+              <div className="space-y-2 p-2.5 pt-0">
+                {PORTFOLIO_PROMPTS.map((p) => (
+                  <CopyPromptBlock key={p.title} title={p.title} text={p.text} />
+                ))}
+              </div>
+            </details>
+          )}
 
           <Field label="Bio">
             <Textarea rows={3} value={draft.bio ?? ""} onChange={(e) => set("bio", e.target.value)} />
