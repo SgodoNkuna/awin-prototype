@@ -20,6 +20,12 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { MEMBER_CATEGORIES } from "@/lib/member-categories";
+import {
+  requestSiteSettingsUpdate,
+  requestTeamMemberUpsert,
+  requestTeamMemberDelete,
+  requestSettingsDangerAction,
+} from "@/lib/admin-settings.functions";
 
 export const Route = createFileRoute("/admin/settings")({
   validateSearch: z.object({
@@ -66,6 +72,9 @@ function SettingsPage() {
   // URL back into the database.
   const [imageDisplayMap, setImageDisplayMap] = useState<Record<string, string>>({});
   const sign = useServerFn(signPortfolioUrls);
+  const callRequestSettingsUpdate = useServerFn(requestSiteSettingsUpdate);
+  const callRequestTeamMemberDelete = useServerFn(requestTeamMemberDelete);
+  const callRequestDangerAction = useServerFn(requestSettingsDangerAction);
 
   const load = async () => {
     const [s, m] = await Promise.all([
@@ -108,10 +117,13 @@ function SettingsPage() {
     const { data: current } = await supabase.from("site_settings").select("value").eq("key", key).maybeSingle();
     const currentText = current?.value ? JSON.stringify(current.value, null, 2) : "(nothing published yet)";
     const nextText = JSON.stringify(settings[key] ?? {}, null, 2);
-    if (!confirm(`Publish changes to "${key}"?\n\nCurrently public:\n${currentText}\n\nNew:\n${nextText}`)) return;
-    const { error } = await supabase.from("site_settings").upsert({ key, value: settings[key] as never });
-    if (error) return toast.error(error.message);
-    toast.success("Published");
+    if (!confirm(`Submit changes to "${key}" for approval?\n\nCurrently public:\n${currentText}\n\nNew:\n${nextText}\n\nA different admin must approve this before it goes live.`)) return;
+    try {
+      await callRequestSettingsUpdate({ data: { key, value: settings[key] ?? {} } });
+      toast.success("Submitted — needs approval from a different admin (see Admin → Approvals)");
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to submit");
+    }
   };
 
   if (loading) {
@@ -346,11 +358,13 @@ function SettingsPage() {
                   variant="ghost"
                   className="text-destructive hover:text-destructive"
                   onClick={async () => {
-                    if (!confirm(`Delete ${m.name || "this member"}? This cannot be undone.`)) return;
-                    const { error } = await supabase.from("team_members").delete().eq("id", m.id!);
-                    if (error) return toast.error(error.message);
-                    toast.success("Deleted");
-                    load();
+                    if (!confirm(`Submit deletion of ${m.name || "this member"} for approval? A different admin must approve before it's removed.`)) return;
+                    try {
+                      await callRequestTeamMemberDelete({ data: { id: m.id!, name: m.name || "unnamed" } });
+                      toast.success("Submitted — needs approval from a different admin");
+                    } catch (e: any) {
+                      toast.error(e.message ?? "Failed to submit");
+                    }
                   }}
                 >
                   <Trash2 className="size-4" />
@@ -403,31 +417,26 @@ function SettingsPage() {
             <CardContent className="space-y-4">
               <DangerAction
                 title="Clear all contact messages"
-                description="Permanently delete every message submitted through the contact form."
+                description="Permanently delete every message submitted through the contact form. Needs approval from a different admin."
                 confirmText="DELETE MESSAGES"
                 onConfirm={async () => {
-                  const { error } = await supabase.from("contact_messages").delete().gte("created_at", "1970-01-01");
-                  if (error) throw error;
+                  await callRequestDangerAction({ data: { op: "clear_messages" } });
                 }}
               />
               <DangerAction
                 title="Reset all site settings to defaults"
-                description="Removes every key in site_settings. Public copy will fall back to hard-coded defaults until you republish."
+                description="Removes every key in site_settings. Public copy will fall back to hard-coded defaults until you republish. Needs approval from a different admin."
                 confirmText="RESET SETTINGS"
                 onConfirm={async () => {
-                  const { error } = await supabase.from("site_settings").delete().gte("key", "");
-                  if (error) throw error;
-                  await load();
+                  await callRequestDangerAction({ data: { op: "reset_settings" } });
                 }}
               />
               <DangerAction
                 title="Delete all draft (unpublished) team profiles"
-                description="Removes team_members rows where published = false. Live members are untouched."
+                description="Removes team_members rows where published = false. Live members are untouched. Needs approval from a different admin."
                 confirmText="DELETE DRAFTS"
                 onConfirm={async () => {
-                  const { error } = await supabase.from("team_members").delete().eq("published", false);
-                  if (error) throw error;
-                  await load();
+                  await callRequestDangerAction({ data: { op: "delete_draft_members" } });
                 }}
               />
             </CardContent>
@@ -462,6 +471,7 @@ function TeamMemberDialog({
 }) {
   const [draft, setDraft] = useState<TeamMember | null>(member);
   const [saving, setSaving] = useState(false);
+  const callRequestUpsert = useServerFn(requestTeamMemberUpsert);
 
   useEffect(() => {
     setDraft(member);
@@ -502,11 +512,13 @@ function TeamMemberDialog({
         committee_position: sanitizeOptionalText(draft.committee_position),
         committee_order: draft.committee_order ?? 0,
       } as any;
-      const { error } = draft.id
-        ? await supabase.from("team_members").update(payload).eq("id", draft.id)
-        : await supabase.from("team_members").insert(payload);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Saved");
+      try {
+        await callRequestUpsert({ data: { id: draft.id, payload } });
+      } catch (e: any) {
+        toast.error(e.message ?? "Failed to submit");
+        return;
+      }
+      toast.success("Submitted — needs approval from a different admin");
       onSaved();
     } finally {
       setSaving(false);
@@ -518,7 +530,10 @@ function TeamMemberDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isNew ? "Add Member" : `Edit ${draft.name || "Member"}`}</DialogTitle>
-          <DialogDescription>Public profile card shown on the "Our Members" page. No login required.</DialogDescription>
+          <DialogDescription>
+            Public profile card shown on the "Our Members" page. No login required. Saving requires
+            approval from a different admin before it goes live.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
@@ -701,8 +716,8 @@ function DangerAction({
           const entered = window.prompt(`Type ${confirmText} to confirm. This cannot be undone.`);
           if (entered !== confirmText) return;
           setBusy(true);
-          try { await onConfirm(); toast.success("Done"); }
-          catch (e: any) { toast.error(e.message ?? "Failed"); }
+          try { await onConfirm(); toast.success("Submitted — needs approval from a different admin"); }
+          catch (e: any) { toast.error(e.message ?? "Failed to submit"); }
           finally { setBusy(false); }
         }}
       >

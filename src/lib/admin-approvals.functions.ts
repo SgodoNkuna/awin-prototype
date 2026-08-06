@@ -7,6 +7,12 @@ import {
   executeDeleteMember,
   executeDeleteApplication,
 } from "@/lib/admin-roles.functions";
+import {
+  executeSiteSettingsUpdate,
+  executeTeamMemberUpsert,
+  executeTeamMemberDelete,
+  executeSettingsDangerAction,
+} from "@/lib/admin-settings.functions";
 
 export const listPendingApprovals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -125,6 +131,18 @@ export const decideApproval = createServerFn({ method: "POST" })
         case "role_grant":
         case "role_revoke":
           result = await executeUserRoleChange(supabaseAdmin, row.payload, actor);
+          break;
+        case "site_settings_update":
+          result = await executeSiteSettingsUpdate(supabaseAdmin, row.payload, actor);
+          break;
+        case "team_member_upsert":
+          result = await executeTeamMemberUpsert(supabaseAdmin, row.payload, actor);
+          break;
+        case "team_member_delete":
+          result = await executeTeamMemberDelete(supabaseAdmin, row.payload, actor);
+          break;
+        case "settings_danger_action":
+          result = await executeSettingsDangerAction(supabaseAdmin, row.payload, actor);
           break;
         default:
           throw new Error(`Unknown action_type: ${row.action_type}`);

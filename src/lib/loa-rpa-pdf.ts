@@ -5,6 +5,7 @@
  * Not a pixel-for-pixel reproduction of their letterhead artwork.
  */
 import type { LoaData, RpaData } from "./loa-rpa-types";
+import { THUTHUKA_LOGO_PNG_BASE64 } from "./thuthuka-logo-base64";
 
 const THUTHUKA_HEADER = {
   name: "ThuthukaSA",
@@ -18,6 +19,10 @@ function drawHeader(pdf: import("jspdf").jsPDF, title: string) {
   const pageW = pdf.internal.pageSize.getWidth();
   pdf.setFillColor(232, 150, 10);
   pdf.rect(0, 0, pageW, 60, "F");
+  // Logo mark, white circle backing so it reads clearly on the orange band.
+  pdf.setFillColor(255, 255, 255);
+  pdf.circle(pageW - 40, 30, 22, "F");
+  pdf.addImage(THUTHUKA_LOGO_PNG_BASE64, "PNG", pageW - 58, 12, 36, 36);
   pdf.setTextColor(255, 255, 255);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(14);

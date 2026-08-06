@@ -15,6 +15,7 @@ import { SignaturePad } from "@/components/site/SignaturePad";
 import { sendLoaRpaReceivedEmail } from "@/lib/email.functions";
 import { buildLoaRpaPdf } from "@/lib/loa-rpa-pdf";
 import { emptyLoaData, emptyRpaData, type LoaData, type RpaData } from "@/lib/loa-rpa-types";
+import { THUTHUKA_LOGO_PNG_BASE64 } from "@/lib/thuthuka-logo-base64";
 
 export const Route = createFileRoute("/loa-rpa")({
   head: () => ({
@@ -187,10 +188,17 @@ function LoaRpaPage() {
             <span className="text-hero-foreground">LOA &amp; Risk Profile</span>
           </nav>
           <h1 className="mt-5 font-serif">Letter of Authority &amp; Risk Profile</h1>
-          <p className="mt-4 max-w-xl text-primary-foreground/95 md:text-lg">
-            Two short forms required by ThuthukaSA (FSP No. 47992) so we can guide your investment appropriately.
-            Takes about 5 minutes on your phone.
-          </p>
+          <div className="mt-4 flex items-center gap-3">
+            <img
+              src={THUTHUKA_LOGO_PNG_BASE64}
+              alt="ThuthukaSA"
+              className="size-10 rounded-full bg-white p-1 shadow-sm"
+            />
+            <p className="max-w-xl text-primary-foreground/95 md:text-lg">
+              Two short forms required by ThuthukaSA (FSP No. 47992) so we can guide your investment appropriately.
+              Takes about 5 minutes on your phone.
+            </p>
+          </div>
         </div>
       </section>
 

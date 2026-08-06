@@ -25,7 +25,15 @@ type Requester = { id: string; full_name: string | null; email: string | null } 
 
 type ApprovalRequest = {
   id: string;
-  action_type: "member_delete" | "application_delete" | "role_grant" | "role_revoke";
+  action_type:
+    | "member_delete"
+    | "application_delete"
+    | "role_grant"
+    | "role_revoke"
+    | "site_settings_update"
+    | "team_member_upsert"
+    | "team_member_delete"
+    | "settings_danger_action";
   payload: Record<string, unknown>;
   reason: string;
   status: "pending" | "approved" | "rejected" | "executed" | "failed";
@@ -43,6 +51,10 @@ const ACTION_LABELS: Record<ApprovalRequest["action_type"], string> = {
   application_delete: "Delete application",
   role_grant: "Grant admin role",
   role_revoke: "Revoke admin role",
+  site_settings_update: "Publish settings change",
+  team_member_upsert: "Add/edit team profile",
+  team_member_delete: "Delete team profile",
+  settings_danger_action: "Danger zone action",
 };
 
 function getErrorMessage(e: unknown, fallback: string) {
@@ -59,6 +71,14 @@ function payloadSummary(req: ApprovalRequest): string {
     case "role_grant":
     case "role_revoke":
       return `Target: ${p.email ?? p.user_id}`;
+    case "site_settings_update":
+      return `Key: ${p.key}`;
+    case "team_member_upsert":
+      return p.id ? `Editing: ${p.payload?.name ?? p.id}` : `New profile: ${p.payload?.name ?? "unnamed"}`;
+    case "team_member_delete":
+      return `Profile: ${p.name}`;
+    case "settings_danger_action":
+      return `Operation: ${p.op}`;
     default:
       return "";
   }
