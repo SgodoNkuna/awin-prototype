@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { SignaturePad } from "@/components/site/SignaturePad";
 import { sendLoaRpaReceivedEmail } from "@/lib/email.functions";
 import { buildLoaRpaPdf } from "@/lib/loa-rpa-pdf";
@@ -39,6 +40,11 @@ async function sha256(text: string) {
 
 const DOC_VERSION = "loa-rpa-v1.0-2026";
 
+const INCOME_MAX = 100000;
+const INCOME_STEP = 1000;
+const formatIncome = (v: number) =>
+  v >= INCOME_MAX ? `R${INCOME_MAX.toLocaleString()}+` : `R${v.toLocaleString()}`;
+
 function LoaRpaPage() {
   const sendReceivedEmail = useServerFn(sendLoaRpaReceivedEmail);
   const [submitting, setSubmitting] = useState(false);
@@ -57,11 +63,19 @@ function LoaRpaPage() {
 
   const [loa, setLoa] = useState<LoaData>(emptyLoaData());
   const [rpa, setRpa] = useState<RpaData>(emptyRpaData());
+  const [incomeValue, setIncomeValue] = useState(10000);
   const [loaAgree, setLoaAgree] = useState(false);
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [signatureType, setSignatureType] = useState<"typed" | "drawn">("typed");
   const [typedSignature, setTypedSignature] = useState("");
   const [drawnSignature, setDrawnSignature] = useState("");
+
+  // Keep the submitted value in sync with the slider's default even if the
+  // applicant never touches it — onValueChange only fires on interaction.
+  useEffect(() => {
+    setRpaField("grossMonthlyIncome")(formatIncome(incomeValue));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Pre-fill from the applicant's own membership application, if any.
   useEffect(() => {
@@ -233,7 +247,15 @@ function LoaRpaPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Label>Gender</Label>
-                    <Input value={rpa.gender} onChange={(e) => setRpaField("gender")(e.target.value)} />
+                    <Select value={rpa.gender} onValueChange={setRpaField("gender")}>
+                      <SelectTrigger><SelectValue placeholder="Choose one" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                        <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label>Work number</Label>
@@ -247,9 +269,23 @@ function LoaRpaPage() {
                     <Label>Occupation</Label>
                     <Input value={rpa.occupation} onChange={(e) => setRpaField("occupation")(e.target.value)} />
                   </div>
-                  <div>
-                    <Label>Gross monthly income</Label>
-                    <Input value={rpa.grossMonthlyIncome} onChange={(e) => setRpaField("grossMonthlyIncome")(e.target.value)} placeholder="Before deductions" />
+                  <div className="sm:col-span-2">
+                    <div className="flex items-baseline justify-between">
+                      <Label>Gross monthly income</Label>
+                      <span className="text-sm font-semibold text-primary">{formatIncome(incomeValue)}</span>
+                    </div>
+                    <Slider
+                      className="mt-2"
+                      min={0}
+                      max={INCOME_MAX}
+                      step={INCOME_STEP}
+                      value={[incomeValue]}
+                      onValueChange={([v]) => {
+                        setIncomeValue(v);
+                        setRpaField("grossMonthlyIncome")(formatIncome(v));
+                      }}
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">Before deductions, per month</p>
                   </div>
                   <div>
                     <Label>Marital status</Label>
