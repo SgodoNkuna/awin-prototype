@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Copy, Pencil, Users, Loader2, Download } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Plus, Trash2, Copy, Pencil, Users, Loader2, Download, Sparkles, CloudUpload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { extractEventFromPoster } from "@/lib/event-poster-extraction.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -304,6 +306,22 @@ function EventsAdminPage() {
               <Field label="Location">
                 <Input value={editing.location ?? ""} onChange={(e) => setEditing({ ...editing, location: e.target.value })} />
               </Field>
+              {!editing.id && (
+                <PosterUploadExtract
+                  onExtracted={(fields, imageUrl) =>
+                    setEditing((cur) => ({
+                      ...cur,
+                      title: fields.title || cur?.title,
+                      description: fields.description || cur?.description,
+                      event_date: fields.event_date || cur?.event_date,
+                      event_time: fields.event_time ?? cur?.event_time,
+                      location: fields.location || cur?.location,
+                      is_awin_hosted: fields.is_awin_hosted,
+                      image_url: imageUrl,
+                    }))
+                  }
+                />
+              )}
               <Field label="Image URL (paste a hosted image link)">
                 <Input value={editing.image_url ?? ""} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} placeholder="https://..." />
               </Field>
@@ -415,6 +433,83 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div className="grid gap-1.5">
       <Label className="text-xs">{label}</Label>
       {children}
+    </div>
+  );
+}
+
+type ExtractedEventFields = {
+  title: string;
+  event_date: string;
+  event_time: string | null;
+  location: string;
+  description: string;
+  is_awin_hosted: boolean;
+};
+
+/** Upload a poster image and auto-fill the New Event form from it via AI. */
+function PosterUploadExtract({
+  onExtracted,
+}: {
+  onExtracted: (fields: ExtractedEventFields, imageUrl: string) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const callExtract = useServerFn(extractEventFromPoster);
+
+  const handleFile = async (file: File) => {
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Image must be under 8 MB");
+      return;
+    }
+    setBusy(true);
+    try {
+      // Upload the poster to storage first so it's usable as the event image
+      // even if extraction below fails or isn't configured yet.
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `events/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("gallery")
+        .upload(path, file, { contentType: file.type, upsert: true });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("gallery").getPublicUrl(path);
+
+      const imageDataUrl: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const fields = await callExtract({ data: { imageDataUrl } });
+      onExtracted(fields as ExtractedEventFields, pub.publicUrl);
+      toast.success("Poster read — form filled in, please double-check it");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not read the poster");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="rounded-md border border-accent/30 bg-accent/5 p-3">
+      <label
+        className={`flex items-center justify-center gap-2 rounded-md border border-dashed border-accent/50 py-4 text-sm text-accent-deep cursor-pointer hover:bg-accent/10 ${busy ? "opacity-60 pointer-events-none" : ""}`}
+      >
+        {busy ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+        {busy ? "Reading poster…" : "Upload a poster to auto-fill this form"}
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFile(file);
+            e.target.value = "";
+          }}
+        />
+      </label>
+      <p className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+        <CloudUpload className="size-3" /> Uploads the poster as the event image and reads title/date/time/location off it.
+      </p>
     </div>
   );
 }
