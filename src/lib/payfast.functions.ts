@@ -77,6 +77,11 @@ export const createPayfastCheckout = createServerFn({ method: "POST" })
     });
     if (insertErr) throw new Error(`Could not create payment record: ${insertErr.message}`);
 
+    // "active" (R500/month) is a real recurring subscription — charged
+    // automatically every month until the member cancels. "general" (R200
+    // joining fee) stays a once-off payment.
+    const isRecurring = data.tier === "active";
+
     const fields: Record<string, string> = {
       merchant_id: merchantId,
       merchant_key: merchantKey,
@@ -89,9 +94,20 @@ export const createPayfastCheckout = createServerFn({ method: "POST" })
       m_payment_id: mPaymentId,
       amount: amountZar.toFixed(2),
       item_name: itemName,
-      item_description: `${TIER_NAMES[data.tier]} membership for 12 months`,
+      item_description: isRecurring
+        ? `${TIER_NAMES[data.tier]} membership, billed monthly`
+        : `${TIER_NAMES[data.tier]} membership`,
       custom_str1: data.tier,
       custom_str2: context.userId,
+      ...(isRecurring
+        ? {
+            subscription_type: "1",
+            billing_date: new Date().toISOString().slice(0, 10),
+            recurring_amount: amountZar.toFixed(2),
+            frequency: "3", // monthly
+            cycles: "0", // indefinite, until the member cancels
+          }
+        : {}),
     };
 
     const ordered: Array<[string, string]> = [];
@@ -107,6 +123,61 @@ export const createPayfastCheckout = createServerFn({ method: "POST" })
     };
   });
 
+/**
+ * Cancel the signed-in member's recurring PayFast subscription, if any.
+ * Uses PayFast's Subscriptions API (separate from the checkout/ITN
+ * signature scheme — header-based auth, documented at
+ * developers.payfast.co.za/docs#subscriptions).
+ */
+export const cancelPayfastSubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { PAYFAST_API_URL, pfSignature } = await import("./payfast.server");
+
+    const merchantId = process.env.PAYFAST_MERCHANT_ID;
+    const passphrase = process.env.PAYFAST_PASSPHRASE ?? "";
+    if (!merchantId) throw new Error("PayFast is not configured.");
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("payfast_subscription_token")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const token = profile?.payfast_subscription_token;
+    if (!token) throw new Error("No active recurring payment on file.");
+
+    const timestamp = new Date().toISOString().slice(0, 19);
+    const version = "v1";
+    const headerFields: Array<[string, string]> = [
+      ["merchant-id", merchantId],
+      ["timestamp", timestamp],
+      ["version", version],
+    ];
+    const signature = pfSignature(headerFields, passphrase);
+
+    const res = await fetch(`${PAYFAST_API_URL}/subscriptions/${token}/cancel`, {
+      method: "PUT",
+      headers: {
+        "merchant-id": merchantId,
+        version,
+        timestamp,
+        signature,
+      },
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`PayFast cancel failed (${res.status}): ${body.slice(0, 200)}`);
+    }
+
+    await supabaseAdmin
+      .from("profiles")
+      .update({ payfast_subscription_token: null })
+      .eq("id", context.userId);
+
+    return { ok: true };
+  });
+
 /** Member's own payment history + active membership window. */
 export const getMyPayments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -120,7 +191,7 @@ export const getMyPayments = createServerFn({ method: "GET" })
         .limit(20),
       context.supabase
         .from("profiles")
-        .select("membership_status, membership_tier, membership_expires_at, last_payment_at")
+        .select("membership_status, membership_tier, membership_expires_at, last_payment_at, payfast_subscription_token")
         .eq("id", context.userId)
         .maybeSingle(),
     ]);

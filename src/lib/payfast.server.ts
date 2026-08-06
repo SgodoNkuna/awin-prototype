@@ -14,6 +14,10 @@ export const PAYFAST_VALIDATE_URL = PAYFAST_SANDBOX
   ? "https://sandbox.payfast.co.za/eng/query/validate"
   : "https://www.payfast.co.za/eng/query/validate";
 
+export const PAYFAST_API_URL = PAYFAST_SANDBOX
+  ? "https://api.sandbox.payfast.co.za"
+  : "https://api.payfast.co.za";
+
 /**
  * PayFast uses urlencoding where SPACE = "+" (not %20) and uppercase hex.
  * This must match exactly or signatures will mismatch.
@@ -114,4 +118,10 @@ export const PAYFAST_FIELD_ORDER = [
   "custom_str5",
   "email_confirmation",
   "confirmation_address",
+  // Recurring billing — must come last per PayFast's documented field order.
+  "subscription_type",
+  "billing_date",
+  "recurring_amount",
+  "frequency",
+  "cycles",
 ] as const;

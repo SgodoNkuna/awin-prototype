@@ -153,6 +153,19 @@ export function contactMessageEmail(name: string, email: string, subject: string
   };
 }
 
+export function adminNewApprovalRequestEmail(actionLabel: string, reason: string, requestedByName: string) {
+  return {
+    subject: `Approval needed: ${actionLabel}`,
+    html: layout(
+      "A request is waiting for a second admin",
+      p(`${strong(requestedByName)} filed a request that needs approval from a ${strong("different")} admin before it takes effect.`) +
+        p(`${strong("Action:")} ${esc(actionLabel)}`) +
+        p(`${strong("Reason given:")} ${esc(reason)}`) +
+        btn(`${BRAND.site}/admin/approvals`, "Review in Admin → Approvals"),
+    ),
+  };
+}
+
 export function passwordChangedEmail(fullName: string) {
   return {
     subject: "Your A-Win password was changed",

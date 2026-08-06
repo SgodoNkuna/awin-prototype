@@ -54,7 +54,7 @@ export async function rateLimitOk(key: string, max: number, windowSeconds: numbe
  * the setting can't be read, so admin alerts are never silently lost.
  */
 export async function adminNotifyEnabled(
-  key: "new_application" | "new_message" | "event_registration" | "new_loa_rpa",
+  key: "new_application" | "new_message" | "event_registration" | "new_loa_rpa" | "new_approval_request",
 ): Promise<boolean> {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

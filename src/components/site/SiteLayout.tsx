@@ -17,7 +17,9 @@ function ForcePasswordChangeGate() {
   useEffect(() => {
     if (loading || !user || !forcePasswordChange) return;
     if (FORCE_CHANGE_ALLOWLIST.includes(location.pathname)) return;
-    navigate({ to: "/change-password", replace: true });
+    // Remember where they were headed so /change-password can return them
+    // there afterward, instead of always landing on a generic admin/portal home.
+    navigate({ to: "/change-password", search: { next: location.pathname }, replace: true });
   }, [loading, user, forcePasswordChange, location.pathname, navigate]);
 
   return null;

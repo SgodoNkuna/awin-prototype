@@ -80,11 +80,16 @@ function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
     >
       <Card className="h-full overflow-hidden border-border/60 bg-card shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)] flex flex-col">
         {previewSrc ? (
-          <div
-            className="aspect-[3/4] w-full bg-cover bg-center bg-secondary"
-            style={{ backgroundImage: `url(${previewSrc})` }}
-            aria-hidden="true"
-          />
+          <div className="aspect-[3/4] w-full overflow-hidden bg-secondary">
+            <img
+              src={previewSrc}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+              aria-hidden="true"
+            />
+          </div>
         ) : (
           <div className="aspect-[3/4] w-full bg-accent/15 flex items-center justify-center">
             <span className="font-serif text-5xl text-accent-deep">{initials(m.name)}</span>
@@ -114,11 +119,16 @@ function CommitteeCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }
       className="flex w-44 shrink-0 flex-col items-center rounded-2xl border border-border/60 bg-card p-4 text-center shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-52"
     >
       {m.photo_url || m.profile_card_url ? (
-        <div
-          className="size-20 rounded-full bg-cover bg-center ring-2 ring-accent/40 sm:size-24"
-          style={{ backgroundImage: `url(${m.photo_url || m.profile_card_url})` }}
-          aria-hidden="true"
-        />
+        <div className="size-20 shrink-0 overflow-hidden rounded-full ring-2 ring-accent/40 sm:size-24">
+          <img
+            src={m.photo_url || m.profile_card_url || undefined}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover"
+            aria-hidden="true"
+          />
+        </div>
       ) : (
         <div className="size-20 rounded-full bg-muted flex items-center justify-center text-xl font-serif text-muted-foreground sm:size-24">
           {initials(m.name)}

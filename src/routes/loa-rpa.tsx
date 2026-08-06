@@ -225,6 +225,22 @@ function LoaRpaPage() {
 
       <section className="py-12">
         <div className="mx-auto max-w-2xl space-y-8 px-4">
+          {/* Section overview — this is a long single-scroll form, so set
+              expectations up front rather than leaving length a surprise. */}
+          <ol className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground">
+            {["Your details", "Letter of Authority", "Risk Profile", "Sign & submit"].map((label, i, arr) => (
+              <li key={label} className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5">
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-semibold text-foreground">
+                    {i + 1}
+                  </span>
+                  {label}
+                </span>
+                {i < arr.length - 1 && <ChevronRight className="size-3 text-muted-foreground/50" />}
+              </li>
+            ))}
+          </ol>
+
           {/* Your details */}
           <Card className="border-border/60">
             <CardContent className="space-y-4 p-6">

@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { z } from "zod";
@@ -20,6 +20,7 @@ const schema = z
 function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
   const { user, isAdmin, forcePasswordChange, clearForcePasswordChange } = useAuth();
   const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as { next?: string };
   const [busy, setBusy] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -56,7 +57,7 @@ function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
 
     setBusy(false);
     toast.success("Password changed");
-    navigate({ to: isAdmin ? "/admin" : "/portal", replace: true });
+    navigate({ to: search.next || (isAdmin ? "/admin" : "/portal"), replace: true });
   };
 
   const mustChange = forced || forcePasswordChange;

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { ensureAdmin } from "@/lib/admin-roles.functions";
+import { ensureAdmin, notifyNewApprovalRequest } from "@/lib/admin-roles.functions";
 
 // --- Execution logic --------------------------------------------------------
 // Reachable only from admin-approvals.functions.ts's decideApproval dispatcher,
@@ -140,6 +140,11 @@ export const requestSiteSettingsUpdate = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+    notifyNewApprovalRequest(
+      "Publish settings change",
+      `Publish "${data.key}" settings`,
+      context.claims?.email ?? "an admin",
+    );
     return { ok: true, approval_id: row.id };
   });
 
@@ -161,6 +166,11 @@ export const requestTeamMemberUpsert = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+    notifyNewApprovalRequest(
+      "Add/edit team profile",
+      `${data.id ? "Edit" : "Add"} team profile: ${name}`,
+      context.claims?.email ?? "an admin",
+    );
     return { ok: true, approval_id: row.id };
   });
 
@@ -181,6 +191,7 @@ export const requestTeamMemberDelete = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+    notifyNewApprovalRequest("Delete team profile", `Delete team profile: ${data.name}`, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });
 
@@ -201,5 +212,6 @@ export const requestSettingsDangerAction = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+    notifyNewApprovalRequest("Danger zone action", `Danger zone: ${data.op}`, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });

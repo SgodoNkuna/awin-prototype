@@ -284,10 +284,17 @@ function EventsPage() {
                     <button
                       type="button"
                       onClick={() => setViewingImage(e)}
-                      className="group relative block h-44 w-full shrink-0 cursor-zoom-in bg-cover bg-center bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      style={{ backgroundImage: `url(${cover})` }}
+                      className="group relative block h-44 w-full shrink-0 cursor-zoom-in overflow-hidden bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={`View full poster for ${e.title}`}
                     >
+                      <img
+                        src={cover}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 h-full w-full object-cover"
+                        aria-hidden="true"
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent transition-opacity group-hover:from-black/60" aria-hidden="true" />
                       <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">
                         <div className="font-serif text-xl leading-none">{db.d}</div>

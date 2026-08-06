@@ -59,14 +59,36 @@ export async function processItnPayload(
   }
 
   if (status === "COMPLETE") {
-    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
     const paidAt = new Date().toISOString();
+    const pfToken = payload["token"] ?? null;
+
+    // "active" (R500/month) is billed monthly via a real PayFast subscription
+    // — each successful charge extends membership by 1 month from whichever
+    // is later, now or the current expiry (so paying a few days early never
+    // shortens the member's standing). "general" (R200 joining fee) is a
+    // once-off payment and still grants the standard 12-month window.
+    let expiresAt: string;
+    if (payment.tier === "active") {
+      const { data: currentProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("membership_expires_at")
+        .eq("id", payment.user_id)
+        .maybeSingle();
+      const currentExpiry = currentProfile?.membership_expires_at
+        ? new Date(currentProfile.membership_expires_at).getTime()
+        : 0;
+      const base = Math.max(Date.now(), currentExpiry);
+      expiresAt = new Date(base + 30 * 24 * 60 * 60 * 1000).toISOString();
+    } else {
+      expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+    }
 
     await supabaseAdmin
       .from("payments")
       .update({
         status: "paid",
         pf_payment_id: pfPaymentId,
+        payfast_token: pfToken,
         raw_payload: payload,
         paid_at: paidAt,
       })
@@ -82,6 +104,7 @@ export async function processItnPayload(
           membership_expires_at: expiresAt,
           last_payment_at: paidAt,
           joined_at: paidAt,
+          ...(pfToken ? { payfast_subscription_token: pfToken } : {}),
         })
         .eq("id", payment.user_id);
 

@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getMyPayments, createPayfastCheckout } from "@/lib/payfast.functions";
+import { getMyPayments, createPayfastCheckout, cancelPayfastSubscription } from "@/lib/payfast.functions";
 import { buildEftReference, useBankDetails } from "@/components/site/EftPanel";
 import { useAuth } from "@/lib/use-auth";
 
@@ -25,6 +25,7 @@ type Profile = {
   membership_tier: string | null;
   membership_expires_at: string | null;
   last_payment_at: string | null;
+  payfast_subscription_token: string | null;
 };
 
 const fmtZar = (cents: number) =>
@@ -46,16 +47,36 @@ function statusBadge(s: string) {
 export function BillingTab({ preferredTier }: { preferredTier?: string | null }) {
   const [data, setData] = useState<{ payments: Payment[]; profile: Profile | null } | null>(null);
   const [paying, setPaying] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const { user } = useAuth();
   const bank = useBankDetails();
   const fnGet = useServerFn(getMyPayments);
   const fnCheckout = useServerFn(createPayfastCheckout);
+  const fnCancel = useServerFn(cancelPayfastSubscription);
 
-  useEffect(() => {
+  const load = () =>
     fnGet()
       .then((r) => setData(r as { payments: Payment[]; profile: Profile | null }))
       .catch((err) => toast.error(err.message ?? "Could not load billing"));
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fnGet]);
+
+  const cancelSubscription = async () => {
+    if (!confirm("Cancel your recurring monthly card payment? You can still pay by EFT or restart card billing later.")) return;
+    setCancelling(true);
+    try {
+      await fnCancel();
+      toast.success("Recurring payment cancelled");
+      load();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const pay = async (tier: "general" | "active" | "patron") => {
     setPaying(true);
@@ -172,8 +193,8 @@ export function BillingTab({ preferredTier }: { preferredTier?: string | null })
               </summary>
               <div className="mt-2 flex flex-wrap gap-2">
                 {([
-                  { t: "general" as const, label: "Joining fee", cents: 20000 },
-                  { t: "active" as const, label: "Monthly contribution", cents: 50000 },
+                  { t: "general" as const, label: "Joining fee (once-off)", cents: 20000 },
+                  { t: "active" as const, label: "Monthly contribution (recurring)", cents: 50000 },
                 ]).map(({ t, label, cents }) => (
                   <Button
                     key={t}
@@ -187,7 +208,20 @@ export function BillingTab({ preferredTier }: { preferredTier?: string | null })
                   </Button>
                 ))}
               </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Monthly contribution card payments repeat automatically every month — cancel anytime below.
+              </p>
             </details>
+          </div>
+        )}
+
+        {data.profile?.payfast_subscription_token && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
+            <span className="text-muted-foreground">A recurring card payment is active for your monthly contribution.</span>
+            <Button size="sm" variant="outline" disabled={cancelling} onClick={cancelSubscription}>
+              {cancelling && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
+              Cancel
+            </Button>
           </div>
         )}
 

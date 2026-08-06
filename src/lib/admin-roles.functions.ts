@@ -24,6 +24,26 @@ export async function ensureAdmin(ctx: { supabase: any; userId: string }) {
   }
 }
 
+/**
+ * Fire-and-forget alert to the admin inbox when a new pending_approvals row
+ * is filed, so a deletion or role change doesn't sit unnoticed until someone
+ * happens to open Admin > Approvals. Gated by the same
+ * Admin > Settings > Notifications toggle pattern as other admin alerts.
+ */
+export function notifyNewApprovalRequest(actionLabel: string, reason: string, requestedByName: string) {
+  void (async () => {
+    try {
+      const { adminNotifyEnabled, sendEmail } = await import("./email.server");
+      if (!(await adminNotifyEnabled("new_approval_request"))) return;
+      const { adminNewApprovalRequestEmail } = await import("./email-templates.server");
+      const mail = adminNewApprovalRequestEmail(actionLabel, reason, requestedByName);
+      await sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...mail });
+    } catch {
+      // best-effort — never block the request itself
+    }
+  })();
+}
+
 // --- Execution logic -------------------------------------------------------
 // These run only after a second admin has approved the request (see
 // admin-approvals.functions.ts). They are not exported as server fns
@@ -187,6 +207,11 @@ export const requestSetUserRole = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+    notifyNewApprovalRequest(
+      data.action === "grant" ? "Grant admin role" : "Revoke admin role",
+      data.reason,
+      context.claims?.email ?? "an admin",
+    );
     return { ok: true, approval_id: row.id };
   });
 
@@ -207,6 +232,7 @@ export const requestDeleteMember = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+    notifyNewApprovalRequest("Delete member", data.reason, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });
 
@@ -227,5 +253,6 @@ export const requestDeleteApplication = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+    notifyNewApprovalRequest("Delete application", data.reason, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });
