@@ -3,6 +3,7 @@
  * Plain-table HTML that renders correctly in Gmail/Outlook/Zoho; brand colours
  * follow the A-Win token palette in src/styles.css.
  */
+import { AWIN_LOGO_WHITE_PNG_BASE64 } from "./awin-logo-base64";
 
 const BRAND = {
   name: "A-Win",
@@ -17,8 +18,8 @@ function layout(title: string, bodyHtml: string): string {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:24px 0;">
 <tr><td align="center">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
-  <tr><td style="background:${BRAND.color};padding:20px 32px;">
-    <span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:1px;">${BRAND.name}</span>
+  <tr><td style="background:${BRAND.color};padding:16px 32px;">
+    <img src="${AWIN_LOGO_WHITE_PNG_BASE64}" alt="${BRAND.name}" height="32" style="height:32px;width:auto;display:block;" />
   </td></tr>
   <tr><td style="padding:32px;">
     <h1 style="margin:0 0 16px;font-size:20px;color:#1c1917;">${title}</h1>

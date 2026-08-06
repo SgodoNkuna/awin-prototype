@@ -187,7 +187,7 @@ export function AdminLayout() {
       {/* Desktop sidebar */}
       <aside
         className="hidden md:flex w-64 flex-col border-r sticky top-20 self-start h-[calc(100vh-5rem)]"
-        style={{ background: "#3D8B2F", color: "#FFFFFF" }}
+        style={{ background: "var(--primary-deep)", color: "#FFFFFF" }}
       >
         <div className="px-5 py-4 border-b border-white/10">
           <div className="text-xs font-semibold uppercase tracking-widest text-[#E8960A]">A-Win</div>
@@ -216,7 +216,7 @@ export function AdminLayout() {
             <SheetContent
               side="left"
               className="w-72 p-0 flex flex-col border-0"
-              style={{ background: "#3D8B2F", color: "#FFFFFF" }}
+              style={{ background: "var(--primary-deep)", color: "#FFFFFF" }}
             >
               <SheetTitle className="sr-only">Admin navigation</SheetTitle>
               <div className="px-5 py-4 border-b border-white/10">

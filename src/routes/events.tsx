@@ -280,11 +280,11 @@ function EventsPage() {
                 const isPast = new Date(e.event_date).getTime() < now;
                 const cover = e.image_url || EVENT_FALLBACK_IMAGES[i % EVENT_FALLBACK_IMAGES.length];
                 return (
-                  <Card key={e.id} className="overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale">
+                  <Card key={e.id} className="flex h-full flex-col overflow-hidden border-border/60 shadow-[var(--shadow-elegant)] hover-scale">
                     <button
                       type="button"
                       onClick={() => setViewingImage(e)}
-                      className="group relative block h-44 w-full cursor-zoom-in bg-cover bg-center bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="group relative block h-44 w-full shrink-0 cursor-zoom-in bg-cover bg-center bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       style={{ backgroundImage: `url(${cover})` }}
                       aria-label={`View full poster for ${e.title}`}
                     >
@@ -300,7 +300,7 @@ function EventsPage() {
                         </Badge>
                       )}
                     </button>
-                    <CardContent className="p-6">
+                    <CardContent className="flex flex-1 flex-col p-6">
                       <h3 className="font-serif text-lg text-foreground">{e.title}</h3>
                       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                         <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {formatDate(e.event_date)}{e.event_time && ` · ${e.event_time}`}</span>
@@ -312,10 +312,11 @@ function EventsPage() {
                         </p>
                       )}
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">{e.description}</p>
-                      {/* Fixed min-height so a card's button area (single button vs. the taller
-                          confirmed-state badge+button) never changes the grid row's height and
-                          shifts neighbouring cards when someone registers or cancels. */}
-                      <div className="mt-5 flex min-h-[88px] flex-col justify-end">
+                      {/* mt-auto pins the button area to the bottom of the card regardless of how
+                          much text sits above it, so buttons line up across a row. min-height keeps
+                          the taller confirmed-state (badge+button) from shifting the row when it
+                          appears/disappears. */}
+                      <div className="mt-auto flex min-h-[88px] flex-col justify-end pt-5">
                         {(() => {
                         const my = myRsvps[e.id];
                         const isConfirmed = my?.status === "confirmed";

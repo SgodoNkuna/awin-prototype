@@ -17,6 +17,7 @@ import { sendLoaRpaReceivedEmail } from "@/lib/email.functions";
 import { buildLoaRpaPdf } from "@/lib/loa-rpa-pdf";
 import { emptyLoaData, emptyRpaData, type LoaData, type RpaData } from "@/lib/loa-rpa-types";
 import { THUTHUKA_LOGO_PNG_BASE64 } from "@/lib/thuthuka-logo-base64";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/loa-rpa")({
   head: () => ({
@@ -42,8 +43,12 @@ const DOC_VERSION = "loa-rpa-v1.0-2026";
 
 const INCOME_MAX = 100000;
 const INCOME_STEP = 1000;
-const formatIncome = (v: number) =>
-  v >= INCOME_MAX ? `R${INCOME_MAX.toLocaleString()}+` : `R${v.toLocaleString()}`;
+const INVEST_MIN = 500;
+const INVEST_MAX = 20000;
+const INVEST_STEP = 250;
+const formatRand = (v: number, max: number) => (v >= max ? `R${max.toLocaleString()}+` : `R${v.toLocaleString()}`);
+const formatIncome = (v: number) => formatRand(v, INCOME_MAX);
+const formatInvestAmount = (v: number) => formatRand(v, INVEST_MAX);
 
 function LoaRpaPage() {
   const sendReceivedEmail = useServerFn(sendLoaRpaReceivedEmail);
@@ -64,6 +69,7 @@ function LoaRpaPage() {
   const [loa, setLoa] = useState<LoaData>(emptyLoaData());
   const [rpa, setRpa] = useState<RpaData>(emptyRpaData());
   const [incomeValue, setIncomeValue] = useState(10000);
+  const [investValue, setInvestValue] = useState(INVEST_MIN);
   const [loaAgree, setLoaAgree] = useState(false);
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [signatureType, setSignatureType] = useState<"typed" | "drawn">("typed");
@@ -74,6 +80,7 @@ function LoaRpaPage() {
   // applicant never touches it — onValueChange only fires on interaction.
   useEffect(() => {
     setRpaField("grossMonthlyIncome")(formatIncome(incomeValue));
+    setRpaField("monthlyAmount")(formatInvestAmount(investValue));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -289,7 +296,16 @@ function LoaRpaPage() {
                   </div>
                   <div>
                     <Label>Marital status</Label>
-                    <Input value={rpa.maritalStatus} onChange={(e) => setRpaField("maritalStatus")(e.target.value)} />
+                    <Select value={rpa.maritalStatus} onValueChange={setRpaField("maritalStatus")}>
+                      <SelectTrigger><SelectValue placeholder="Choose one" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Single">Single</SelectItem>
+                        <SelectItem value="Married">Married</SelectItem>
+                        <SelectItem value="Divorced">Divorced</SelectItem>
+                        <SelectItem value="Widowed">Widowed</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="sm:col-span-2">
                     <Label>Stokvel name</Label>
@@ -345,22 +361,58 @@ function LoaRpaPage() {
               </div>
               <div>
                 <Label>2. What is the term of your investment?</Label>
-                <Input value={rpa.term} onChange={(e) => setRpaField("term")(e.target.value)} />
+                <Select value={rpa.term} onValueChange={setRpaField("term")}>
+                  <SelectTrigger><SelectValue placeholder="Choose one" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Less than 1 year">Less than 1 year</SelectItem>
+                    <SelectItem value="1 - 3 years">1 - 3 years</SelectItem>
+                    <SelectItem value="3 - 5 years">3 - 5 years</SelectItem>
+                    <SelectItem value="5 - 10 years">5 - 10 years</SelectItem>
+                    <SelectItem value="10+ years">10+ years</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
-                <Label>3. How much would you like to invest per month? <span className="font-normal text-muted-foreground">Minimum R500</span></Label>
-                <Input value={rpa.monthlyAmount} onChange={(e) => setRpaField("monthlyAmount")(e.target.value)} placeholder="R500" />
+                <div className="flex items-baseline justify-between">
+                  <Label>3. How much would you like to invest per month? <span className="font-normal text-muted-foreground">Minimum R500</span></Label>
+                  <span className="shrink-0 pl-3 text-sm font-semibold text-primary">{formatInvestAmount(investValue)}</span>
+                </div>
+                <Slider
+                  className="mt-2"
+                  min={INVEST_MIN}
+                  max={INVEST_MAX}
+                  step={INVEST_STEP}
+                  value={[investValue]}
+                  onValueChange={([v]) => {
+                    setInvestValue(v);
+                    setRpaField("monthlyAmount")(formatInvestAmount(v));
+                  }}
+                />
               </div>
               <div>
                 <Label>4. What is your risk appetite?</Label>
-                <Select value={rpa.riskAppetite} onValueChange={setRpaField("riskAppetite")}>
-                  <SelectTrigger><SelectValue placeholder="Choose one" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Aggressive">Aggressive</SelectItem>
-                    <SelectItem value="Moderate">Moderate</SelectItem>
-                    <SelectItem value="Conservative">Conservative</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                  {[
+                    { v: "Aggressive", d: "Higher risk, higher potential growth" },
+                    { v: "Moderate", d: "A balance of growth and safety" },
+                    { v: "Conservative", d: "Priority on protecting your money" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.v}
+                      type="button"
+                      onClick={() => setRpaField("riskAppetite")(opt.v)}
+                      className={cn(
+                        "rounded-lg border p-3 text-left transition-colors",
+                        rpa.riskAppetite === opt.v
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:bg-secondary/30",
+                      )}
+                    >
+                      <span className="block text-sm font-medium">{opt.v}</span>
+                      <span className="block text-xs text-muted-foreground">{opt.d}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
                 <Label>5. Are you scared of losing money?</Label>

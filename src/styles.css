@@ -79,10 +79,13 @@
   --popover: #FFFFFF;
   --popover-foreground: #24261F;
 
-  /* Brand — warm olive green (A symbol) */
-  --primary: #5CB335;
+  /* Brand — warm olive green (A symbol). Lightened a touch site-wide
+     2026-08-06 (client request) — NOT --gradient-hero, which stays as-is:
+     it's calibrated to clear WCAG AA for white hero text (see below), and
+     a lighter hero previously drew a "not visible enough" complaint. */
+  --primary: #66BF3F;
   --primary-foreground: #FFFFFF;
-  --primary-deep: #3D8B2F;
+  --primary-deep: #479938;
   --primary-light: #EEF9E6;
   --hero-foreground: #FFFFFF;
   --hero-muted: rgba(255, 255, 255, 0.97);
@@ -97,42 +100,44 @@
   --accent-bright: #FFA500;
 
   --secondary: #F4FAF0;
-  --secondary-foreground: #3D8B2F;
+  --secondary-foreground: #479938;
 
   --muted: #F7F7F5;
   --muted-foreground: #6E7268;
 
   --destructive: #C0392B;
   --destructive-foreground: #FFFFFF;
-  --success: #5CB335;
+  --success: #66BF3F;
   --success-foreground: #FFFFFF;
 
   --border: #E6E6E1;
   --input: #E6E6E1;
-  --ring: #5CB335;
+  --ring: #66BF3F;
 
-  --chart-1: #5CB335;
+  --chart-1: #66BF3F;
   --chart-2: #E8960A;
   --chart-3: #4F7FB7;
-  --chart-4: #3D8B2F;
+  --chart-4: #479938;
   --chart-5: #C0392B;
 
-  --sidebar: #3D8B2F;
+  --sidebar: #479938;
   --sidebar-foreground: #FFFFFF;
   --sidebar-primary: #E8960A;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #5CB335;
+  --sidebar-accent: #66BF3F;
   --sidebar-accent-foreground: #FFFFFF;
   --sidebar-border: rgba(255, 255, 255, 0.12);
   --sidebar-ring: #E8960A;
 
   /* Gradients & shadows */
   /* Deep enough that white hero text clears WCAG AA (4.9:1 → 7.9:1).
-     The old light green only reached 1.7:1 and read as washed out. */
+     The old light green only reached 1.7:1 and read as washed out.
+     Left unchanged during the 2026-08-06 site-wide lightening — this is
+     the one spot with a real contrast floor to protect. */
   --gradient-hero: linear-gradient(135deg, #37802A 0%, #235619 100%);
   --gradient-placeholder: linear-gradient(135deg, #F2FCEA 0%, #D3EFBA 100%);
   --gradient-gold: linear-gradient(135deg, #F5A623 0%, #D98910 100%);
-  --shadow-elegant: 0 10px 30px -10px rgba(61, 139, 47, 0.28);
+  --shadow-elegant: 0 10px 30px -10px rgba(71, 153, 56, 0.28);
   --shadow-gold-glow: 0 0 0 1px rgba(232, 150, 10, 0.42), 0 10px 30px -10px rgba(232, 150, 10, 0.48);
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }

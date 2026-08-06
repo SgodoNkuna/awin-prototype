@@ -112,7 +112,7 @@ export function SiteHeader() {
           <SheetContent
             side="right"
             className="w-[300px] border-l-0 p-0 [&>button]:hidden"
-            style={{ background: "#3D8B2F", color: "#FFFFFF" }}
+            style={{ background: "var(--primary-deep)", color: "#FFFFFF" }}
           >
             <SheetTitle className="sr-only">A-Win navigation</SheetTitle>
             <div className="flex items-center justify-between px-5 pt-5">

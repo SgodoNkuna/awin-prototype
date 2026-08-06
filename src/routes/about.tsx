@@ -242,7 +242,7 @@ function AboutPage() {
             <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
               <Link to="/membership">Apply for Membership</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-2 border-white bg-white text-[#3D8B2F] hover:bg-white/90 hover:text-[#3D8B2F]">
+            <Button asChild size="lg" variant="outline" className="border-2 border-white bg-white text-primary-deep hover:bg-white/90 hover:text-primary-deep">
               <Link to="/members">Meet the Team</Link>
             </Button>
           </div>
