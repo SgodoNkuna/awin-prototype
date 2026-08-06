@@ -157,6 +157,12 @@ function ApprovalsPage() {
                   {req.decision_reason && (
                     <p className="text-xs text-muted-foreground">Decision note: "{req.decision_reason}"</p>
                   )}
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-muted-foreground">View full details before deciding</summary>
+                    <pre className="mt-1.5 max-w-full overflow-x-auto rounded-md border border-border bg-muted/40 p-2 whitespace-pre-wrap break-all">
+                      {JSON.stringify(req.payload, null, 2)}
+                    </pre>
+                  </details>
                 </div>
                 {req.status === "pending" && (
                   <div className="flex gap-2">

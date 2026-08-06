@@ -8,6 +8,20 @@ export async function ensureAdmin(ctx: { supabase: any; userId: string }) {
     _role: "admin",
   });
   if (!ok) throw new Error("Forbidden: admin role required");
+
+  // A password reset by the committee flags the account until the owner
+  // sets their own password — block every privileged server action for
+  // that window too, not just the client-side redirect. Otherwise anyone
+  // holding a still-shared/unrotated temp password has full admin power
+  // via direct API calls, defeating the point of forcing a change.
+  const { data: profile } = await ctx.supabase
+    .from("profiles")
+    .select("force_password_change")
+    .eq("id", ctx.userId)
+    .maybeSingle();
+  if (profile?.force_password_change) {
+    throw new Error("Forbidden: change your password before performing admin actions");
+  }
 }
 
 // --- Execution logic -------------------------------------------------------

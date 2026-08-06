@@ -402,7 +402,7 @@ function MembersPage() {
                 if (!promoting) return;
                 setPromoteBusy(true);
                 try {
-                  await callSetRole({ data: { user_id: promoting.id, role: "admin", action: "revoke", reason: promoteReason.trim() } });
+                  await callSetRole({ data: { user_id: promoting.id, email: promoting.email ?? undefined, role: "admin", action: "revoke", reason: promoteReason.trim() } });
                   toast.success("Revoke request submitted — needs approval from a different admin");
                   setPromoting(null);
                 } catch (e: any) { toast.error(getErrorMessage(e, "Failed")); }
@@ -415,7 +415,7 @@ function MembersPage() {
                 if (!promoting) return;
                 setPromoteBusy(true);
                 try {
-                  await callSetRole({ data: { user_id: promoting.id, role: "admin", action: "grant", reason: promoteReason.trim() } });
+                  await callSetRole({ data: { user_id: promoting.id, email: promoting.email ?? undefined, role: "admin", action: "grant", reason: promoteReason.trim() } });
                   toast.success("Promotion request submitted — needs approval from a different admin");
                   setPromoting(null);
                 } catch (e: any) { toast.error(getErrorMessage(e, "Failed")); }
