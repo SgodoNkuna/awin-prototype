@@ -310,19 +310,15 @@ function MembershipPage() {
   return (
     <div className="flex flex-col">
       {/* Hero */}
-      <section
-        className="relative overflow-hidden px-4 py-24 text-primary-foreground"
-        style={{ background: "var(--gradient-hero)" }}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,var(--accent),transparent_55%)] opacity-25" />
+      <section className="page-header px-4 py-24">
         <div className="relative mx-auto max-w-5xl animate-fade-in">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="font-medium text-hero-foreground">Membership</span>
+            <span className="font-medium text-accent">Membership</span>
           </nav>
-          <h1 className="mt-5 font-serif">Become a Member</h1>
-          <p className="mt-5 max-w-2xl text-primary-foreground/95 md:text-lg">
+          <h1 className="mt-5 font-serif text-foreground">Become a Member</h1>
+          <p className="mt-5 max-w-2xl text-muted-foreground md:text-lg">
             You do not need a degree or a professional title to join A-Win. You
             need a commitment to saving, investing, and growing with a community
             of women who have your back. If that sounds like you, you belong here.

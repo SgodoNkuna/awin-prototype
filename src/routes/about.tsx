@@ -73,23 +73,18 @@ function AboutPage() {
   return (
     <>
       {/* HERO */}
-      <section
-        className="relative overflow-hidden px-4 py-24 text-primary-foreground"
-        style={{ background: "var(--gradient-hero)" }}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,var(--accent),transparent_55%)] opacity-25" />
-
+      <section className="page-header px-4 py-24">
         <div className="relative mx-auto max-w-5xl animate-fade-in">
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70"
+            className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground"
           >
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="font-medium text-hero-foreground">About</span>
+            <span className="font-medium text-accent">About</span>
           </nav>
-          <h1 className="mt-5 font-serif">About A-Win</h1>
-          <p className="mt-5 max-w-3xl text-primary-foreground/95 md:text-xl italic">
+          <h1 className="mt-5 font-serif text-foreground">About A-Win</h1>
+          <p className="mt-5 max-w-3xl text-muted-foreground md:text-xl italic">
             Empowering African women, from all walks of life, through investment and collaboration.
           </p>
         </div>

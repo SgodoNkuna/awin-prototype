@@ -130,16 +130,26 @@
   --sidebar-ring: #E8960A;
 
   /* Gradients & shadows */
-  /* Deep enough that white hero text clears WCAG AA (4.9:1 → 7.9:1).
-     The old light green only reached 1.7:1 and read as washed out.
-     Left unchanged during the 2026-08-06 site-wide lightening — this is
-     the one spot with a real contrast floor to protect. */
-  --gradient-hero: linear-gradient(135deg, #37802A 0%, #235619 100%);
+  /* Lightened 2026-08-06 (explicit client request) to match the rest of
+     the site's brighter green — uses --primary/--primary-deep directly.
+     On its own this would dip below the 4.5:1 floor that caused the
+     *previous* version to be darkened after a real complaint — legibility
+     instead now leans on the existing h1/p text-shadow rule further down
+     this file (search "gradient-hero" h1). Don't lighten further without
+     either re-checking contrast or strengthening that shadow first. */
+  --gradient-hero: linear-gradient(135deg, #66BF3F 0%, #479938 100%);
   --gradient-placeholder: linear-gradient(135deg, #F2FCEA 0%, #D3EFBA 100%);
   --gradient-gold: linear-gradient(135deg, #F5A623 0%, #D98910 100%);
   --shadow-elegant: 0 10px 30px -10px rgba(71, 153, 56, 0.28);
   --shadow-gold-glow: 0 0 0 1px rgba(232, 150, 10, 0.42), 0 10px 30px -10px rgba(232, 150, 10, 0.48);
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  /* .page-header background — matches --primary-deep, the same green used
+     on the site header/footer bars and the admin sidebar (explicit client
+     request: "use the green on the sidebar"). Dark foreground text here
+     measures ~4.3:1 — just under the 4.5:1 AA text floor, better than the
+     ~3.6:1 white text would get, but not fully compliant. Flagged, not
+     silently accepted — revisit if this needs to pass a real audit. */
+  --page-header-bg: #479938;
 }
 
 
@@ -192,6 +202,7 @@
   --gradient-gold: linear-gradient(135deg, #d9b45b 0%, #a5792e 100%);
   --shadow-elegant: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
   --shadow-gold-glow: 0 0 0 1px rgba(212, 166, 74, 0.5), 0 10px 30px -10px rgba(212, 166, 74, 0.45);
+  --page-header-bg: #5A4C35;
 }
 
 @layer base {
@@ -263,6 +274,7 @@
   --gradient-gold: linear-gradient(135deg, #e7b34b 0%, #b75a25 100%);
   --shadow-elegant: 0 10px 30px -10px rgba(169, 78, 31, 0.3);
   --shadow-gold-glow: 0 0 0 1px rgba(200, 91, 39, 0.4), 0 10px 30px -10px rgba(200, 91, 39, 0.45);
+  --page-header-bg: #F1CEB7;
 }
 
 :root[data-theme="black"] {
@@ -286,6 +298,7 @@
   --gradient-gold: linear-gradient(135deg, #666a73 0%, #2f323a 100%);
   --shadow-elegant: 0 10px 30px -10px rgba(0, 0, 0, 0.45);
   --shadow-gold-glow: 0 0 0 1px rgba(83, 87, 97, 0.5), 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+  --page-header-bg: #B3B4B8;
 }
 
 :root[data-theme="white"] {
@@ -337,6 +350,29 @@ section [style*="gradient-hero"] h1,
 section[style*="gradient-hero"] h1 { text-shadow: 0 2px 18px rgba(0,0,0,0.35); }
 section [style*="gradient-hero"] p,
 section[style*="gradient-hero"] p { text-shadow: 0 1px 10px rgba(0,0,0,0.45); font-weight: 500; }
+
+/* Interior page headers (About, Contact, Membership, etc.) — replaced the
+   colored --gradient-hero band 2026-08-06 (explicit client request: "swap
+   for a different design", then "still too light, do more of a WhatsApp
+   green" — see --page-header-bg per theme above). Dark foreground text
+   throughout, not fighting a contrast floor the way white-on-gradient text
+   was — a thin gold accent stripe adds the only other color.
+   --page-header-bg is hardcoded per theme rather than computed at runtime —
+   jsPDF/html2canvas (member cert, attendee-export PDFs) can't parse the CSS
+   color-mixing functions, and the repo has a standing test guarding
+   against using them anywhere in this file. */
+.page-header {
+  position: relative;
+  background: var(--page-header-bg);
+  border-bottom: 1px solid var(--border);
+}
+.page-header::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--gradient-gold);
+}
 
 /* Skeleton shimmer */
 @keyframes awin-shimmer {

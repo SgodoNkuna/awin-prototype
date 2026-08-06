@@ -258,15 +258,11 @@ function OnboardingPage() {
 
   return (
     <>
-      <section
-        className="relative overflow-hidden px-4 py-16 text-white md:py-20"
-        style={{ background: "var(--gradient-hero)" }}
-      >
-        <div className="absolute inset-0 bg-primary-deep/10" />
+      <section className="page-header px-4 py-16 md:py-20">
         <div className="relative mx-auto max-w-5xl">
-          <Badge className="bg-white/15 text-white hover:bg-white/15">Membership Onboarding</Badge>
-          <h1 className="mt-4 font-serif text-white">Join the sisterhood in one flow</h1>
-          <p className="mt-3 max-w-2xl text-white/90">
+          <Badge className="bg-accent/15 text-accent-deep hover:bg-accent/15">Membership Onboarding</Badge>
+          <h1 className="mt-4 font-serif text-foreground">Join the sisterhood in one flow</h1>
+          <p className="mt-3 max-w-2xl text-muted-foreground">
             Just a couple of things left: sign the membership agreement and confirm your details.
             Anything you already gave us when you applied is filled in for you.
           </p>

@@ -197,25 +197,21 @@ function LoaRpaPage() {
 
   return (
     <>
-      <section
-        className="relative overflow-hidden px-4 py-16 text-primary-foreground md:py-20"
-        style={{ background: "var(--gradient-hero)" }}
-      >
-        <div className="absolute inset-0 bg-primary-deep/10" />
+      <section className="page-header px-4 py-16 md:py-20">
         <div className="relative mx-auto max-w-3xl">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-primary-foreground/70">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
-            <span className="text-hero-foreground">LOA &amp; Risk Profile</span>
+            <span className="text-accent">LOA &amp; Risk Profile</span>
           </nav>
-          <h1 className="mt-5 font-serif">Letter of Authority &amp; Risk Profile</h1>
+          <h1 className="mt-5 font-serif text-foreground">Letter of Authority &amp; Risk Profile</h1>
           <div className="mt-4 flex items-center gap-3">
             <img
               src={THUTHUKA_LOGO_PNG_BASE64}
               alt="ThuthukaSA"
               className="size-10 rounded-full bg-white p-1 shadow-sm"
             />
-            <p className="max-w-xl text-primary-foreground/95 md:text-lg">
+            <p className="max-w-xl text-muted-foreground md:text-lg">
               Two short forms required by ThuthukaSA (FSP No. 47992) so we can guide your investment appropriately.
               Takes about 5 minutes on your phone.
             </p>

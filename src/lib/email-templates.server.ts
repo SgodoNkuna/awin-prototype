@@ -3,7 +3,6 @@
  * Plain-table HTML that renders correctly in Gmail/Outlook/Zoho; brand colours
  * follow the A-Win token palette in src/styles.css.
  */
-import { AWIN_LOGO_WHITE_PNG_BASE64 } from "./awin-logo-base64";
 
 const BRAND = {
   name: "A-Win",
@@ -12,6 +11,13 @@ const BRAND = {
   site: process.env.PAYFAST_RETURN_URL?.replace(/\/portal.*$/, "") ?? "https://awin.co.za",
 };
 
+// A base64 data: URI (what this used to be) is silently stripped by Gmail and
+// unsupported entirely by Outlook's Word rendering engine — the logo never
+// actually showed up. Email images need a real, stable, publicly reachable
+// URL instead, so this is served from /public (unhashed, same path every
+// deploy) rather than the Vite-bundled, content-hashed src/assets copy.
+const LOGO_URL = `${BRAND.site}/email-assets/awin-logo-white.png`;
+
 function layout(title: string, bodyHtml: string): string {
   return `<!doctype html>
 <html><body style="margin:0;padding:0;background:#f5f5f4;font-family:Segoe UI,Arial,sans-serif;">
@@ -19,7 +25,7 @@ function layout(title: string, bodyHtml: string): string {
 <tr><td align="center">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
   <tr><td style="background:${BRAND.color};padding:16px 32px;">
-    <img src="${AWIN_LOGO_WHITE_PNG_BASE64}" alt="${BRAND.name}" height="32" style="height:32px;width:auto;display:block;" />
+    <img src="${LOGO_URL}" width="120" height="32" alt="${BRAND.name}" style="height:32px;width:auto;display:block;border:0;" />
   </td></tr>
   <tr><td style="padding:32px;">
     <h1 style="margin:0 0 16px;font-size:20px;color:#1c1917;">${title}</h1>
