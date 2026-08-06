@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Download, Eye, Loader2, MessageCircle, Globe2 } from "lucide-react";
+import { Download, Eye, Loader2, MessageCircle, Globe2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -55,6 +55,62 @@ const RPA_LABELS: [keyof RpaData, string][] = [
   ["newsletterSubscribe", "Newsletter"],
 ];
 
+function CopyLinkRow({ label, icon, url }: { label: string; icon: React.ReactNode; url: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    toast.success("Link copied");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+      <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground w-32 shrink-0">
+        {icon} {label}
+      </span>
+      <div className="flex flex-1 items-center gap-2 min-w-0">
+        <code className="flex-1 min-w-0 truncate rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs">
+          {url}
+        </code>
+        <Button size="sm" variant="outline" onClick={copy} className="shrink-0">
+          {copied ? <Check className="size-3.5 mr-1.5 text-primary" /> : <Copy className="size-3.5 mr-1.5" />}
+          {copied ? "Copied" : "Copy"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ShareLinksCard() {
+  const [origin, setOrigin] = useState("");
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+  if (!origin) return null;
+
+  return (
+    <Card>
+      <CardContent className="pt-6 space-y-3">
+        <h3 className="text-sm font-semibold">Share the LOA &amp; Risk Profile form</h3>
+        <p className="text-xs text-muted-foreground -mt-2">
+          Send the WhatsApp link when sharing in a chat — it tags the submission's source so you can tell WhatsApp
+          applicants apart from website applicants above.
+        </p>
+        <CopyLinkRow
+          label="WhatsApp"
+          icon={<MessageCircle className="size-3.5" />}
+          url={`${origin}/loa-rpa?src=whatsapp`}
+        />
+        <CopyLinkRow
+          label="Website"
+          icon={<Globe2 className="size-3.5" />}
+          url={`${origin}/loa-rpa`}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
 function LoaRpaAdminPage() {
   const [rows, setRows] = useState<Submission[] | null>(null);
   const [viewing, setViewing] = useState<Submission | null>(null);
@@ -103,6 +159,8 @@ function LoaRpaAdminPage() {
         </p>
       </div>
 
+      <ShareLinksCard />
+
       {rows === null ? (
         <div className="py-8 flex justify-center">
           <Loader2 className="size-5 animate-spin" />
@@ -110,7 +168,7 @@ function LoaRpaAdminPage() {
       ) : rows.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            No submissions yet. Share the form at <code className="text-xs">/loa-rpa</code>.
+            No submissions yet. Copy the link above and share it to get started.
           </CardContent>
         </Card>
       ) : (
