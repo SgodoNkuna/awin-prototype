@@ -334,9 +334,8 @@ function LoaRpaPage() {
               <h2 className="font-serif text-xl text-foreground">Letter of Authority</h2>
               <div className="max-h-56 overflow-y-auto rounded-lg border border-border bg-secondary/20 p-4 text-sm leading-relaxed text-foreground/90">
                 <p>
-                  I, the undersigned, hereby authorise <strong>Phumelele Ndumo</strong>, or any/the following
-                  member of his/her staff, <strong>Khanyiswa Buthelezi</strong>, to obtain any information on my
-                  behalf regarding my assurance and/or investment portfolio, and any of my employee benefits, from
+                  I, the undersigned, hereby authorise <strong>Phumelele Ndumo</strong> to obtain any information on
+                  my behalf regarding my assurance and/or investment portfolio, and any of my employee benefits, from
                   any life office, retirement fund or other financial institution directly, or by using the
                   services of The Financial Services Exchange (Pty.) Ltd., trading as Astute.
                 </p>

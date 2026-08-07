@@ -122,7 +122,7 @@ export async function buildLoaRpaPdf(input: {
   pdf.setFontSize(10.5);
   pdf.setTextColor(40, 40, 40);
   const loaIntro = pdf.splitTextToSize(
-    "To whom it may concern. 1. Authorisation to request information. I, the undersigned, hereby authorise Phumelele Ndumo, or any/the following member of his/her staff, Khanyiswa Buthelezi, to obtain any information on my behalf regarding my assurance and/or investment portfolio, and any of my employee benefits, from any life office, retirement fund or other financial institution directly, or by using the services of The Financial Services Exchange (Pty.) Ltd., trading as Astute.",
+    "To whom it may concern. 1. Authorisation to request information. I, the undersigned, hereby authorise Phumelele Ndumo to obtain any information on my behalf regarding my assurance and/or investment portfolio, and any of my employee benefits, from any life office, retirement fund or other financial institution directly, or by using the services of The Financial Services Exchange (Pty.) Ltd., trading as Astute.",
     colW,
   );
   pdf.text(loaIntro, margin, y);
