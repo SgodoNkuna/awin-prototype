@@ -27,6 +27,14 @@ const COMMITTEES: Array<{ key: string; label: string }> = [
   { key: "website", label: "Website Committee" },
 ];
 
+// A member can sit on more than one committee — `committee` stores a
+// comma-separated list of keys (e.g. "main,website"), not a single value.
+// committee_order is still one number per person, so ordering is shared
+// across every committee they're on — a known simplification, not a bug.
+const committeeKeys = (committee: string | null): string[] =>
+  (committee ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+const inCommittee = (committee: string | null, key: string) => committeeKeys(committee).includes(key);
+
 function CommitteesPage() {
   const [rows, setRows] = useState<M[] | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
@@ -42,10 +50,10 @@ function CommitteesPage() {
     load();
   }, []);
 
-  const move = async (m: M, delta: number) => {
+  const move = async (m: M, delta: number, committeeKey: string) => {
     if (!rows) return;
     const peers = rows
-      .filter((x) => x.committee === m.committee)
+      .filter((x) => inCommittee(x.committee, committeeKey))
       .sort((a, b) => (a.committee_order ?? 0) - (b.committee_order ?? 0));
     const idx = peers.findIndex((x) => x.id === m.id);
     const swapIdx = idx + delta;
@@ -72,11 +80,16 @@ function CommitteesPage() {
     else toast.success("Position saved");
   };
 
-  const removeFromCommittee = async (m: M) => {
-    if (!confirm(`Remove ${m.name} from committee? Their member record stays.`)) return;
+  const removeFromCommittee = async (m: M, committeeKey: string) => {
+    const label = COMMITTEES.find((c) => c.key === committeeKey)?.label ?? committeeKey;
+    if (!confirm(`Remove ${m.name} from ${label}? Their member record and any other committees stay.`)) return;
+    const remaining = committeeKeys(m.committee).filter((k) => k !== committeeKey);
     const { error } = await supabase
       .from("team_members")
-      .update({ committee: null, committee_position: null, committee_order: 0 })
+      .update({
+        committee: remaining.length ? remaining.join(",") : null,
+        ...(remaining.length ? {} : { committee_position: null, committee_order: 0 }),
+      })
       .eq("id", m.id);
     if (error) return toast.error(error.message);
     load();
@@ -108,7 +121,7 @@ function CommitteesPage() {
 
       {COMMITTEES.map((c) => {
         const list = rows
-          .filter((r) => r.committee === c.key)
+          .filter((r) => inCommittee(r.committee, c.key))
           .sort((a, b) => (a.committee_order ?? 0) - (b.committee_order ?? 0));
         return (
           <Card key={c.key}>
@@ -160,7 +173,7 @@ function CommitteesPage() {
                       size="sm"
                       variant="ghost"
                       disabled={idx === 0 || saving === m.id}
-                      onClick={() => move(m, -1)}
+                      onClick={() => move(m, -1, c.key)}
                       aria-label="Move up"
                     >
                       <ArrowUp className="size-4" />
@@ -169,7 +182,7 @@ function CommitteesPage() {
                       size="sm"
                       variant="ghost"
                       disabled={idx === list.length - 1 || saving === m.id}
-                      onClick={() => move(m, 1)}
+                      onClick={() => move(m, 1, c.key)}
                       aria-label="Move down"
                     >
                       <ArrowDown className="size-4" />
@@ -178,7 +191,7 @@ function CommitteesPage() {
                       size="sm"
                       variant="ghost"
                       className="text-destructive"
-                      onClick={() => removeFromCommittee(m)}
+                      onClick={() => removeFromCommittee(m, c.key)}
                     >
                       Remove
                     </Button>

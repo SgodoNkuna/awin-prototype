@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { MEMBER_CATEGORIES } from "@/lib/member-categories";
@@ -666,20 +667,34 @@ function TeamMemberDialog({
 
           <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-3">
             <Label className="text-xs font-semibold uppercase tracking-wider text-accent">Committee placement</Label>
+            <p className="text-xs text-muted-foreground -mt-1">
+              A member can sit on more than one committee. Position/order apply across all of them.
+            </p>
             <div className="grid grid-cols-3 gap-3">
-              <Field label="Committee">
-                <select
-                  className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  value={draft.committee ?? ""}
-                  onChange={(e) => set("committee", e.target.value || null)}
-                >
-                  <option value="">None (general member)</option>
-                  <option value="main">Main Committee</option>
-                  <option value="property">Property Investment Committee</option>
-                  <option value="website">Website Committee</option>
-                  <option value="other">Other</option>
-                </select>
-              </Field>
+              {(
+                [
+                  ["main", "Main Committee"],
+                  ["property", "Property Investment"],
+                  ["website", "Website Committee"],
+                ] as const
+              ).map(([key, label]) => {
+                const keys = (draft.committee ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+                const checked = keys.includes(key);
+                return (
+                  <label key={key} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={(v) => {
+                        const next = v ? [...keys, key] : keys.filter((k) => k !== key);
+                        set("committee", next.length ? next.join(",") : null);
+                      }}
+                    />
+                    {label}
+                  </label>
+                );
+              })}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <Field label="Position">
                 <Input value={draft.committee_position ?? ""} placeholder="Chairman, Secretary…" onChange={(e) => set("committee_position", e.target.value)} />
               </Field>

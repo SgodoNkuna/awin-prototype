@@ -206,8 +206,12 @@ export function MembersPage() {
     const map = new Map<string, Member[]>();
     (team ?? []).forEach((m) => {
       if (!m.committee) return;
-      if (!map.has(m.committee)) map.set(m.committee, []);
-      map.get(m.committee)!.push(m);
+      // A member can sit on more than one committee — `committee` is a
+      // comma-separated list of keys (e.g. "main,website"), not one value.
+      for (const key of m.committee.split(",").map((s) => s.trim()).filter(Boolean)) {
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(m);
+      }
     });
     map.forEach((list) =>
       list.sort((a, b) => (a.committee_order ?? 0) - (b.committee_order ?? 0)),
