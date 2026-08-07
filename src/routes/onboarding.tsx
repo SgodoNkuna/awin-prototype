@@ -262,7 +262,7 @@ function OnboardingPage() {
         <div className="relative mx-auto max-w-5xl">
           <Badge className="bg-accent/15 text-accent-deep hover:bg-accent/15">Membership Onboarding</Badge>
           <h1 className="mt-4 font-serif text-foreground">Join the sisterhood in one flow</h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-2xl text-foreground/80">
             Just a couple of things left: sign the membership agreement and confirm your details.
             Anything you already gave us when you applied is filled in for you.
           </p>

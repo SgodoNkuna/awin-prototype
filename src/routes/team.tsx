@@ -290,13 +290,13 @@ export function MembersPage() {
     <>
       <section className="page-header px-4 py-20 md:py-24">
         <div className="relative mx-auto max-w-5xl">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-foreground/65">
             <Link to="/" className="hover:text-accent">Home</Link>
             <ChevronRight className="h-3 w-3" />
             <span className="font-medium text-accent">Our Members</span>
           </nav>
           <h1 className="mt-5 font-serif text-foreground">Our Members</h1>
-          <p className="mt-5 max-w-2xl text-muted-foreground md:text-lg">
+          <p className="mt-5 max-w-2xl text-foreground/80 md:text-lg">
             A-Win brings together women from all walks of life, united by one goal:
             building wealth together. Whether you are a professional, an entrepreneur,
             a student, or simply someone who wants to change their relationship with

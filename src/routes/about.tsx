@@ -77,14 +77,14 @@ function AboutPage() {
         <div className="relative mx-auto max-w-5xl animate-fade-in">
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground"
+            className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-foreground/65"
           >
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
             <span className="font-medium text-accent">About</span>
           </nav>
           <h1 className="mt-5 font-serif text-foreground">About A-Win</h1>
-          <p className="mt-5 max-w-3xl text-muted-foreground md:text-xl italic">
+          <p className="mt-5 max-w-3xl text-foreground/80 md:text-xl italic">
             Empowering African women, from all walks of life, through investment and collaboration.
           </p>
         </div>

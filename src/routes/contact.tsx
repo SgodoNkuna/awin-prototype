@@ -118,13 +118,13 @@ function ContactPage() {
       {/* Hero */}
       <section className="page-header px-4 py-24">
         <div className="relative mx-auto max-w-5xl animate-fade-in">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-foreground/65">
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
             <span className="font-medium text-accent">Contact</span>
           </nav>
           <h1 className="mt-5 font-serif text-foreground">Get In Touch</h1>
-          <p className="mt-5 max-w-2xl text-muted-foreground md:text-lg">
+          <p className="mt-5 max-w-2xl text-foreground/80 md:text-lg">
             Questions, partnerships, or just want to say hello? We'd love to hear from you.
           </p>
         </div>

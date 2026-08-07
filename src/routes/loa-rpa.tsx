@@ -199,7 +199,7 @@ function LoaRpaPage() {
     <>
       <section className="page-header px-4 py-16 md:py-20">
         <div className="relative mx-auto max-w-3xl">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-foreground/65">
             <Link to="/" className="hover:text-accent transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
             <span className="text-accent">LOA &amp; Risk Profile</span>
@@ -211,7 +211,7 @@ function LoaRpaPage() {
               alt="ThuthukaSA"
               className="size-10 rounded-full bg-white p-1 shadow-sm"
             />
-            <p className="max-w-xl text-muted-foreground md:text-lg">
+            <p className="max-w-xl text-foreground/80 md:text-lg">
               Two short forms required by ThuthukaSA (FSP No. 47992) so we can guide your investment appropriately.
               Takes about 5 minutes on your phone.
             </p>

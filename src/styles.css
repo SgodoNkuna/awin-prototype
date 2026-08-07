@@ -145,11 +145,12 @@
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   /* .page-header background — matches --primary-deep, the same green used
      on the site header/footer bars and the admin sidebar (explicit client
-     request: "use the green on the sidebar"). Dark foreground text here
-     measures ~4.3:1 — just under the 4.5:1 AA text floor, better than the
-     ~3.6:1 white text would get, but not fully compliant. Flagged, not
-     silently accepted — revisit if this needs to pass a real audit. */
-  --page-header-bg: #479938;
+     request: "use the green on the sidebar" — then "still too dark, the
+     text isn't visible" once live). Now matches --primary (the lighter
+     site-wide green, not the deep/sidebar variant) so dark text clears
+     6.6:1 — comfortably past the 4.5:1 AA floor, unlike the sidebar-green
+     version's marginal ~4.3:1. */
+  --page-header-bg: #66BF3F;
 }
 
 
@@ -356,7 +357,8 @@ section[style*="gradient-hero"] p { text-shadow: 0 1px 10px rgba(0,0,0,0.45); fo
    for a different design", then "still too light, do more of a WhatsApp
    green" — see --page-header-bg per theme above). Dark foreground text
    throughout, not fighting a contrast floor the way white-on-gradient text
-   was — a thin gold accent stripe adds the only other color.
+   was — a thin solid-accent stripe adds the only other color (no gradient
+   function anywhere in this rule, per explicit "remove gradients").
    --page-header-bg is hardcoded per theme rather than computed at runtime —
    jsPDF/html2canvas (member cert, attendee-export PDFs) can't parse the CSS
    color-mixing functions, and the repo has a standing test guarding
@@ -371,7 +373,7 @@ section[style*="gradient-hero"] p { text-shadow: 0 1px 10px rgba(0,0,0,0.45); fo
   position: absolute;
   inset: 0 0 auto 0;
   height: 4px;
-  background: var(--gradient-gold);
+  background: var(--accent);
 }
 
 /* Skeleton shimmer */
