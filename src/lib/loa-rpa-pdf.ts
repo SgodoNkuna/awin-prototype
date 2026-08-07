@@ -7,29 +7,27 @@
 import type { LoaData, RpaData } from "./loa-rpa-types";
 import { THUTHUKA_LOGO_PNG_BASE64 } from "./thuthuka-logo-base64";
 
+// name/FSP number no longer drawn as separate text — the logo image itself
+// now includes the full wordmark, tagline, and FSP number.
 const THUTHUKA_HEADER = {
-  name: "ThuthukaSA",
-  fsp: "FSP NO: 47992",
   phone: "+27 11 568 2635 / +27 69 245 0228",
   email: "info@thuthuka-sa.co.za",
   address: "Office 62, Block 2, Ext 15, 8 Incubation Dr, Riversands Office Park, Riverside View, Fourways, Midrand, 2021",
 };
 
+// Full logo (icon + "ThuthukaSA" wordmark + "Financial Services Provider" +
+// FSP number), source aspect ratio ~1.487:1 — sized to fit the header band.
+const LOGO_H = 44;
+const LOGO_W = LOGO_H * 1.487;
+
 function drawHeader(pdf: import("jspdf").jsPDF, title: string) {
   const pageW = pdf.internal.pageSize.getWidth();
   pdf.setFillColor(232, 150, 10);
   pdf.rect(0, 0, pageW, 60, "F");
-  // Logo mark, white circle backing so it reads clearly on the orange band.
+  // White card backing so the logo's dark wordmark stays legible on orange.
   pdf.setFillColor(255, 255, 255);
-  pdf.circle(pageW - 40, 30, 22, "F");
-  pdf.addImage(THUTHUKA_LOGO_PNG_BASE64, "PNG", pageW - 58, 12, 36, 36);
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(14);
-  pdf.text(THUTHUKA_HEADER.name, 40, 28);
-  pdf.setFontSize(9);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(THUTHUKA_HEADER.fsp, 40, 44);
+  pdf.roundedRect(40, 8, LOGO_W + 16, LOGO_H + 8, 4, 4, "F");
+  pdf.addImage(THUTHUKA_LOGO_PNG_BASE64, "PNG", 48, 12, LOGO_W, LOGO_H);
   pdf.setTextColor(20, 20, 20);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(16);

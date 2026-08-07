@@ -209,7 +209,7 @@ function LoaRpaPage() {
             <img
               src={THUTHUKA_LOGO_PNG_BASE64}
               alt="ThuthukaSA"
-              className="size-10 rounded-full bg-white p-1 shadow-sm"
+              className="h-14 w-auto shrink-0 rounded-md bg-white p-1.5 shadow-sm"
             />
             <p className="max-w-xl text-foreground/80 md:text-lg">
               Two short forms required by ThuthukaSA (FSP No. 47992) so we can guide your investment appropriately.
