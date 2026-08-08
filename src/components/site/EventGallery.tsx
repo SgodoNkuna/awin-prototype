@@ -22,8 +22,12 @@ const c1 = asset("wcw-coaching/coaching-1.jpeg");
 const c2 = asset("wcw-coaching/coaching-2.jpeg");
 const c3 = asset("wcw-coaching/coaching-3.jpeg");
 const c4 = asset("wcw-coaching/coaching-4.jpeg");
+const wd1 = asset("womens-day-2026/womens-day-1.jpeg");
+const wd2 = asset("womens-day-2026/womens-day-2.jpeg");
+const wd3 = asset("womens-day-2026/womens-day-3.jpeg");
+const wd4 = asset("womens-day-2026/womens-day-4.jpeg");
 
-type Cat = "all" | "hike" | "wcw" | "coaching";
+type Cat = "all" | "hike" | "wcw" | "coaching" | "womens-day";
 
 const PHOTOS: { src: string; caption: string; event: string; cat: Cat }[] = [
   { src: h1, caption: "Sisterhood on the trail", event: "A-Win Hike · April 2026", cat: "hike" },
@@ -44,10 +48,15 @@ const PHOTOS: { src: string; caption: string; event: string; cat: Cat }[] = [
   { src: c2, caption: "Workshop notes", event: "Coaching with Nompumelelo", cat: "coaching" },
   { src: c3, caption: "Small circle", event: "Coaching with Nompumelelo", cat: "coaching" },
   { src: c4, caption: "Reflection", event: "Coaching with Nompumelelo", cat: "coaching" },
+  { src: wd1, caption: "The sisterhood, dressed for the day", event: "Women's Day Brunch · 8 August 2026", cat: "womens-day" },
+  { src: wd2, caption: "A-Winners together", event: "Women's Day Brunch · 8 August 2026", cat: "womens-day" },
+  { src: wd3, caption: "At the A-Win table", event: "Women's Day Brunch · 8 August 2026", cat: "womens-day" },
+  { src: wd4, caption: "Sharing what A-Win is about", event: "Women's Day Brunch · 8 August 2026", cat: "womens-day" },
 ];
 
 const TABS: { id: Cat; label: string }[] = [
   { id: "all", label: "All" },
+  { id: "womens-day", label: "Women's Day 2026" },
   { id: "hike", label: "Hike 2026" },
   { id: "wcw", label: "WCW" },
   { id: "coaching", label: "Coaching" },
