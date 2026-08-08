@@ -19,6 +19,8 @@ type M = {
   committee: string | null;
   committee_position: string | null;
   committee_order: number | null;
+  website_committee_position: string | null;
+  website_committee_order: number | null;
 };
 
 const COMMITTEES: Array<{ key: string; label: string }> = [
@@ -29,11 +31,19 @@ const COMMITTEES: Array<{ key: string; label: string }> = [
 
 // A member can sit on more than one committee — `committee` stores a
 // comma-separated list of keys (e.g. "main,website"), not a single value.
-// committee_order is still one number per person, so ordering is shared
-// across every committee they're on — a known simplification, not a bug.
+// committee_order/committee_position only hold ONE rank per person, which
+// breaks for anyone whose standing differs between committees (e.g. chairs
+// Website but isn't senior on Main). Website Committee gets its own
+// website_committee_order/_position columns for that reason; every other
+// committee still shares the original pair — add another dedicated pair
+// if a third committee ever actually needs it, don't build it speculatively.
 const committeeKeys = (committee: string | null): string[] =>
   (committee ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 const inCommittee = (committee: string | null, key: string) => committeeKeys(committee).includes(key);
+const orderCol = (key: string) => (key === "website" ? "website_committee_order" : "committee_order") as const;
+const positionCol = (key: string) => (key === "website" ? "website_committee_position" : "committee_position") as const;
+const orderFor = (m: M, key: string) => (key === "website" ? m.website_committee_order ?? m.committee_order : m.committee_order) ?? 0;
+const positionFor = (m: M, key: string) => (key === "website" ? m.website_committee_position ?? m.committee_position : m.committee_position) ?? "";
 
 function CommitteesPage() {
   const [rows, setRows] = useState<M[] | null>(null);
@@ -42,7 +52,7 @@ function CommitteesPage() {
   const load = async () => {
     const { data } = await supabase
       .from("team_members")
-      .select("id, name, photo_url, profile_card_url, committee, committee_position, committee_order")
+      .select("id, name, photo_url, profile_card_url, committee, committee_position, committee_order, website_committee_position, website_committee_order")
       .order("committee_order");
     setRows((data as M[]) ?? []);
   };
@@ -52,9 +62,10 @@ function CommitteesPage() {
 
   const move = async (m: M, delta: number, committeeKey: string) => {
     if (!rows) return;
+    const col = orderCol(committeeKey);
     const peers = rows
       .filter((x) => inCommittee(x.committee, committeeKey))
-      .sort((a, b) => (a.committee_order ?? 0) - (b.committee_order ?? 0));
+      .sort((a, b) => orderFor(a, committeeKey) - orderFor(b, committeeKey));
     const idx = peers.findIndex((x) => x.id === m.id);
     const swapIdx = idx + delta;
     if (swapIdx < 0 || swapIdx >= peers.length) return;
@@ -62,18 +73,18 @@ function CommitteesPage() {
     const b = peers[swapIdx];
     setSaving(m.id);
     await Promise.all([
-      supabase.from("team_members").update({ committee_order: b.committee_order ?? 0 }).eq("id", a.id),
-      supabase.from("team_members").update({ committee_order: a.committee_order ?? 0 }).eq("id", b.id),
+      supabase.from("team_members").update({ [col]: orderFor(b, committeeKey) }).eq("id", a.id),
+      supabase.from("team_members").update({ [col]: orderFor(a, committeeKey) }).eq("id", b.id),
     ]);
     setSaving(null);
     load();
   };
 
-  const savePosition = async (m: M, value: string) => {
+  const savePosition = async (m: M, committeeKey: string, value: string) => {
     setSaving(m.id);
     const { error } = await supabase
       .from("team_members")
-      .update({ committee_position: value })
+      .update({ [positionCol(committeeKey)]: value })
       .eq("id", m.id);
     setSaving(null);
     if (error) toast.error(error.message);
@@ -84,11 +95,14 @@ function CommitteesPage() {
     const label = COMMITTEES.find((c) => c.key === committeeKey)?.label ?? committeeKey;
     if (!confirm(`Remove ${m.name} from ${label}? Their member record and any other committees stay.`)) return;
     const remaining = committeeKeys(m.committee).filter((k) => k !== committeeKey);
+    const clearWebsiteCols = committeeKey === "website" ? { website_committee_position: null, website_committee_order: null } : {};
+    const clearSharedCols = remaining.length === 0 ? { committee_position: null, committee_order: 0 } : {};
     const { error } = await supabase
       .from("team_members")
       .update({
         committee: remaining.length ? remaining.join(",") : null,
-        ...(remaining.length ? {} : { committee_position: null, committee_order: 0 }),
+        ...clearWebsiteCols,
+        ...clearSharedCols,
       })
       .eq("id", m.id);
     if (error) return toast.error(error.message);
@@ -122,7 +136,7 @@ function CommitteesPage() {
       {COMMITTEES.map((c) => {
         const list = rows
           .filter((r) => inCommittee(r.committee, c.key))
-          .sort((a, b) => (a.committee_order ?? 0) - (b.committee_order ?? 0));
+          .sort((a, b) => orderFor(a, c.key) - orderFor(b, c.key));
         return (
           <Card key={c.key}>
             <CardHeader>
@@ -158,12 +172,12 @@ function CommitteesPage() {
                   <div className="min-w-0 flex-1">
                     <div className="font-medium truncate">{m.name}</div>
                     <Input
-                      defaultValue={m.committee_position ?? ""}
+                      defaultValue={positionFor(m, c.key)}
                       placeholder="Position title"
                       className="mt-1 h-8 text-xs"
                       onBlur={(e) => {
-                        if (e.target.value !== (m.committee_position ?? "")) {
-                          savePosition(m, e.target.value);
+                        if (e.target.value !== positionFor(m, c.key)) {
+                          savePosition(m, c.key, e.target.value);
                         }
                       }}
                     />

@@ -51,7 +51,16 @@ type Member = {
   committee: string | null;
   committee_position: string | null;
   committee_order: number | null;
+  website_committee_position: string | null;
+  website_committee_order: number | null;
 };
+
+// Website Committee has its own order/position — see admin.committees.tsx
+// for why (shared columns break once someone's rank differs by committee).
+const orderForCommittee = (m: Member, key: string) =>
+  (key === "website" ? m.website_committee_order ?? m.committee_order : m.committee_order) ?? 0;
+const positionForCommittee = (m: Member, key: string) =>
+  (key === "website" ? m.website_committee_position ?? m.committee_position : m.committee_position) ?? null;
 
 const CATEGORIES = ["All", ...MEMBER_CATEGORIES] as const;
 
@@ -111,7 +120,7 @@ function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
   );
 }
 
-function CommitteeCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
+function CommitteeCard({ m, committeeKey, onOpen }: { m: Member; committeeKey: string; onOpen: (m: Member) => void }) {
   return (
     <button
       type="button"
@@ -136,7 +145,7 @@ function CommitteeCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }
       )}
       <div className="mt-3 font-serif text-base font-semibold text-foreground leading-tight">{m.name || "[Name]"}</div>
       <div className="mt-1 text-xs font-medium uppercase tracking-wider text-accent">
-        {m.committee_position || "[Position]"}
+        {positionForCommittee(m, committeeKey) || "[Position]"}
       </div>
     </button>
   );
@@ -155,7 +164,7 @@ export function MembersPage() {
     (async () => {
       const { data } = await supabase
         .from("team_members")
-        .select("id, name, title, bio, photo_url, profile_card_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order" as any)
+        .select("id, name, title, bio, photo_url, profile_card_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order, website_committee_position, website_committee_order" as any)
         .eq("published", true)
         .order("order_index");
       const rows = ((data ?? []) as unknown) as Member[];
@@ -213,8 +222,8 @@ export function MembersPage() {
         map.get(key)!.push(m);
       }
     });
-    map.forEach((list) =>
-      list.sort((a, b) => (a.committee_order ?? 0) - (b.committee_order ?? 0)),
+    map.forEach((list, key) =>
+      list.sort((a, b) => orderForCommittee(a, key) - orderForCommittee(b, key)),
     );
     return map;
   }, [team]);
@@ -322,7 +331,7 @@ export function MembersPage() {
                 </div>
                 <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:thin]">
                   {list.map((m) => (
-                    <CommitteeCard key={m.id} m={m} onOpen={setActive} />
+                    <CommitteeCard key={m.id} m={m} committeeKey={c.key} onOpen={setActive} />
                   ))}
                 </div>
               </div>
