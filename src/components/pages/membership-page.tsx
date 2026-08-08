@@ -99,6 +99,15 @@ const APPLY_STEPS = [
   { n: 2, title: "Done", icon: Check },
 ] as const;
 
+// Toast alone is easy to miss on a long mobile form when the user is
+// scrolled down at the bottom (e.g. right by the Continue button) —
+// scroll them back up so the error is actually in view, not just fired
+// off-screen above their thumb.
+function reportFormError(message: string) {
+  toast.error(message);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function MembershipPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -200,7 +209,7 @@ function MembershipPage() {
       try {
         cleanEmail = sanitizeEmail(String(fd.get("email") ?? ""));
       } catch {
-        toast.error("Please enter a valid email address.");
+        reportFormError("Please enter a valid email address.");
         return;
       }
 
@@ -220,80 +229,88 @@ function MembershipPage() {
 
       const parsed = applicationSchema.safeParse(raw);
       if (!parsed.success) {
-        toast.error(parsed.error.issues[0]?.message ?? "Please check the form");
+        reportFormError(parsed.error.issues[0]?.message ?? "Please check the form");
         return;
       }
 
       if (!popiaConsent) {
-        toast.error("Please consent to POPIA data processing to continue.");
+        reportFormError("Please consent to POPIA data processing to continue.");
         return;
       }
 
       setSubmitting(true);
+      try {
+        // Pre-flight duplicate check: existing application OR existing approved member.
+        // Use parameterised .or() with .eq sub-clauses — never string interpolation into a filter.
+        const [{ data: existingApp }, { data: existingMember }] = await Promise.all([
+          supabase
+            .from("applications")
+            .select("id, status")
+            .or(`email.eq.${cleanEmail},id_number.eq.${cleanIdNumber}`)
+            .maybeSingle(),
+          supabase
+            .from("profiles")
+            .select("id, membership_status")
+            .eq("email", cleanEmail)
+            .in("membership_status", ["active", "pending"])
+            .maybeSingle(),
+        ]);
 
-      // Pre-flight duplicate check: existing application OR existing approved member.
-      // Use parameterised .or() with .eq sub-clauses — never string interpolation into a filter.
-      const [{ data: existingApp }, { data: existingMember }] = await Promise.all([
-        supabase
-          .from("applications")
-          .select("id, status")
-          .or(`email.eq.${cleanEmail},id_number.eq.${cleanIdNumber}`)
-          .maybeSingle(),
-        supabase
-          .from("profiles")
-          .select("id, membership_status")
-          .eq("email", cleanEmail)
-          .in("membership_status", ["active", "pending"])
-          .maybeSingle(),
-      ]);
-
-      if (existingMember) {
-        setSubmitting(false);
-        setDuplicateWarning(
-          "You are already a registered A-Win member. Please sign in to access your member portal.",
-        );
-        return;
-      }
-
-      if (existingApp) {
-        setSubmitting(false);
-        const msg =
-          existingApp.status === "approved"
-            ? `An approved application already exists for this email or ID number. If you believe this is an error, please contact ${SUPPORT_EMAIL}.`
-            : `An application for this email or ID number is already in progress (status: ${existingApp.status}). Please contact ${SUPPORT_EMAIL} if you need assistance.`;
-        setDuplicateWarning(msg);
-        return;
-      }
-
-      // tier column kept for backward compatibility; single model always stores "active".
-      const { data: inserted, error } = await supabase
-        .from("applications")
-        .insert({
-          ...parsed.data,
-          tier: "active",
-          user_id: user?.id ?? null,
-          popia_consent: true,
-          popia_consent_at: new Date().toISOString(),
-        })
-        .select("id")
-        .single();
-      setSubmitting(false);
-
-      if (error || !inserted) {
-        if (error && isDuplicateError(error)) {
+        if (existingMember) {
           setDuplicateWarning(
-            `An application with this email address or ID number already exists. Please contact ${SUPPORT_EMAIL} if you need assistance.`,
+            "You are already a registered A-Win member. Please sign in to access your member portal.",
           );
+          reportFormError("You're already a registered A-Win member.");
           return;
         }
-        toast.error("Could not submit. Please try again.");
+
+        if (existingApp) {
+          const msg =
+            existingApp.status === "approved"
+              ? `An approved application already exists for this email or ID number. If you believe this is an error, please contact ${SUPPORT_EMAIL}.`
+              : `An application for this email or ID number is already in progress (status: ${existingApp.status}). Please contact ${SUPPORT_EMAIL} if you need assistance.`;
+          setDuplicateWarning(msg);
+          reportFormError("An application already exists for this email or ID number.");
+          return;
+        }
+
+        // tier column kept for backward compatibility; single model always stores "active".
+        const { data: inserted, error } = await supabase
+          .from("applications")
+          .insert({
+            ...parsed.data,
+            tier: "active",
+            user_id: user?.id ?? null,
+            popia_consent: true,
+            popia_consent_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+
+        if (error || !inserted) {
+          if (error && isDuplicateError(error)) {
+            setDuplicateWarning(
+              `An application with this email address or ID number already exists. Please contact ${SUPPORT_EMAIL} if you need assistance.`,
+            );
+            reportFormError("An application already exists for this email or ID number.");
+            return;
+          }
+          reportFormError("Could not submit. Please check your connection and try again.");
+          return;
+        }
+        setApplicationId(inserted.id);
+        setApplicantName(parsed.data.full_name);
+        setPopiaConsent(false);
+        setStep(1);
+        toast.success("Details saved — now let's get your proof of payment sorted.");
+      } catch {
+        // Network hiccup, RLS rejection, or anything else unexpected — surface
+        // it instead of leaving the button silently stuck with no feedback.
+        reportFormError("Something went wrong submitting your application. Please try again.");
         return;
+      } finally {
+        setSubmitting(false);
       }
-      setApplicationId(inserted.id);
-      setApplicantName(parsed.data.full_name);
-      setPopiaConsent(false);
-      setStep(1);
-      toast.success("Details saved — now let's get your proof of payment sorted.");
       // Confirmation email — fire and forget, submission already succeeded.
       void import("@/lib/email.functions").then(({ sendApplicationReceivedEmail }) =>
         sendApplicationReceivedEmail({ data: { email: cleanEmail, fullName: parsed.data.full_name } }).catch(() => {}),
