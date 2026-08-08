@@ -343,14 +343,16 @@ function LoaRpaPage() {
                   I hereby give consent to any financial institution or employer in possession of information
                   regarding my insurance, investment and employee benefits portfolio to release that information
                   upon request directly to the person who is in terms of this document authorised to request it, or
-                  to the authorised person via Astute. This consent may possibly have a restricting influence on my
-                  constitutional right to privacy. This authorisation shall remain valid for 6 months (180 days)
-                  from date of my signature.
+                  to the authorised person via Astute. For this purpose I confirm that the authorised person is
+                  acting on my behalf and/or in my interest. It was explained to me, and I understand, that this
+                  consent may possibly have a restricting influence on my constitutional right to privacy. This
+                  authorisation shall remain valid for 6 months (180 days) from date of my signature.
                 </p>
                 <p className="mt-3">
                   I further request the financial institutions with whom Phumelele Ndumo has a sales agreement to
-                  indicate him/her on their records as my official care intermediary. This appointment may be
-                  revoked by me in writing at any time.
+                  indicate him/her on their records as my official care intermediary. I have been properly
+                  counselled on the consequences of this letter of appointment. This appointment may be revoked by
+                  me in writing at any time.
                 </p>
               </div>
               <label className="flex items-start gap-3 rounded-lg border border-border p-4 cursor-pointer hover:bg-secondary/30">
