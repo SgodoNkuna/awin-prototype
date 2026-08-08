@@ -48,7 +48,13 @@ type Row = {
   is_visible: boolean;
 };
 
-const BUCKET = "event-gallery";
+// Public "gallery" bucket, under the same assets/ prefix the site's own
+// asset() helper resolves — so admin uploads and the hand-placed photos
+// they were backfilled alongside live in the same place. (Was the private
+// "event-gallery" bucket with signed URLs — pointless for content that's
+// meant to be public, and the public site never actually read from it.)
+const BUCKET = "gallery";
+const pathFor = (category: string, filename: string) => `assets/${category}/${filename}`;
 
 function GalleryAdminPage() {
   const { isAdmin } = useAuth();
@@ -86,12 +92,10 @@ function GalleryAdminPage() {
     if (error) toast.error(error.message);
     const list = (data as Row[]) ?? [];
     setRows(list);
-    // Generate signed URLs
     const map: Record<string, string> = {};
-    await Promise.all(list.map(async (r) => {
-      const { data: s } = await supabase.storage.from(BUCKET).createSignedUrl(r.storage_path, 60 * 60);
-      if (s?.signedUrl) map[r.id] = s.signedUrl;
-    }));
+    for (const r of list) {
+      map[r.id] = supabase.storage.from(BUCKET).getPublicUrl(r.storage_path).data.publicUrl;
+    }
     setUrls(map);
   }, [cat]);
 
@@ -112,7 +116,7 @@ function GalleryAdminPage() {
     setBusy(true);
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `${cat}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const path = pathFor(cat, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`);
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
 

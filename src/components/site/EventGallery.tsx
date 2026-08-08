@@ -1,71 +1,68 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { asset } from "@/lib/cdn";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const h1 = asset("hike-2026/hike-00.44.593.jpeg");
-const h2 = asset("hike-2026/hike-00.44.5844.jpeg");
-const h3 = asset("hike-2026/hike-00.44.5922.jpeg");
-const h4 = asset("hike-2026/hike-00.44.5966.jpeg");
-const h5 = asset("hike-2026/hike-00.45.001.jpeg");
-const h7 = asset("hike-2026/hike-00.45.00-2.jpeg");
-const h8 = asset("hike-2026/hike-00.44.5911.jpeg");
-const h9 = asset("hike-2026/hike-00.44.5932.jpeg");
-const w1 = asset("wcw/wcw-1.jpeg");
-const w2 = asset("wcw/wcw-2.jpeg");
-const w3 = asset("wcw/wcw-3.jpeg");
-const w4 = asset("wcw/wcw-4.jpeg");
-const w5 = asset("wcw/wcw-5.jpeg");
-const w6 = asset("wcw/wcw-6.jpeg");
-const c1 = asset("wcw-coaching/coaching-1.jpeg");
-const c2 = asset("wcw-coaching/coaching-2.jpeg");
-const c3 = asset("wcw-coaching/coaching-3.jpeg");
-const c4 = asset("wcw-coaching/coaching-4.jpeg");
-const wd1 = asset("womens-day-2026/womens-day-1.jpeg");
-const wd2 = asset("womens-day-2026/womens-day-2.jpeg");
-const wd3 = asset("womens-day-2026/womens-day-3.jpeg");
-const wd4 = asset("womens-day-2026/womens-day-4.jpeg");
+type Photo = { id: string; src: string; caption: string; event: string; category: string };
 
-type Cat = "all" | "hike" | "wcw" | "coaching" | "womens-day";
+// Seed labels for the categories admin.gallery.tsx ships with — any further
+// category an admin types in there just shows up automatically, titled from
+// its slug (see labelize below).
+const CATEGORY_LABELS: Record<string, string> = {
+  "womens-day": "Women's Day 2026",
+  hike: "Hike 2026",
+  wcw: "WCW",
+  coaching: "Coaching",
+  other: "Other",
+};
 
-const PHOTOS: { src: string; caption: string; event: string; cat: Cat }[] = [
-  { src: h1, caption: "Sisterhood on the trail", event: "A-Win Hike · April 2026", cat: "hike" },
-  { src: h2, caption: "By the bridge", event: "A-Win Hike · April 2026", cat: "hike" },
-  { src: h3, caption: "Team moment", event: "A-Win Hike · April 2026", cat: "hike" },
-  { src: h4, caption: "Riverside", event: "A-Win Hike · April 2026", cat: "hike" },
-  { src: h5, caption: "Crossing together", event: "A-Win Hike · April 2026", cat: "hike" },
-  { src: h7, caption: "Lakeside pause", event: "A-Win Hike · April 2026", cat: "hike" },
-  { src: h8, caption: "Onward", event: "A-Win Hike · April 2026", cat: "hike" },
-  { src: h9, caption: "Quiet waters", event: "A-Win Hike · April 2026", cat: "hike" },
-  { src: w1, caption: "WCW gathering", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: w2, caption: "Panel in session", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: w3, caption: "Community", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: w4, caption: "Networking", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: w5, caption: "Speakers", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: w6, caption: "Full house", event: "Woman Crush Wednesday", cat: "wcw" },
-  { src: c1, caption: "Group coaching", event: "Coaching with Nompumelelo", cat: "coaching" },
-  { src: c2, caption: "Workshop notes", event: "Coaching with Nompumelelo", cat: "coaching" },
-  { src: c3, caption: "Small circle", event: "Coaching with Nompumelelo", cat: "coaching" },
-  { src: c4, caption: "Reflection", event: "Coaching with Nompumelelo", cat: "coaching" },
-  { src: wd1, caption: "The sisterhood, dressed for the day", event: "Women's Day Brunch · 8 August 2026", cat: "womens-day" },
-  { src: wd2, caption: "A-Winners together", event: "Women's Day Brunch · 8 August 2026", cat: "womens-day" },
-  { src: wd3, caption: "At the A-Win table", event: "Women's Day Brunch · 8 August 2026", cat: "womens-day" },
-  { src: wd4, caption: "Sharing what A-Win is about", event: "Women's Day Brunch · 8 August 2026", cat: "womens-day" },
-];
-
-const TABS: { id: Cat; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "womens-day", label: "Women's Day 2026" },
-  { id: "hike", label: "Hike 2026" },
-  { id: "wcw", label: "WCW" },
-  { id: "coaching", label: "Coaching" },
-];
+const labelize = (id: string) =>
+  CATEGORY_LABELS[id] ??
+  id.split(/[-_\s]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
 
 export function EventGallery({ heading = true }: { heading?: boolean }) {
-  const [cat, setCat] = useState<Cat>("all");
-  const [open, setOpen] = useState<(typeof PHOTOS)[number] | null>(null);
-  const items = cat === "all" ? PHOTOS : PHOTOS.filter((p) => p.cat === cat);
+  const [photos, setPhotos] = useState<Photo[] | null>(null);
+  const [cat, setCat] = useState<string>("all");
+  const [open, setOpen] = useState<Photo | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("event_gallery")
+        .select("id, category, storage_path, caption, event_label")
+        .eq("is_visible", true)
+        .order("sort_order", { ascending: true });
+      if (cancelled) return;
+      const rows = (data ?? []) as { id: string; category: string; storage_path: string; caption: string | null; event_label: string | null }[];
+      setPhotos(
+        rows.map((r) => ({
+          id: r.id,
+          src: asset(r.storage_path.replace(/^assets\//, "")),
+          caption: r.caption ?? "",
+          event: r.event_label ?? labelize(r.category),
+          category: r.category,
+        })),
+      );
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (photos === null) {
+    return (
+      <section className="bg-secondary/30 py-16">
+        <div className="flex justify-center"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>
+      </section>
+    );
+  }
+  if (photos.length === 0) return null;
+
+  const categories = Array.from(new Set(photos.map((p) => p.category)));
+  const tabs = [{ id: "all", label: "All" }, ...categories.map((id) => ({ id, label: labelize(id) }))];
+  const items = cat === "all" ? photos : photos.filter((p) => p.category === cat);
 
   return (
     <section className="bg-secondary/30 py-16">
@@ -81,7 +78,7 @@ export function EventGallery({ heading = true }: { heading?: boolean }) {
         )}
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.id}
               type="button"
@@ -101,7 +98,7 @@ export function EventGallery({ heading = true }: { heading?: boolean }) {
         <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
           {items.map((p) => (
             <button
-              key={p.src}
+              key={p.id}
               type="button"
               onClick={() => setOpen(p)}
               className="group relative aspect-square overflow-hidden rounded-xl border border-border/60 shadow-[var(--shadow-elegant)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
