@@ -16,6 +16,7 @@ import { WCWGallery } from "@/components/site/WCWGallery";
 import { HikeGallery } from "@/components/site/HikeGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { signPortfolioUrls } from "@/lib/portfolio-storage.functions";
+import { AnimateNumber } from "@/components/ui/animate-number";
 const wcwHero = asset("wcw/wcw-5.jpeg");
 const hikeImg1 = asset("hike-2026/hike-00.44.593.jpeg");
 const hikeImg2 = asset("hike-2026/hike-00.44.5922.jpeg");
@@ -176,6 +177,14 @@ function useFeaturedMembers(limit = 6) {
 // Articles removed — Portfolio carousel replaces News section
 
 
+// Admin-editable free text ("50+ Women", "Est. 2025", "Growing Together") —
+// animate the leading number when there is one, otherwise render as-is.
+function StatValue({ value }: { value: string }) {
+  const match = value.match(/^(\d[\d,]*)(.*)$/);
+  if (!match) return <>{value}</>;
+  return <AnimateNumber value={Number(match[1].replace(/,/g, ""))} suffix={match[2]} />;
+}
+
 function Index() {
   const liveStats = useHomepageStats();
   const upcomingEvents = useUpcomingEvents(4);
@@ -201,7 +210,7 @@ function Index() {
               className="border-border/60 text-center shadow-[var(--shadow-elegant)]"
             >
               <CardContent className="p-6">
-                <div className="font-serif text-xl md:text-2xl text-primary">{s.value}</div>
+                <div className="font-serif text-xl md:text-2xl text-primary"><StatValue value={s.value} /></div>
                 <div className="mt-2 text-xs uppercase tracking-wider text-muted-foreground">
                   {s.label}
                 </div>

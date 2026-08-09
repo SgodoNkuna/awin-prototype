@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Download, Eye, Loader2, MessageCircle, Globe2, FileDown, Search } from "lucide-react";
+import { AnimateNumber } from "@/components/ui/animate-number";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -156,7 +157,7 @@ export function SubmissionsPanel({ emptyHint }: { emptyHint?: string }) {
           ].map(([label, value]) => (
             <Card key={label as string}>
               <CardContent className="pt-4 pb-3">
-                <div className="text-2xl font-semibold">{value}</div>
+                <div className="text-2xl font-semibold"><AnimateNumber value={value as number} /></div>
                 <div className="text-xs text-muted-foreground">{label}</div>
               </CardContent>
             </Card>

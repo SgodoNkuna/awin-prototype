@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/use-auth";
+import { AnimateNumber } from "@/components/ui/animate-number";
 
 export const Route = createFileRoute("/admin/")({
   component: OverviewPage,
@@ -173,7 +174,9 @@ function Stat({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">{label}</p>
-              <p className="text-2xl font-bold mt-1">{value ?? "—"}</p>
+              <p className="text-2xl font-bold mt-1">
+                {value === undefined ? "—" : <AnimateNumber value={value} />}
+              </p>
             </div>
             <Icon className={`size-7 ${accent} opacity-70`} />
           </div>
