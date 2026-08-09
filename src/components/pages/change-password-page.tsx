@@ -49,7 +49,17 @@ function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
     });
     if (updateError) {
       setBusy(false);
-      toast.error(updateError.message || "Could not change password");
+      // GoTrue returns the exact same message text ("Current password
+      // required when setting new password.") for both a missing AND a
+      // wrong current password — genuinely misleading, since the field is
+      // required in this form and clearly isn't empty. Use the machine
+      // error code to tell the user what's actually wrong.
+      const code = (updateError as { code?: string }).code;
+      if (code === "current_password_invalid") {
+        toast.error("That current/temporary password is incorrect — check for typos, or use \"Forgot password?\" on the sign-in page instead.");
+      } else {
+        toast.error(updateError.message || "Could not change password");
+      }
       return;
     }
 
