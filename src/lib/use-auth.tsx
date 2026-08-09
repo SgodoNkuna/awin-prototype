@@ -42,6 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setForcePasswordChange(!!profileRow?.force_password_change);
     };
 
+    // onAuthStateChange alone is sufficient — it fires an INITIAL_SESSION
+    // event with the real (storage-restored) session as soon as the client
+    // determines it, so a separate getSession() call is redundant. Calling
+    // both raced two concurrent loadRole() calls against each other: one
+    // could resolve (and flip loading to false) while the other was still
+    // in flight, letting components briefly observe loading=false with
+    // stale role/force-password-change state before the second call caught
+    // up — which is exactly what silently skipped the forced password
+    // change redirect for a freshly created account.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       if (s?.user) {
@@ -52,15 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsAdmin(false);
         setIsAdvisor(false);
         setForcePasswordChange(false);
-        setLoading(false);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      if (data.session?.user) {
-        void loadRole(data.session.user.id).finally(() => setLoading(false));
-      } else {
         setLoading(false);
       }
     });
