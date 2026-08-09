@@ -26,6 +26,22 @@ function ForcePasswordChangeGate() {
 }
 
 export function SiteLayout() {
+  const location = useLocation();
+  // ThuthukaSA's dashboard is deliberately not "the A-Win site" — no A-Win
+  // nav, no A-Win footer, so it never reads as just another page of the
+  // member site. It builds its own header/chrome entirely.
+  const bareLayout = location.pathname === "/tksa";
+
+  if (bareLayout) {
+    return (
+      <>
+        <ForcePasswordChangeGate />
+        <Outlet />
+        <ScrollToTop />
+      </>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <ForcePasswordChangeGate />

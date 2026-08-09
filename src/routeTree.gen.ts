@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WhyAWinRouteImport } from './routes/why-a-win'
+import { Route as TksaRouteImport } from './routes/tksa'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PortalRouteImport } from './routes/portal'
@@ -47,6 +48,11 @@ import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/pay
 const WhyAWinRoute = WhyAWinRouteImport.update({
   id: '/why-a-win',
   path: '/why-a-win',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TksaRoute = TksaRouteImport.update({
+  id: '/tksa',
+  path: '/tksa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeamRoute = TeamRouteImport.update({
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/team': typeof TeamRoute
+  '/tksa': typeof TksaRoute
   '/why-a-win': typeof WhyAWinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/approvals': typeof AdminApprovalsRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/team': typeof TeamRoute
+  '/tksa': typeof TksaRoute
   '/why-a-win': typeof WhyAWinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/approvals': typeof AdminApprovalsRoute
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   '/portal': typeof PortalRoute
   '/portfolio': typeof PortfolioRoute
   '/team': typeof TeamRoute
+  '/tksa': typeof TksaRoute
   '/why-a-win': typeof WhyAWinRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/approvals': typeof AdminApprovalsRoute
@@ -342,6 +351,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/portfolio'
     | '/team'
+    | '/tksa'
     | '/why-a-win'
     | '/admin/applications'
     | '/admin/approvals'
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/portfolio'
     | '/team'
+    | '/tksa'
     | '/why-a-win'
     | '/admin/applications'
     | '/admin/approvals'
@@ -413,6 +424,7 @@ export interface FileRouteTypes {
     | '/portal'
     | '/portfolio'
     | '/team'
+    | '/tksa'
     | '/why-a-win'
     | '/admin/applications'
     | '/admin/approvals'
@@ -450,6 +462,7 @@ export interface RootRouteChildren {
   PortalRoute: typeof PortalRoute
   PortfolioRoute: typeof PortfolioRoute
   TeamRoute: typeof TeamRoute
+  TksaRoute: typeof TksaRoute
   WhyAWinRoute: typeof WhyAWinRoute
   DebugRoutesRoute: typeof DebugRoutesRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -462,6 +475,13 @@ declare module '@tanstack/react-router' {
       path: '/why-a-win'
       fullPath: '/why-a-win'
       preLoaderRoute: typeof WhyAWinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tksa': {
+      id: '/tksa'
+      path: '/tksa'
+      fullPath: '/tksa'
+      preLoaderRoute: typeof TksaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/team': {
@@ -753,6 +773,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalRoute: PortalRoute,
   PortfolioRoute: PortfolioRoute,
   TeamRoute: TeamRoute,
+  TksaRoute: TksaRoute,
   WhyAWinRoute: WhyAWinRoute,
   DebugRoutesRoute: DebugRoutesRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,

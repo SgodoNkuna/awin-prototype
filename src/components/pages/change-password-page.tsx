@@ -19,7 +19,7 @@ const schema = z
   .refine((v) => v.password === v.confirm, { message: "Passwords do not match", path: ["confirm"] });
 
 function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
-  const { user, isAdmin, forcePasswordChange, clearForcePasswordChange } = useAuth();
+  const { user, isAdmin, isAdvisor, forcePasswordChange, clearForcePasswordChange } = useAuth();
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { next?: string };
   const [busy, setBusy] = useState(false);
@@ -76,7 +76,7 @@ function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
 
     setBusy(false);
     toast.success("Password changed");
-    navigate({ to: search.next || (isAdmin ? "/admin" : "/portal"), replace: true });
+    navigate({ to: search.next || (isAdmin ? "/admin" : isAdvisor ? "/tksa" : "/portal"), replace: true });
   };
 
   const mustChange = forced || forcePasswordChange;

@@ -134,15 +134,16 @@ function ForgotPasswordFlow({ onDone }: { onDone: () => void }) {
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, isAdvisor, loading } = useAuth();
   const [tab, setTab] = useState<"signin" | "signup" | "reset">("signin");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (loading || !user) return;
-    // Admins land on the admin dashboard; members continue to the portal.
-    navigate({ to: isAdmin ? "/admin" : "/portal", replace: true });
-  }, [user, isAdmin, loading, navigate]);
+    // Admins land on the admin dashboard, ThuthukaSA advisors on their own
+    // dashboard, everyone else continues to the member portal.
+    navigate({ to: isAdmin ? "/admin" : isAdvisor ? "/tksa" : "/portal", replace: true });
+  }, [user, isAdmin, isAdvisor, loading, navigate]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -240,7 +241,8 @@ function AuthPage() {
 
           {tab === "reset" ? (
             <>
-              <ForgotPasswordFlow onDone={() => navigate({ to: "/portal", replace: true })} />
+              {/* The role-aware redirect effect above fires once `user` is set — no need to duplicate its admin/advisor/member logic here. */}
+              <ForgotPasswordFlow onDone={() => {}} />
               <p className="text-center text-sm text-muted-foreground mt-4">
                 <button type="button" className="hover:text-primary underline-offset-2 hover:underline" onClick={() => setTab("signin")}>
                   ← Back to sign in

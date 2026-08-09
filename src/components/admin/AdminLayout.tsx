@@ -93,10 +93,6 @@ const NAV_GROUPS: NavGroup[] = [
 
 const FLAT_NAV: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
 
-// ThuthukaSA advisor accounts are scoped to LOA/RPA only — they must never
-// see A-Win membership/finance data, so every other admin route bounces them.
-const ADVISOR_ALLOWED_PATH = "/admin/loa-rpa";
-
 export function AdminLayout() {
   const { user, loading, isAdmin, isAdvisor, signOut } = useAuth();
   const navigate = useNavigate();
@@ -104,21 +100,22 @@ export function AdminLayout() {
   const search = useRouterState({ select: (s) => s.location.search as Record<string, string> });
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const advisorOnly = isAdvisor && !isAdmin;
-
+  // The A-Win admin console is admin-only. ThuthukaSA advisor accounts have
+  // their own separate dashboard (/tksa) and never see this — even the
+  // "advisor" role alone no longer grants entry here; an account that's
+  // both admin and advisor still gets in via the admin check.
   useEffect(() => {
     if (loading) return;
     if (!user) navigate({ to: "/auth", replace: true });
-    else if (!isAdmin && !isAdvisor) navigate({ to: "/portal", replace: true });
-    else if (advisorOnly && path !== ADVISOR_ALLOWED_PATH) navigate({ to: ADVISOR_ALLOWED_PATH, replace: true });
-  }, [user, loading, isAdmin, isAdvisor, advisorOnly, path, navigate]);
+    else if (!isAdmin) navigate({ to: isAdvisor ? "/tksa" : "/portal", replace: true });
+  }, [user, loading, isAdmin, isAdvisor, navigate]);
 
   // Close mobile drawer on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [path]);
 
-  if (loading || !user || (!isAdmin && !isAdvisor) || (advisorOnly && path !== ADVISOR_ALLOWED_PATH)) {
+  if (loading || !user || !isAdmin) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -126,9 +123,7 @@ export function AdminLayout() {
     );
   }
 
-  const navGroups = advisorOnly
-    ? [{ label: "LOA & Risk Profile", items: [{ to: ADVISOR_ALLOWED_PATH, label: "LOA & Risk Profile", icon: ShieldCheck, exact: true } as NavItem] }]
-    : NAV_GROUPS;
+  const navGroups = NAV_GROUPS;
 
   const isActive = (item: NavItem) => {
     const pathMatches = item.exact ? path === item.to : path === item.to || path.startsWith(item.to + "/");
