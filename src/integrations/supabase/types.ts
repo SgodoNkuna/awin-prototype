@@ -401,6 +401,7 @@ export type Database = {
           full_name: string
           id: string
           loa_data: Json
+          loa_pdf_path: string | null
           pdf_path: string | null
           phone: string | null
           privacy_consent: boolean
@@ -423,6 +424,7 @@ export type Database = {
           full_name: string
           id?: string
           loa_data?: Json
+          loa_pdf_path?: string | null
           pdf_path?: string | null
           phone?: string | null
           privacy_consent?: boolean
@@ -445,6 +447,7 @@ export type Database = {
           full_name?: string
           id?: string
           loa_data?: Json
+          loa_pdf_path?: string | null
           pdf_path?: string | null
           phone?: string | null
           privacy_consent?: boolean
@@ -910,7 +913,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "member"
+      app_role: "admin" | "member" | "advisor"
       application_status: "pending" | "under_review" | "approved" | "rejected"
       investment_experience: "beginner" | "intermediate" | "advanced"
       membership_tier: "general" | "active" | "patron"
@@ -1041,7 +1044,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "member"],
+      app_role: ["admin", "member", "advisor"],
       application_status: ["pending", "under_review", "approved", "rejected"],
       investment_experience: ["beginner", "intermediate", "advanced"],
       membership_tier: ["general", "active", "patron"],

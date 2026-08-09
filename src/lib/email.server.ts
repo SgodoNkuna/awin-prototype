@@ -70,6 +70,37 @@ export async function adminNotifyEnabled(
   }
 }
 
+/**
+ * Where a confidential notification type's alerts actually go — configurable
+ * per notification type from Admin → LOA & Risk Profile (or Settings), stored
+ * in the `notify_recipients` site_setting as { [notifyKey]: { emails, whatsapp } }.
+ * Every change goes through the same two-person approval + audit_logs trail
+ * as any other site_settings write (see requestSiteSettingsUpdate) — so who
+ * gets copied on FAIS-regulated data is an explicit, logged decision instead
+ * of a value quietly baked into the code. Falls back to `fallback` (fails
+ * OPEN to the known-safe default) if nothing's configured or the read fails.
+ */
+export async function getNotifyRecipients(
+  notifyKey: string,
+  fallback: { emails: string[]; whatsapp: string[] },
+): Promise<{ emails: string[]; whatsapp: string[] }> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", "notify_recipients")
+      .maybeSingle();
+    const cfg = (data?.value as Record<string, { emails?: string[]; whatsapp?: string[] }> | null)?.[notifyKey];
+    if (!cfg) return fallback;
+    const emails = Array.isArray(cfg.emails) && cfg.emails.length > 0 ? cfg.emails : fallback.emails;
+    const whatsapp = Array.isArray(cfg.whatsapp) && cfg.whatsapp.length > 0 ? cfg.whatsapp : fallback.whatsapp;
+    return { emails, whatsapp };
+  } catch {
+    return fallback;
+  }
+}
+
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
   const token = process.env.ZOHO_ZEPTOMAIL_TOKEN;
   const from = process.env.ZOHO_MAIL_FROM;

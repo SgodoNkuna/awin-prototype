@@ -53,7 +53,7 @@ export function notifyNewApprovalRequest(actionLabel: string, reason: string, re
 export const promoteSchema = z.object({
   email: z.string().email().optional(),
   user_id: z.string().uuid().optional(),
-  role: z.enum(["admin", "member"]).default("admin"),
+  role: z.enum(["admin", "member", "advisor"]).default("admin"),
   action: z.enum(["grant", "revoke"]).default("grant"),
   reason: z.string().trim().min(5).max(500),
 }).refine((v) => v.email || v.user_id, { message: "email or user_id required" });
@@ -255,4 +255,76 @@ export const requestDeleteApplication = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     notifyNewApprovalRequest("Delete application", data.reason, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
+  });
+
+// --- Advisor account bootstrap ----------------------------------------------
+// Creating a brand-new ThuthukaSA login is a one-time bootstrap, not a
+// promotion of an existing member — there's no existing advisor around to be
+// the "different admin" the two-person approval flow needs, so this runs
+// immediately once an admin confirms it (still logged to audit_logs).
+// Granting advisor to anyone ELSE afterwards still goes through
+// requestSetUserRole above, which does require that second approval.
+
+export const createAdvisorAccountSchema = z.object({
+  email: z.string().email(),
+  fullName: z.string().trim().min(1).max(200),
+});
+
+function generateTempPassword() {
+  // 24 random bytes, base64url — well past any Supabase password policy,
+  // no ambiguous characters to misread when relaying it by phone/WhatsApp.
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "A").replace(/\//g, "b").replace(/=+$/, "") + "!9";
+}
+
+export const createAdvisorAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => createAdvisorAccountSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: existing } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("email", data.email)
+      .maybeSingle();
+    if (existing) {
+      throw new Error("An account with this email already exists — use “Grant advisor” below instead of creating a new one.");
+    }
+
+    const tempPassword = generateTempPassword();
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName },
+    });
+    if (createErr || !created.user) throw new Error(createErr?.message ?? "Could not create account");
+    const userId = created.user.id;
+
+    // The on_auth_user_created trigger already inserted a profiles row and a
+    // 'member' role — fill in the name/force-change flag and layer 'advisor'
+    // on top (additive; 'member' staying alongside it is harmless).
+    await supabaseAdmin
+      .from("profiles")
+      .update({ full_name: data.fullName, force_password_change: true })
+      .eq("id", userId);
+    const { error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .upsert({ user_id: userId, role: "advisor" }, { onConflict: "user_id,role" });
+    if (roleErr) throw new Error(roleErr.message);
+
+    await supabaseAdmin.from("audit_logs").insert({
+      actor_id: context.userId,
+      actor_email: context.claims?.email ?? null,
+      action: "advisor_account_bootstrap",
+      target_type: "user_role",
+      target_id: userId,
+      reason: "Initial ThuthukaSA advisor account creation",
+      details: { role: "advisor", target_email: data.email },
+    });
+
+    return { ok: true, user_id: userId, email: data.email, tempPassword };
   });

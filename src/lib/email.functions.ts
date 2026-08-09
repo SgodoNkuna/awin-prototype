@@ -50,9 +50,33 @@ export const sendLoaRpaReceivedEmail = createServerFn({ method: "POST" })
     }
     const { loaRpaReceivedEmail, adminNewLoaRpaEmail } = await import("./email-templates.server");
     const mail = loaRpaReceivedEmail(data.fullName);
+    // Confidentiality: LOA/RPA submissions contain FAIS-regulated financial
+    // advice data, so the notification goes to ThuthukaSA (the FSP) only —
+    // never to admin@awin.co.za. A-Win committee members are not bound by
+    // FAIS confidentiality and must not receive this. The actual recipient
+    // list is admin-configurable (Admin → LOA & Risk Profile → Advisory
+    // notification recipients, two-person-approved like any other site
+    // setting) — info@thuthuka-sa.co.za and the ThuthukaSA WhatsApp number
+    // are only the fallback defaults if nothing's been configured.
     if (await adminNotifyEnabled("new_loa_rpa")) {
+      const { getNotifyRecipients } = await import("./email.server");
+      const { THUTHUKA_WHATSAPP_NUMBER } = await import("./whatsapp.server");
+      const recipients = await getNotifyRecipients("loa_rpa", {
+        emails: ["info@thuthuka-sa.co.za"],
+        whatsapp: [THUTHUKA_WHATSAPP_NUMBER],
+      });
       const adminMail = adminNewLoaRpaEmail(data.fullName, data.email, data.source);
-      void sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...adminMail });
+      for (const to of recipients.emails) {
+        void sendEmail({ to, toName: "ThuthukaSA", ...adminMail });
+      }
+      // Second, independent channel — same confidentiality reasoning as the
+      // email above. Best-effort: no-ops until WHATSAPP_ACCESS_TOKEN /
+      // WHATSAPP_PHONE_NUMBER_ID are configured (see whatsapp.server.ts).
+      void (async () => {
+        const { sendWhatsAppMessage } = await import("./whatsapp.server");
+        const text = `New LOA & Risk Profile submission: ${data.fullName} (${data.email}) via ${data.source}. Review: https://awin.co.za/admin/loa-rpa`;
+        await Promise.all(recipients.whatsapp.map((to) => sendWhatsAppMessage(to, text)));
+      })().catch(() => {});
     }
     return sendEmail({ to: data.email, toName: data.fullName, ...mail });
   });

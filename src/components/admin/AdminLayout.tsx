@@ -93,31 +93,42 @@ const NAV_GROUPS: NavGroup[] = [
 
 const FLAT_NAV: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
 
+// ThuthukaSA advisor accounts are scoped to LOA/RPA only — they must never
+// see A-Win membership/finance data, so every other admin route bounces them.
+const ADVISOR_ALLOWED_PATH = "/admin/loa-rpa";
+
 export function AdminLayout() {
-  const { user, loading, isAdmin, signOut } = useAuth();
+  const { user, loading, isAdmin, isAdvisor, signOut } = useAuth();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const search = useRouterState({ select: (s) => s.location.search as Record<string, string> });
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const advisorOnly = isAdvisor && !isAdmin;
+
   useEffect(() => {
     if (loading) return;
     if (!user) navigate({ to: "/auth", replace: true });
-    else if (!isAdmin) navigate({ to: "/portal", replace: true });
-  }, [user, loading, isAdmin, navigate]);
+    else if (!isAdmin && !isAdvisor) navigate({ to: "/portal", replace: true });
+    else if (advisorOnly && path !== ADVISOR_ALLOWED_PATH) navigate({ to: ADVISOR_ALLOWED_PATH, replace: true });
+  }, [user, loading, isAdmin, isAdvisor, advisorOnly, path, navigate]);
 
   // Close mobile drawer on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [path]);
 
-  if (loading || !user || !isAdmin) {
+  if (loading || !user || (!isAdmin && !isAdvisor) || (advisorOnly && path !== ADVISOR_ALLOWED_PATH)) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
+
+  const navGroups = advisorOnly
+    ? [{ label: "LOA & Risk Profile", items: [{ to: ADVISOR_ALLOWED_PATH, label: "LOA & Risk Profile", icon: ShieldCheck, exact: true } as NavItem] }]
+    : NAV_GROUPS;
 
   const isActive = (item: NavItem) => {
     const pathMatches = item.exact ? path === item.to : path === item.to || path.startsWith(item.to + "/");
@@ -132,7 +143,7 @@ export function AdminLayout() {
 
   const NavList = ({ onNav }: { onNav?: () => void }) => (
     <nav className="flex-1 overflow-y-auto p-3 space-y-4">
-      {NAV_GROUPS.map((group) => (
+      {navGroups.map((group) => (
         <div key={group.label}>
           <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-white/60">
             {group.label}

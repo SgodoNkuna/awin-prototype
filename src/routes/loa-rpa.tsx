@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { SignaturePad } from "@/components/site/SignaturePad";
 import { sendLoaRpaReceivedEmail } from "@/lib/email.functions";
-import { buildLoaRpaPdf } from "@/lib/loa-rpa-pdf";
+import { buildLoaPdf, buildLoaRpaPdf } from "@/lib/loa-rpa-pdf";
 import { emptyLoaData, emptyRpaData, type LoaData, type RpaData } from "@/lib/loa-rpa-types";
 import { THUTHUKA_LOGO_PNG_BASE64 } from "@/lib/thuthuka-logo-base64";
 import { cn } from "@/lib/utils";
@@ -127,8 +127,7 @@ function LoaRpaPage() {
       const rpaFull: RpaData = { ...rpa, cellPhone: phone, email };
       const docHash = await sha256(JSON.stringify({ fullName, loa: loaFull, rpa: rpaFull, DOC_VERSION }));
 
-      // 1. Generate the signed PDF client-side.
-      const pdfBlob = await buildLoaRpaPdf({
+      const pdfInput = {
         fullName: fullName.trim(),
         loa: loaFull,
         rpa: rpaFull,
@@ -136,14 +135,26 @@ function LoaRpaPage() {
         signatureTypedName: typedSignature.trim(),
         signatureDrawnData: drawnSignature,
         dateStr,
-      });
+      };
 
-      // 2. Upload it to the private loa-rpa-documents bucket.
-      const path = `${Date.now()}-${loa.idNumber.replace(/\s+/g, "") || "submission"}.pdf`;
+      // 1. Generate the signed PDFs client-side: the combined LOA+RPA record
+      // for ThuthukaSA's internal file, and a standalone LOA-only PDF — the
+      // one that gets emailed on its own to outside institutions and must
+      // not carry the applicant's RPA financial/risk answers with it.
+      const [pdfBlob, loaOnlyBlob] = await Promise.all([buildLoaRpaPdf(pdfInput), buildLoaPdf(pdfInput)]);
+
+      // 2. Upload both to the private loa-rpa-documents bucket.
+      const idStub = loa.idNumber.replace(/\s+/g, "") || "submission";
+      const path = `${Date.now()}-${idStub}.pdf`;
+      const loaPath = `${Date.now()}-${idStub}-loa-only.pdf`;
       const { error: upErr } = await supabase.storage
         .from("loa-rpa-documents")
         .upload(path, pdfBlob, { contentType: "application/pdf", upsert: false });
       if (upErr) throw upErr;
+      const { error: upErr2 } = await supabase.storage
+        .from("loa-rpa-documents")
+        .upload(loaPath, loaOnlyBlob, { contentType: "application/pdf", upsert: false });
+      if (upErr2) throw upErr2;
 
       // 3. Insert the submission row (RLS: public insert allowed).
       const { error: insErr } = await supabase.from("loa_rpa_submissions").insert({
@@ -161,6 +172,7 @@ function LoaRpaPage() {
         signature_user_agent: navigator.userAgent,
         signature_doc_hash: docHash,
         pdf_path: path,
+        loa_pdf_path: loaPath,
       });
       if (insErr) throw insErr;
 
@@ -216,6 +228,14 @@ function LoaRpaPage() {
               Takes about 5 minutes on your phone.
             </p>
           </div>
+          <p className="mt-4 flex items-start gap-2 rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm text-foreground/85">
+            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
+            <span>
+              The information you provide on this form is submitted directly to ThuthukaSA, your appointed
+              Financial Services Provider, and is treated as confidential as required by the Financial Advisory
+              and Intermediary Services Act (FAIS) and POPIA.
+            </span>
+          </p>
         </div>
       </section>
 
@@ -478,15 +498,24 @@ function LoaRpaPage() {
                 <p className="flex items-start gap-2">
                   <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
                   <span>
-                    Your details on this form are shared with ThuthukaSA (FSP No. 47992) solely to prepare your
-                    Letter of Authority and Risk Profile, in terms of POPIA. They are not used for any other
-                    purpose without your consent.
+                    <strong>ThuthukaSA (FSP No. 47992)</strong> is the appointed financial advisor to A-Win. This
+                    form, and the Letter of Authority and Risk Profile it produces, are submitted directly to
+                    ThuthukaSA as the licensed Financial Services Provider — not to A-Win.
+                  </span>
+                </p>
+                <p className="mt-2 flex items-start gap-2">
+                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
+                  <span>
+                    <strong>Confidentiality clause:</strong> the personal and financial information you provide here
+                    is treated as confidential in terms of the Financial Advisory and Intermediary Services Act
+                    (FAIS) and POPIA. It is used solely by ThuthukaSA to prepare your Letter of Authority and Risk
+                    Profile, and is not shared with A-Win or any other party without your consent.
                   </span>
                 </p>
               </div>
               <label className="flex items-start gap-3 rounded-lg border border-border p-4 cursor-pointer hover:bg-secondary/30">
                 <Checkbox checked={privacyConsent} onCheckedChange={(v) => setPrivacyConsent(!!v)} className="mt-0.5" />
-                <span className="text-sm">I consent to A-Win and ThuthukaSA processing my personal information as described above.</span>
+                <span className="text-sm">I consent to ThuthukaSA, as the Financial Services Provider, processing my personal information as described above.</span>
               </label>
 
               <div className="flex gap-2 rounded-lg border border-border p-1">

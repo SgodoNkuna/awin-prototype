@@ -7,6 +7,8 @@ interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  /** ThuthukaSA role — scoped access to LOA & Risk Profile submissions only. */
+  isAdvisor: boolean;
   forcePasswordChange: boolean;
   clearForcePasswordChange: () => void;
   signOut: () => Promise<void>;
@@ -18,24 +20,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdvisor, setIsAdvisor] = useState(false);
   const [forcePasswordChange, setForcePasswordChange] = useState(false);
 
   useEffect(() => {
     const loadRole = async (userId: string) => {
-      const [{ data: roleRow }, { data: profileRow }] = await Promise.all([
+      const [{ data: roleRows }, { data: profileRow }] = await Promise.all([
         supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", userId)
-          .eq("role", "admin")
-          .maybeSingle(),
+          .in("role", ["admin", "advisor"]),
         supabase
           .from("profiles")
           .select("force_password_change")
           .eq("id", userId)
           .maybeSingle(),
       ]);
-      setIsAdmin(!!roleRow);
+      setIsAdmin(!!roleRows?.some((r) => r.role === "admin"));
+      setIsAdvisor(!!roleRows?.some((r) => r.role === "advisor"));
       setForcePasswordChange(!!profileRow?.force_password_change);
     };
 
@@ -47,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         void loadRole(s.user.id).finally(() => setLoading(false));
       } else {
         setIsAdmin(false);
+        setIsAdvisor(false);
         setForcePasswordChange(false);
         setLoading(false);
       }
@@ -75,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         loading,
         isAdmin,
+        isAdvisor,
         forcePasswordChange,
         clearForcePasswordChange: () => setForcePasswordChange(false),
         signOut,

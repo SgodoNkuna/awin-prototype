@@ -81,7 +81,9 @@ export function SignaturePad({
 
   return (
     <div className="space-y-2">
-      <div className="relative overflow-hidden rounded-lg border-2 border-dashed border-border bg-background">
+      <div className="relative overflow-hidden rounded-lg border-2 border-dashed border-border bg-white">
+        {/* Always white, regardless of site theme — the stroke color below is
+            fixed dark, so a dark-mode bg-background made this invisible. */}
         <canvas
           ref={canvasRef}
           onPointerDown={start}
@@ -91,7 +93,7 @@ export function SignaturePad({
           className="block h-40 w-full touch-none"
         />
         {empty && (
-          <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs uppercase tracking-widest text-muted-foreground/70">
+          <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs uppercase tracking-widest text-neutral-400">
             Sign here with mouse or finger
           </span>
         )}

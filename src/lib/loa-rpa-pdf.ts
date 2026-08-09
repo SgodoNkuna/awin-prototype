@@ -3,6 +3,11 @@
  * the content of ThuthukaSA's real source forms (Astute Letter of
  * Authorisation, ThuthukaSA Risk Profile Analysis, FSP No. 47992) as text.
  * Not a pixel-for-pixel reproduction of their letterhead artwork.
+ *
+ * The LOA and RPA are built as two independent, single-document PDFs (each
+ * with its own signature) rather than one combined file — the LOA gets
+ * emailed on its own to outside institutions (e.g. Astute, insurers), and it
+ * must not carry the applicant's RPA financial/risk answers along with it.
  */
 import type { LoaData, RpaData } from "./loa-rpa-types";
 import { THUTHUKA_LOGO_PNG_BASE64 } from "./thuthuka-logo-base64";
@@ -100,22 +105,21 @@ function addSignatureBlock(
   pdf.text(`Date: ${dateStr}`, x, y + 78);
 }
 
-export async function buildLoaRpaPdf(input: {
-  fullName: string;
-  loa: LoaData;
-  rpa: RpaData;
+type SignatureInput = {
   signatureType: "typed" | "drawn";
   signatureTypedName: string;
   signatureDrawnData: string;
   dateStr: string;
-}): Promise<Blob> {
-  const { jsPDF } = await import("jspdf");
-  const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4", compress: true });
+};
+
+function drawLoaPage(
+  pdf: import("jspdf").jsPDF,
+  input: { fullName: string; loa: LoaData } & SignatureInput,
+) {
   const pageW = pdf.internal.pageSize.getWidth();
   const margin = 40;
   const colW = pageW - margin * 2;
 
-  // ---- Page 1: Letter of Authorisation ----
   drawHeader(pdf, "Letter of Authorisation");
   let y = 130;
   pdf.setFont("helvetica", "normal");
@@ -153,12 +157,19 @@ export async function buildLoaRpaPdf(input: {
   pdf.setTextColor(90, 90, 90);
   pdf.text("Intermediary: Phumelele Ndumo · Code 627 518 · 011 568 2635 · phumelele@thuthuka-sa.co.za", margin, y + 110, { maxWidth: colW });
   drawFooter(pdf);
+}
 
-  // ---- Page 2: Risk Profile Analysis ----
-  pdf.addPage();
-  drawHeader(pdf, "Risk Profile Analysis");
-  y = 130;
+function drawRpaPage(
+  pdf: import("jspdf").jsPDF,
+  input: { fullName: string; loa: LoaData; rpa: RpaData } & SignatureInput,
+) {
+  const pageW = pdf.internal.pageSize.getWidth();
+  const margin = 40;
+  const colW = pageW - margin * 2;
   const colHalf = (colW - 20) / 2;
+
+  drawHeader(pdf, "Risk Profile Analysis");
+  let y = 130;
 
   y = field(pdf, "Name and surname per ID book", input.fullName, margin, y, colW);
   const rowStartY1 = y;
@@ -221,6 +232,40 @@ export async function buildLoaRpaPdf(input: {
   y += 10;
   addSignatureBlock(pdf, margin, y, input.signatureType, input.signatureTypedName, input.signatureDrawnData, input.dateStr);
   drawFooter(pdf);
+}
 
+type BuildInput = {
+  fullName: string;
+  loa: LoaData;
+  rpa: RpaData;
+  signatureType: "typed" | "drawn";
+  signatureTypedName: string;
+  signatureDrawnData: string;
+  dateStr: string;
+};
+
+/** Standalone Letter of Authorisation — the document A-Win/ThuthukaSA email on its own to outside institutions (Astute, insurers, etc). */
+export async function buildLoaPdf(input: BuildInput): Promise<Blob> {
+  const { jsPDF } = await import("jspdf");
+  const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4", compress: true });
+  drawLoaPage(pdf, input);
+  return pdf.output("blob");
+}
+
+/** Standalone Risk Profile Analysis — internal ThuthukaSA record only. */
+export async function buildRpaPdf(input: BuildInput): Promise<Blob> {
+  const { jsPDF } = await import("jspdf");
+  const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4", compress: true });
+  drawRpaPage(pdf, input);
+  return pdf.output("blob");
+}
+
+/** Combined LOA + RPA record kept for ThuthukaSA's internal file. */
+export async function buildLoaRpaPdf(input: BuildInput): Promise<Blob> {
+  const { jsPDF } = await import("jspdf");
+  const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4", compress: true });
+  drawLoaPage(pdf, input);
+  pdf.addPage();
+  drawRpaPage(pdf, input);
   return pdf.output("blob");
 }
