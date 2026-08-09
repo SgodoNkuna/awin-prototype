@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
-import { Download, Eye, Loader2, MessageCircle, Globe2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Download, Eye, Loader2, MessageCircle, Globe2, FileDown, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import type { LoaData, RpaData } from "@/lib/loa-rpa-types";
 
@@ -67,10 +68,28 @@ function Field({ label, value }: { label: string; value: string | undefined }) {
  * (tksa.tsx). RLS already scopes what rows come back per caller's role, so
  * this component doesn't need to know who's looking at it.
  */
+function exportCsv(rows: Submission[]) {
+  const header = ["Name", "Email", "Phone", "Source", "Status", "ID Number", "Submitted"];
+  const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const lines = rows.map((r) =>
+    [r.full_name, r.email, r.phone ?? "", r.source, r.status, r.loa_data?.idNumber ?? "", new Date(r.created_at).toLocaleString()]
+      .map((v) => escape(String(v)))
+      .join(","),
+  );
+  const csv = [header.map(escape).join(","), ...lines].join("\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `loa-rpa-submissions-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function SubmissionsPanel({ emptyHint }: { emptyHint?: string }) {
   const [rows, setRows] = useState<Submission[] | null>(null);
   const [viewing, setViewing] = useState<Submission | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const load = async () => {
     const { data, error } = await supabase
@@ -105,8 +124,58 @@ export function SubmissionsPanel({ emptyHint }: { emptyHint?: string }) {
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   };
 
+  // Derived from the same rows already fetched above — no extra queries.
+  const stats = useMemo(() => {
+    if (!rows) return null;
+    return {
+      total: rows.length,
+      pending: rows.filter((r) => r.status !== "reviewed").length,
+      reviewed: rows.filter((r) => r.status === "reviewed").length,
+      whatsapp: rows.filter((r) => r.source === "whatsapp").length,
+      website: rows.filter((r) => r.source === "website").length,
+    };
+  }, [rows]);
+
+  const filtered = useMemo(() => {
+    if (!rows) return rows;
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) => r.full_name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q));
+  }, [rows, search]);
+
   return (
     <>
+      {stats && stats.total > 0 && (
+        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+          {[
+            ["Total", stats.total],
+            ["Pending review", stats.pending],
+            ["Reviewed", stats.reviewed],
+            ["Via WhatsApp", stats.whatsapp],
+            ["Via website", stats.website],
+          ].map(([label, value]) => (
+            <Card key={label as string}>
+              <CardContent className="pt-4 pb-3">
+                <div className="text-2xl font-semibold">{value}</div>
+                <div className="text-xs text-muted-foreground">{label}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {rows && rows.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-48">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8" />
+          </div>
+          <Button size="sm" variant="outline" onClick={() => exportCsv(filtered ?? rows)}>
+            <FileDown className="mr-1.5 size-4" /> Export CSV
+          </Button>
+        </div>
+      )}
+
       {rows === null ? (
         <div className="py-8 flex justify-center">
           <Loader2 className="size-5 animate-spin" />
@@ -117,9 +186,13 @@ export function SubmissionsPanel({ emptyHint }: { emptyHint?: string }) {
             {emptyHint ?? "No submissions yet."}
           </CardContent>
         </Card>
+      ) : filtered && filtered.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">No submissions match "{search}".</CardContent>
+        </Card>
       ) : (
         <div className="grid gap-3">
-          {rows.map((row) => (
+          {(filtered ?? rows).map((row) => (
             <Card key={row.id}>
               <CardContent className="pt-6 flex flex-wrap items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
