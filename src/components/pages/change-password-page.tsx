@@ -63,8 +63,18 @@ function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
       return;
     }
 
-    // Clear the mandatory-change flag now that a real password is set.
-    await supabase.from("profiles").update({ force_password_change: false }).eq("id", user.id);
+    // Clear the mandatory-change flag now that a real password is set. This
+    // used to fire-and-forget: if it silently failed, the auth password DID
+    // change but the DB flag stayed true, so the *next* login re-entered
+    // this same form forever — exactly the "keeps asking for a new
+    // password" loop. Now it's visible and retried once instead of silent.
+    let { error: flagError } = await supabase.from("profiles").update({ force_password_change: false }).eq("id", user.id);
+    if (flagError) {
+      ({ error: flagError } = await supabase.from("profiles").update({ force_password_change: false }).eq("id", user.id));
+    }
+    if (flagError) {
+      toast.error("Password changed, but couldn't confirm it here — if you're asked to change it again next login, that's why. Try again or contact an admin.");
+    }
     clearForcePasswordChange();
 
     // Confirmation emails — fire and forget, the change already succeeded.
