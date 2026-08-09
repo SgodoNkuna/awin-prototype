@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const schema = z
   .object({
+    currentPassword: z.string().min(1, "Required"),
     password: z.string().min(8, "At least 8 characters").max(72),
     confirm: z.string().min(8).max(72),
   })
@@ -28,6 +29,7 @@ function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
     if (!user?.email) return;
     const fd = new FormData(e.currentTarget);
     const parsed = schema.safeParse({
+      currentPassword: String(fd.get("currentPassword") ?? ""),
       password: String(fd.get("password") ?? ""),
       confirm: String(fd.get("confirm") ?? ""),
     });
@@ -37,7 +39,14 @@ function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
     }
 
     setBusy(true);
-    const { error: updateError } = await supabase.auth.updateUser({ password: parsed.data.password });
+    // This project requires the current password alongside the new one
+    // (GOTRUE_SECURITY_UPDATE_PASSWORD_REQUIRE_CURRENT_PASSWORD) — for a
+    // forced first-login change, "current" is the temp password the admin
+    // handed out. Wrong current password surfaces GoTrue's own error text.
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: parsed.data.password,
+      current_password: parsed.data.currentPassword,
+    });
     if (updateError) {
       setBusy(false);
       toast.error(updateError.message || "Could not change password");
@@ -72,10 +81,16 @@ function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
           {mustChange && (
             <div className="mb-5 flex items-start gap-2 rounded-lg border border-accent/40 bg-accent/10 p-3 text-sm text-foreground">
               <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent-deep" />
-              <p>Your password was reset by an administrator. Please set a new password to continue.</p>
+              <p>Your password was reset by an administrator. Enter the temporary password you were given below, then set your own.</p>
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="currentPassword" className="text-foreground">{mustChange ? "Temporary Password" : "Current Password"}</Label>
+              <Input id="currentPassword" name="currentPassword" type="password" required
+                placeholder="••••••••"
+                className="bg-background text-foreground placeholder:text-muted-foreground" />
+            </div>
             <div className="space-y-1.5">
               <Label htmlFor="password" className="text-foreground">New Password</Label>
               <Input id="password" name="password" type="password" required minLength={8} maxLength={72}

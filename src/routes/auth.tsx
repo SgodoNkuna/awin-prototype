@@ -30,10 +30,112 @@ const signUpSchema = signInSchema.extend({
   full_name: z.string().trim().min(1, "Required").max(120),
 });
 
+/**
+ * Forgot-password: a 6-digit code emailed via Supabase's recovery flow, per
+ * request (2026-08-09) — not a "current password" prompt, since by
+ * definition someone using this has forgotten it.
+ *
+ * `resetPasswordForEmail` triggers Supabase's recovery email. By default
+ * that email contains a magic link, not a code — for the code to actually
+ * appear, the Recovery template in Supabase Dashboard → Authentication →
+ * Email Templates must include `{{ .Token }}` (see supabase.com/docs/guides
+ * /auth/auth-email-templates). That's a one-time Dashboard edit outside what
+ * this app's code can configure.
+ *
+ * `verifyOtp({type:'recovery'})` exchanges that code for a real session —
+ * unlike a normal password change, a recovery-flow session does not need
+ * `current_password` (the whole point of "forgot" is not having it).
+ */
+function ForgotPasswordFlow({ onDone }: { onDone: () => void }) {
+  const [step, setStep] = useState<"request" | "verify">("request");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const sendCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = z.string().trim().email("Invalid email").max(255).safeParse(email);
+    if (!parsed.success) return toast.error(parsed.error.issues[0]?.message ?? "Enter a valid email");
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(parsed.data);
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Check your email for a 6-digit code");
+    setStep("verify");
+  };
+
+  const verifyAndSet = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (code.trim().length < 6) return toast.error("Enter the 6-digit code from your email");
+    if (password.length < 8) return toast.error("At least 8 characters");
+    if (password !== confirm) return toast.error("Passwords do not match");
+    setBusy(true);
+    const { error: otpError } = await supabase.auth.verifyOtp({ email, token: code.trim(), type: "recovery" });
+    if (otpError) {
+      setBusy(false);
+      return toast.error(otpError.message || "Invalid or expired code");
+    }
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+    setBusy(false);
+    if (updateError) return toast.error(updateError.message || "Could not set new password");
+    toast.success("Password set — you're signed in");
+    onDone();
+  };
+
+  return (
+    <div className="space-y-4 mt-4">
+      {step === "request" ? (
+        <form onSubmit={sendCode} className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Enter your account email — we'll send a 6-digit code to reset your password.
+          </p>
+          <div className="space-y-1.5">
+            <Label htmlFor="fp-email" className="text-foreground">Email</Label>
+            <Input id="fp-email" type="email" required maxLength={255} value={email}
+              onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com"
+              className="bg-background text-foreground placeholder:text-muted-foreground" />
+          </div>
+          <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={busy}>
+            {busy && <Loader2 className="size-4 animate-spin mr-2" />}
+            Send code
+          </Button>
+        </form>
+      ) : (
+        <form onSubmit={verifyAndSet} className="space-y-4">
+          <p className="text-sm text-muted-foreground">Enter the code sent to {email}, and your new password.</p>
+          <div className="space-y-1.5">
+            <Label htmlFor="fp-code" className="text-foreground">6-digit code</Label>
+            <Input id="fp-code" required maxLength={6} value={code} onChange={(e) => setCode(e.target.value)}
+              placeholder="123456" className="bg-background text-foreground placeholder:text-muted-foreground" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="fp-password" className="text-foreground">New Password</Label>
+            <Input id="fp-password" type="password" required minLength={8} maxLength={72} value={password}
+              onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
+              className="bg-background text-foreground placeholder:text-muted-foreground" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="fp-confirm" className="text-foreground">Confirm New Password</Label>
+            <Input id="fp-confirm" type="password" required minLength={8} maxLength={72} value={confirm}
+              onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••"
+              className="bg-background text-foreground placeholder:text-muted-foreground" />
+          </div>
+          <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={busy}>
+            {busy && <Loader2 className="size-4 animate-spin mr-2" />}
+            Set new password
+          </Button>
+        </form>
+      )}
+    </div>
+  );
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const { user, isAdmin, loading } = useAuth();
-  const [tab, setTab] = useState<"signin" | "signup">("signin");
+  const [tab, setTab] = useState<"signin" | "signup" | "reset">("signin");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -136,58 +238,73 @@ function AuthPage() {
             </div>
           </div>
 
-          <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
+          {tab === "reset" ? (
+            <>
+              <ForgotPasswordFlow onDone={() => navigate({ to: "/portal", replace: true })} />
+              <p className="text-center text-sm text-muted-foreground mt-4">
+                <button type="button" className="hover:text-primary underline-offset-2 hover:underline" onClick={() => setTab("signin")}>
+                  ← Back to sign in
+                </button>
+              </p>
+            </>
+          ) : (
+            <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">Sign In</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              </TabsList>
 
+              <TabsContent value="signin">
+                <form onSubmit={handleSignIn} className="space-y-4 mt-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="si-email" className="text-foreground">Email</Label>
+                    <Input id="si-email" name="email" type="email" required maxLength={255}
+                      placeholder="you@example.com"
+                      className="bg-background text-foreground placeholder:text-muted-foreground" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="si-password" className="text-foreground">Password</Label>
+                      <button type="button" className="text-xs text-muted-foreground hover:text-primary underline-offset-2 hover:underline" onClick={() => setTab("reset")}>
+                        Forgot password?
+                      </button>
+                    </div>
+                    <Input id="si-password" name="password" type="password" required maxLength={72}
+                      placeholder="••••••••"
+                      className="bg-background text-foreground placeholder:text-muted-foreground" />
+                  </div>
+                  <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={busy}>
+                    {busy && <Loader2 className="size-4 animate-spin mr-2" />}
+                    Sign In
+                  </Button>
+                </form>
+              </TabsContent>
 
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4 mt-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="si-email" className="text-foreground">Email</Label>
-                  <Input id="si-email" name="email" type="email" required maxLength={255}
-                    placeholder="you@example.com"
-                    className="bg-background text-foreground placeholder:text-muted-foreground" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="si-password" className="text-foreground">Password</Label>
-                  <Input id="si-password" name="password" type="password" required maxLength={72}
-                    placeholder="••••••••"
-                    className="bg-background text-foreground placeholder:text-muted-foreground" />
-                </div>
-                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={busy}>
-                  {busy && <Loader2 className="size-4 animate-spin mr-2" />}
-                  Sign In
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4 mt-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="su-name" className="text-foreground">Full Name</Label>
-                  <Input id="su-name" name="full_name" required maxLength={120}
-                    className="bg-background text-foreground placeholder:text-muted-foreground" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="su-email" className="text-foreground">Email</Label>
-                  <Input id="su-email" name="email" type="email" required maxLength={255}
-                    className="bg-background text-foreground placeholder:text-muted-foreground" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="su-password" className="text-foreground">Password</Label>
-                  <Input id="su-password" name="password" type="password" required minLength={6} maxLength={72}
-                    className="bg-background text-foreground placeholder:text-muted-foreground" />
-                </div>
-                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={busy}>
-                  {busy && <Loader2 className="size-4 animate-spin mr-2" />}
-                  Create Account
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="signup">
+                <form onSubmit={handleSignUp} className="space-y-4 mt-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="su-name" className="text-foreground">Full Name</Label>
+                    <Input id="su-name" name="full_name" required maxLength={120}
+                      className="bg-background text-foreground placeholder:text-muted-foreground" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="su-email" className="text-foreground">Email</Label>
+                    <Input id="su-email" name="email" type="email" required maxLength={255}
+                      className="bg-background text-foreground placeholder:text-muted-foreground" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="su-password" className="text-foreground">Password</Label>
+                    <Input id="su-password" name="password" type="password" required minLength={6} maxLength={72}
+                      className="bg-background text-foreground placeholder:text-muted-foreground" />
+                  </div>
+                  <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={busy}>
+                    {busy && <Loader2 className="size-4 animate-spin mr-2" />}
+                    Create Account
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          )}
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             <Link to="/" className="hover:text-primary">← Back to home</Link>
