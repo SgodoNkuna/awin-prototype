@@ -38,8 +38,26 @@ const TIER_LABELS: Record<TierName, string> = {
   active: "Monthly Contribution",
 };
 
+/** Admin (blue) and ThuthukaSA Advisor (their brand orange) — so it's obvious at a glance who's who. */
+function RoleBadges({ roles }: { roles: Set<string> | undefined }) {
+  if (!roles || roles.size === 0) return null;
+  return (
+    <span className="inline-flex gap-1 ml-2">
+      {roles.has("admin") && (
+        <Badge variant="outline" className="border-blue-400/50 bg-blue-500/10 text-blue-700">Admin</Badge>
+      )}
+      {roles.has("advisor") && (
+        <Badge variant="outline" style={{ borderColor: "rgba(232,150,10,0.5)", background: "rgba(232,150,10,0.1)", color: "#a16207" }}>
+          ThuthukaSA Advisor
+        </Badge>
+      )}
+    </span>
+  );
+}
+
 function MembersPage() {
   const [members, setMembers] = useState<Member[] | null>(null);
+  const [roleMap, setRoleMap] = useState<Record<string, Set<string>>>({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [tierFilter, setTierFilter] = useState<string>("all");
@@ -57,12 +75,20 @@ function MembersPage() {
   const callDeleteMember = useServerFn(requestDeleteMember);
 
   const load = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, email, full_name, membership_tier, membership_status, joined_at, suspended, created_at")
-      .order("created_at", { ascending: false });
+    const [{ data, error }, { data: roleRows }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, email, full_name, membership_tier, membership_status, joined_at, suspended, created_at")
+        .order("created_at", { ascending: false }),
+      supabase.from("user_roles").select("user_id, role").in("role", ["admin", "advisor"]),
+    ]);
     if (error) toast.error(error.message);
     setMembers((data as Member[]) ?? []);
+    const map: Record<string, Set<string>> = {};
+    for (const r of roleRows ?? []) {
+      (map[r.user_id] ??= new Set()).add(r.role);
+    }
+    setRoleMap(map);
   };
 
   useEffect(() => {
@@ -185,7 +211,10 @@ function MembersPage() {
                       className="border-b last:border-0 cursor-pointer hover:bg-muted/40"
                       onClick={() => setDetail(m)}
                     >
-                      <td className="py-3 pr-3 font-medium">{m.full_name || "—"}</td>
+                      <td className="py-3 pr-3 font-medium">
+                        {m.full_name || "—"}
+                        <RoleBadges roles={roleMap[m.id]} />
+                      </td>
                       <td className="py-3 pr-3 text-muted-foreground">{m.email}</td>
                       <td className="py-3 pr-3">{m.membership_tier ? TIER_LABELS[m.membership_tier] : "—"}</td>
                       <td className="py-3 pr-3"><StatusPill status={m.membership_status} suspended={m.suspended} /></td>
@@ -220,7 +249,10 @@ function MembersPage() {
       <Sheet open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
         <SheetContent className="w-full sm:max-w-md overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{detail?.full_name || "(no name)"}</SheetTitle>
+            <SheetTitle>
+              {detail?.full_name || "(no name)"}
+              {detail && <RoleBadges roles={roleMap[detail.id]} />}
+            </SheetTitle>
             <SheetDescription>{detail?.email}</SheetDescription>
           </SheetHeader>
           {detail && (

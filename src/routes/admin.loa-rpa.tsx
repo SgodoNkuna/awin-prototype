@@ -21,24 +21,30 @@ export const Route = createFileRoute("/admin/loa-rpa")({
   component: LoaRpaAdminPage,
 });
 
-function CopyLinkRow({ label, icon, url }: { label: string; icon: React.ReactNode; url: string }) {
+/**
+ * Copies `message` (not a bare URL) — whatever gets pasted into a WhatsApp
+ * chat or anywhere else should explain itself with no extra context needed.
+ * The code box shows exactly what's copied, so there's no surprise between
+ * what you see and what lands on the clipboard.
+ */
+function CopyLinkRow({ label, icon, message }: { label: string; icon: React.ReactNode; message: string }) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
-    await navigator.clipboard.writeText(url);
+    await navigator.clipboard.writeText(message);
     setCopied(true);
-    toast.success("Link copied");
+    toast.success("Copied — ready to paste");
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-      <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground w-32 shrink-0">
+    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3">
+      <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground w-32 shrink-0 sm:pt-1.5">
         {icon} {label}
       </span>
-      <div className="flex flex-1 items-center gap-2 min-w-0">
-        <code className="flex-1 min-w-0 truncate rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs">
-          {url}
+      <div className="flex flex-1 items-start gap-2 min-w-0">
+        <code className="flex-1 min-w-0 whitespace-pre-wrap break-words rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs">
+          {message}
         </code>
         <Button size="sm" variant="outline" onClick={copy} className="shrink-0">
           {copied ? <Check className="size-3.5 mr-1.5 text-primary" /> : <Copy className="size-3.5 mr-1.5" />}
@@ -369,17 +375,26 @@ function ShareLinksCard() {
   if (!origin) return null;
 
   return (
-    <Card>
+    <Card className="border-accent/40">
       <CardContent className="pt-6 space-y-4">
         <div>
           <h3 className="text-sm font-semibold">Share the full LOA &amp; Risk Profile form</h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            For new A-Win members — includes the Risk Profile Analysis. Send the WhatsApp link when sharing in a
-            chat — it tags the submission's source so you can tell WhatsApp applicants apart from website applicants.
+            For new A-Win members — includes the Risk Profile Analysis. Copy the WhatsApp version straight into a
+            chat — it's a ready-to-send message, not just a bare link, and it tags the submission's source so you
+            can tell WhatsApp applicants apart from website applicants.
           </p>
           <div className="mt-2 space-y-2">
-            <CopyLinkRow label="WhatsApp" icon={<MessageCircle className="size-3.5" />} url={`${origin}/loa-rpa?src=whatsapp`} />
-            <CopyLinkRow label="Website" icon={<Globe2 className="size-3.5" />} url={`${origin}/loa-rpa`} />
+            <CopyLinkRow
+              label="WhatsApp"
+              icon={<MessageCircle className="size-3.5" />}
+              message={`Hi! Please complete your A-Win Letter of Authority & Risk Profile form here — takes about 5 minutes: ${origin}/loa-rpa?src=whatsapp`}
+            />
+            <CopyLinkRow
+              label="Website"
+              icon={<Globe2 className="size-3.5" />}
+              message={`A-Win — Letter of Authority & Risk Profile form (ThuthukaSA, FSP No. 47992): ${origin}/loa-rpa`}
+            />
           </div>
         </div>
         <div className="border-t border-border pt-4">
@@ -389,8 +404,16 @@ function ShareLinksCard() {
             questions entirely.
           </p>
           <div className="mt-2 space-y-2">
-            <CopyLinkRow label="WhatsApp" icon={<MessageCircle className="size-3.5" />} url={`${origin}/loa?src=whatsapp`} />
-            <CopyLinkRow label="Website" icon={<Globe2 className="size-3.5" />} url={`${origin}/loa`} />
+            <CopyLinkRow
+              label="WhatsApp"
+              icon={<MessageCircle className="size-3.5" />}
+              message={`Hi! Please complete this short Letter of Authority form — takes about a minute: ${origin}/loa?src=whatsapp`}
+            />
+            <CopyLinkRow
+              label="Website"
+              icon={<Globe2 className="size-3.5" />}
+              message={`A-Win — Letter of Authority form only, no Risk Profile (ThuthukaSA, FSP No. 47992): ${origin}/loa`}
+            />
           </div>
         </div>
       </CardContent>
@@ -402,7 +425,7 @@ function LoaRpaAdminPage() {
   const { isAdmin, isAdvisor } = useAuth();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="font-serif text-2xl md:text-3xl">LOA &amp; Risk Profile</h1>
         <p className="text-sm text-muted-foreground">
@@ -411,10 +434,24 @@ function LoaRpaAdminPage() {
         </p>
       </div>
 
-      {isAdmin && <NotifyRecipientsCard />}
-      {isAdmin && <CreateAdvisorAccountCard />}
-      {isAdmin && <AdvisorAccessCard />}
-      {isAdmin && <RecentChangesCard />}
+      {/* 1. Links first — this is what most visits to this page are actually for. */}
+      <section className="space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">1. Share the forms</h2>
+        <ShareLinksCard />
+      </section>
+
+      {/* 2. Who can see the data, and how that's managed. */}
+      {isAdmin && (
+        <section className="space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">2. Access &amp; confidentiality</h2>
+          <div className="space-y-4">
+            <NotifyRecipientsCard />
+            <CreateAdvisorAccountCard />
+            <AdvisorAccessCard />
+            <RecentChangesCard />
+          </div>
+        </section>
+      )}
 
       {isAdmin && !isAdvisor && (
         <Card className="border-destructive/40 bg-destructive/5">
@@ -429,9 +466,11 @@ function LoaRpaAdminPage() {
         </Card>
       )}
 
-      <ShareLinksCard />
-
-      <SubmissionsPanel emptyHint="No submissions yet. Copy the link above and share it to get started." />
+      {/* 3. The actual submissions, last — only advisor accounts see anything here. */}
+      <section className="space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">3. Submissions</h2>
+        <SubmissionsPanel emptyHint="No submissions yet. Copy a link above and share it to get started." />
+      </section>
     </div>
   );
 }
