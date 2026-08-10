@@ -25,16 +25,22 @@ export const Route = createFileRoute("/tksa")({
 });
 
 function TksaDashboard() {
-  const { user, loading, isAdvisor, signOut } = useAuth();
+  const { user, loading, isAdvisor, forcePasswordChange, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
     if (!user) { navigate({ to: "/auth", replace: true }); return; }
     if (!isAdvisor) { navigate({ to: "/portal", replace: true }); return; }
-  }, [user, loading, isAdvisor, navigate]);
+    // Belt-and-braces: this page carries confidential FAIS-regulated data, so
+    // it enforces the forced-password-change gate itself rather than relying
+    // solely on the shared SiteLayout gate — observed live that gate not
+    // firing reliably for this route, whatever the cause, and a page this
+    // sensitive shouldn't depend on a single mechanism to keep it locked.
+    if (forcePasswordChange) { navigate({ to: "/change-password", search: { next: "/tksa" }, replace: true }); return; }
+  }, [user, loading, isAdvisor, forcePasswordChange, navigate]);
 
-  if (loading || !user || !isAdvisor) return null;
+  if (loading || !user || !isAdvisor || forcePasswordChange) return null;
 
   return (
     <div className="min-h-screen bg-[#12110f]">
