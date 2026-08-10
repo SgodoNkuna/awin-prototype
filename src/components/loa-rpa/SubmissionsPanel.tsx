@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Download, Eye, Loader2, MessageCircle, Globe2, FileDown, Search } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { AnimateNumber } from "@/components/ui/animate-number";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,7 +88,12 @@ function exportCsv(rows: Submission[]) {
   URL.revokeObjectURL(url);
 }
 
-export function SubmissionsPanel({ emptyHint }: { emptyHint?: string }) {
+// ThuthukaSA's brand orange — the same rgb(232,150,10) used on their PDF
+// letterhead (see loa-rpa-pdf.ts) — plus a muted charcoal for the "other" slice.
+const CHART_ORANGE = "#e8960a";
+const CHART_MUTED = "#57534e";
+
+export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string; showChart?: boolean }) {
   const [rows, setRows] = useState<Submission[] | null>(null);
   const [viewing, setViewing] = useState<Submission | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -163,6 +169,61 @@ export function SubmissionsPanel({ emptyHint }: { emptyHint?: string }) {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {showChart && stats && stats.total > 0 && (
+        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+          <Card>
+            <CardContent className="pt-4 pb-2">
+              <div className="mb-1 text-xs font-medium text-muted-foreground">Review status</div>
+              <ResponsiveContainer width="100%" height={160}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: "Reviewed", value: stats.reviewed },
+                      { name: "Pending review", value: stats.pending },
+                    ].filter((d) => d.value > 0)}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={40}
+                    outerRadius={60}
+                    paddingAngle={2}
+                  >
+                    <Cell fill={CHART_ORANGE} />
+                    <Cell fill={CHART_MUTED} />
+                  </Pie>
+                  <Tooltip />
+                  <Legend iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-2">
+              <div className="mb-1 text-xs font-medium text-muted-foreground">Submission channel</div>
+              <ResponsiveContainer width="100%" height={160}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: "WhatsApp", value: stats.whatsapp },
+                      { name: "Website", value: stats.website },
+                    ].filter((d) => d.value > 0)}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={40}
+                    outerRadius={60}
+                    paddingAngle={2}
+                  >
+                    <Cell fill={CHART_ORANGE} />
+                    <Cell fill={CHART_MUTED} />
+                  </Pie>
+                  <Tooltip />
+                  <Legend iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         </div>
       )}
 

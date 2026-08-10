@@ -38,7 +38,9 @@ function TksaDashboard() {
 
   return (
     <div className="min-h-screen bg-[#12110f]">
-      <header className="border-b border-white/10 bg-[#1a1815]">
+      {/* ThuthukaSA's brand orange — same rgb(232,150,10) as their PDF letterhead. */}
+      <div className="h-1" style={{ background: "#e8960a" }} />
+      <header className="border-b border-[#e8960a]/20 bg-[#1a1815]">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-4">
           <div className="flex items-center gap-3">
             <img src={THUTHUKA_LOGO_PNG_BASE64} alt="ThuthukaSA" className="h-10 w-auto rounded-md bg-white p-1" />
@@ -50,7 +52,7 @@ function TksaDashboard() {
           <Button
             size="sm"
             variant="outline"
-            className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+            className="border-[#e8960a]/40 bg-transparent text-white hover:bg-[#e8960a]/15 hover:text-white"
             onClick={async () => {
               await supabase.auth.signOut();
               signOut();
@@ -78,7 +80,7 @@ function TksaDashboard() {
           </p>
         </div>
 
-        <SubmissionsPanel emptyHint="No submissions yet." />
+        <SubmissionsPanel emptyHint="No submissions yet." showChart />
       </main>
     </div>
   );
