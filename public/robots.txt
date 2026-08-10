@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /portal
+Disallow: /tksa
+Disallow: /auth
+Disallow: /change-password
+Disallow: /onboarding
+Disallow: /debug/routes
+Disallow: /api/
+
+Sitemap: https://awin.co.za/sitemap.xml

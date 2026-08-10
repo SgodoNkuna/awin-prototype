@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, ChevronRight, Loader2, ShieldCheck } from "lucide-react";
+import { Check, ChevronRight, Loader2, ShieldCheck, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SignaturePad } from "@/components/site/SignaturePad";
 import { sendLoaRpaReceivedEmail } from "@/lib/email.functions";
-import { buildLoaPdf } from "@/lib/loa-rpa-pdf";
+import { buildLoaPdf, downloadBlankLoaTemplate } from "@/lib/loa-rpa-pdf";
 import { emptyLoaData, emptyRpaData, type LoaData } from "@/lib/loa-rpa-types";
 import { THUTHUKA_LOGO_PNG_BASE64 } from "@/lib/thuthuka-logo-base64";
 
@@ -120,7 +120,7 @@ function LoaOnlyPage() {
 
       setDone(true);
       toast.success("Submitted. A confirmation email is on its way.");
-      void sendReceivedEmail({ data: { email: email.trim(), fullName: fullName.trim(), source } }).catch(() => {});
+      void sendReceivedEmail({ data: { email: email.trim(), fullName: fullName.trim(), source, loaOnly: true } }).catch(() => {});
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -177,6 +177,13 @@ function LoaOnlyPage() {
               and Intermediary Services Act (FAIS) and POPIA.
             </span>
           </p>
+          <button
+            type="button"
+            onClick={() => downloadBlankLoaTemplate()}
+            className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground underline-offset-2 hover:text-accent hover:underline"
+          >
+            <FileDown className="size-3.5" /> Download the blank template (unsigned PDF)
+          </button>
         </div>
       </section>
 

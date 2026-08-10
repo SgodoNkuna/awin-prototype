@@ -6,6 +6,7 @@ import {
   executeUserRoleChange,
   executeDeleteMember,
   executeDeleteApplication,
+  executeDeleteLoaRpaSubmission,
 } from "@/lib/admin-roles.functions";
 import {
   executeSiteSettingsUpdate,
@@ -75,6 +76,11 @@ export const decideApproval = createServerFn({ method: "POST" })
     }
 
     const actor = { userId: context.userId, email: context.claims?.email ?? null };
+    // Each execute* fn's payload shape was already zod-validated by its
+    // corresponding request* fn before this row was ever written — the
+    // generated Json type for the stored column doesn't know that, so this
+    // is a deliberate, single cast rather than one per dispatch case below.
+    const payload = row.payload as any;
 
     if (data.decision === "reject") {
       const { error } = await supabaseAdmin
@@ -123,26 +129,29 @@ export const decideApproval = createServerFn({ method: "POST" })
       let result: unknown;
       switch (row.action_type) {
         case "member_delete":
-          result = await executeDeleteMember(supabaseAdmin, row.payload, actor);
+          result = await executeDeleteMember(supabaseAdmin, payload, actor);
           break;
         case "application_delete":
-          result = await executeDeleteApplication(supabaseAdmin, row.payload, actor);
+          result = await executeDeleteApplication(supabaseAdmin, payload, actor);
+          break;
+        case "loa_rpa_submission_delete":
+          result = await executeDeleteLoaRpaSubmission(supabaseAdmin, payload, actor);
           break;
         case "role_grant":
         case "role_revoke":
-          result = await executeUserRoleChange(supabaseAdmin, row.payload, actor);
+          result = await executeUserRoleChange(supabaseAdmin, payload, actor);
           break;
         case "site_settings_update":
-          result = await executeSiteSettingsUpdate(supabaseAdmin, row.payload, actor);
+          result = await executeSiteSettingsUpdate(supabaseAdmin, payload, actor);
           break;
         case "team_member_upsert":
-          result = await executeTeamMemberUpsert(supabaseAdmin, row.payload, actor);
+          result = await executeTeamMemberUpsert(supabaseAdmin, payload, actor);
           break;
         case "team_member_delete":
-          result = await executeTeamMemberDelete(supabaseAdmin, row.payload, actor);
+          result = await executeTeamMemberDelete(supabaseAdmin, payload, actor);
           break;
         case "settings_danger_action":
-          result = await executeSettingsDangerAction(supabaseAdmin, row.payload, actor);
+          result = await executeSettingsDangerAction(supabaseAdmin, payload, actor);
           break;
         default:
           throw new Error(`Unknown action_type: ${row.action_type}`);
@@ -150,10 +159,10 @@ export const decideApproval = createServerFn({ method: "POST" })
 
       await supabaseAdmin
         .from("pending_approvals")
-        .update({ status: "executed", result })
+        .update({ status: "executed", result: result as any })
         .eq("id", data.approval_id);
 
-      return { ok: true, status: "executed" as const, result };
+      return { ok: true, status: "executed" as const, result: result as any };
     } catch (execError: any) {
       await supabaseAdmin
         .from("pending_approvals")

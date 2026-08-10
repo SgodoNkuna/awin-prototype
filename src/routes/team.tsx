@@ -92,11 +92,10 @@ function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
           <div className="aspect-[3/4] w-full overflow-hidden bg-secondary">
             <img
               src={previewSrc}
-              alt=""
+              alt={m.name}
               loading="lazy"
               decoding="async"
               className="h-full w-full object-cover"
-              aria-hidden="true"
             />
           </div>
         ) : (
@@ -131,11 +130,10 @@ function CommitteeCard({ m, committeeKey, onOpen }: { m: Member; committeeKey: s
         <div className="size-20 shrink-0 overflow-hidden rounded-full ring-2 ring-accent/40 sm:size-24">
           <img
             src={m.photo_url || m.profile_card_url || undefined}
-            alt=""
+            alt={m.name}
             loading="lazy"
             decoding="async"
             className="h-full w-full object-cover"
-            aria-hidden="true"
           />
         </div>
       ) : (

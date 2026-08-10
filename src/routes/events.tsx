@@ -287,11 +287,10 @@ function EventsPage() {
                     >
                       <img
                         src={cover}
-                        alt=""
+                        alt={`${e.title} poster`}
                         loading="lazy"
                         decoding="async"
                         className="absolute inset-0 h-full w-full object-cover"
-                        aria-hidden="true"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent transition-opacity group-hover:from-black/60" aria-hidden="true" />
                       <div className="absolute left-4 top-4 rounded-lg bg-accent px-3 py-1.5 text-center text-accent-foreground shadow-md">

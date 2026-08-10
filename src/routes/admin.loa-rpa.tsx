@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, MessageCircle, Globe2, Copy, Check, ShieldAlert, UserPlus, Bell, History, AlertTriangle } from "lucide-react";
+import { Loader2, MessageCircle, Globe2, Copy, Check, ShieldAlert, UserPlus, Bell, History, AlertTriangle, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +29,7 @@ export const Route = createFileRoute("/admin/loa-rpa")({
  */
 function CopyLinkRow({ label, icon, message }: { label: string; icon: React.ReactNode; message: string }) {
   const [copied, setCopied] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
 
   const copy = async () => {
     await navigator.clipboard.writeText(message);
@@ -42,14 +43,26 @@ function CopyLinkRow({ label, icon, message }: { label: string; icon: React.Reac
       <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground w-32 shrink-0 sm:pt-1.5">
         {icon} {label}
       </span>
-      <div className="flex flex-1 items-start gap-2 min-w-0">
-        <code className="flex-1 min-w-0 whitespace-pre-wrap break-words rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs">
-          {message}
-        </code>
-        <Button size="sm" variant="outline" onClick={copy} className="shrink-0">
-          {copied ? <Check className="size-3.5 mr-1.5 text-primary" /> : <Copy className="size-3.5 mr-1.5" />}
-          {copied ? "Copied" : "Copy"}
-        </Button>
+      <div className="flex flex-1 flex-col gap-2 min-w-0">
+        <div className="flex items-start gap-2 min-w-0">
+          <code className="flex-1 min-w-0 whitespace-pre-wrap break-words rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs">
+            {message}
+          </code>
+          <Button size="sm" variant="ghost" onClick={() => setPreviewing((v) => !v)} className="shrink-0" title="Preview how this looks in a chat">
+            <Eye className="size-3.5" />
+          </Button>
+          <Button size="sm" variant="outline" onClick={copy} className="shrink-0">
+            {copied ? <Check className="size-3.5 mr-1.5 text-primary" /> : <Copy className="size-3.5 mr-1.5" />}
+            {copied ? "Copied" : "Copy"}
+          </Button>
+        </div>
+        {previewing && (
+          <div className="flex justify-start">
+            <div className="max-w-[85%] rounded-lg rounded-tl-none bg-[#dcf8c6] px-3 py-2 text-sm text-[#111b21] shadow-sm dark:bg-[#005c4b] dark:text-[#e9edef]">
+              {message}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

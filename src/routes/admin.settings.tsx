@@ -342,7 +342,7 @@ function SettingsPage() {
               <div key={m.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
                 <div className="size-11 shrink-0 rounded-full bg-muted overflow-hidden flex items-center justify-center text-xs font-semibold">
                   {m.profile_card_url || m.photo_url ? (
-                    <img src={displayImage(m.profile_card_url) || displayImage(m.photo_url) || ""} alt="" className="size-full object-cover" />
+                    <img src={displayImage(m.profile_card_url) || displayImage(m.photo_url) || ""} alt={m.name || "Team member"} className="size-full object-cover" />
                   ) : (
                     (m.name || "?").split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase()
                   )}
@@ -586,14 +586,14 @@ function TeamMemberDialog({
                 <Input value={draft.profile_card_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => set("profile_card_url", e.target.value)} />
                 <UploadImageButton onUploaded={(url) => set("profile_card_url", url)} />
               </div>
-              {draft.profile_card_url ? <img src={displayImage(draft.profile_card_url) ?? undefined} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
+              {draft.profile_card_url ? <img src={displayImage(draft.profile_card_url) ?? undefined} alt={`${draft.name || "Team member"} profile card preview`} className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
             </Field>
             <Field label="Headshot (fallback)">
               <div className="flex gap-2">
                 <Input value={draft.photo_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => set("photo_url", e.target.value)} />
                 <UploadImageButton onUploaded={(url) => set("photo_url", url)} />
               </div>
-              {draft.photo_url ? <img src={displayImage(draft.photo_url) ?? undefined} alt="" className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
+              {draft.photo_url ? <img src={displayImage(draft.photo_url) ?? undefined} alt={`${draft.name || "Team member"} headshot preview`} className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
             </Field>
           </div>
 

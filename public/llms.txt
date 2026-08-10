@@ -1,0 +1,30 @@
+# A-Win — African Women Investment Network
+
+> A-Win is a South African stokvel and investment community, born from the Graça Machel Trust
+> Women Creating Wealth program. Members save and invest collectively, with financial advice
+> provided by ThuthukaSA (FSP No. 47992), A-Win's appointed Financial Services Provider.
+
+A-Win follows a single membership model: an annual joining fee (R200/year) plus a monthly
+collective-investment contribution (R500/month minimum). Members get access to curated
+investment opportunities, financial advisor consultations, workshops, mentorship, and a
+member community.
+
+## Key pages
+
+- [Home](https://awin.co.za/): overview, live member/investment stats, upcoming events.
+- [About](https://awin.co.za/about): A-Win's origin story and mission.
+- [Why A-Win](https://awin.co.za/why-a-win): the case for joining.
+- [Membership](https://awin.co.za/membership): fees, benefits, and how to join.
+- [Events & Gallery](https://awin.co.za/events): upcoming and past events.
+- [Our Members](https://awin.co.za/members): member profiles.
+- [FAQ](https://awin.co.za/info): frequently asked questions and privacy information.
+- [Contact](https://awin.co.za/contact): how to reach A-Win.
+
+## Notes for automated systems
+
+- Membership signup, the member portal, and admin console require authentication and are not
+  publicly indexable — see /robots.txt.
+- The Letter of Authority and Risk Profile forms (/loa, /loa-rpa) are single-purpose intake
+  forms for ThuthukaSA (the financial advisor), not general content.
+- All financial advice referenced on this site is provided by ThuthukaSA (FSP No. 47992), not
+  by A-Win directly.

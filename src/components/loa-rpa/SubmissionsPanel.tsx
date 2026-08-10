@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Eye, Loader2, MessageCircle, Globe2, FileDown, Search } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Download, Eye, Loader2, MessageCircle, Globe2, FileDown, Search, Trash2 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { AnimateNumber } from "@/components/ui/animate-number";
 import { toast } from "sonner";
@@ -8,7 +9,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { useAuth } from "@/lib/use-auth";
+import { requestDeleteLoaRpaSubmission } from "@/lib/admin-roles.functions";
+import { getErrorMessage } from "@/lib/errors";
 import type { LoaData, RpaData } from "@/lib/loa-rpa-types";
 
 export type Submission = {
@@ -94,10 +100,16 @@ const CHART_ORANGE = "#e8960a";
 const CHART_MUTED = "#57534e";
 
 export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string; showChart?: boolean }) {
+  const { isAdmin } = useAuth();
+  const callDeleteSubmission = useServerFn(requestDeleteLoaRpaSubmission);
   const [rows, setRows] = useState<Submission[] | null>(null);
   const [viewing, setViewing] = useState<Submission | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [deleting, setDeleting] = useState<Submission | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   const load = async () => {
     const { data, error } = await supabase
@@ -289,6 +301,17 @@ export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string;
                       {busy === row.id ? <Loader2 className="size-4 animate-spin" /> : "Mark reviewed"}
                     </Button>
                   )}
+                  {isAdmin && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      title="Delete this submission"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => { setDeleting(row); setDeleteConfirmName(""); setDeleteReason(""); }}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -334,6 +357,61 @@ export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string;
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Admin-only, type-to-confirm — same pattern as deleting a member or
+          an application. Not available to advisor-only accounts; deletion of
+          FAIS-regulated records stays with A-Win's own accountable admins. */}
+      <Dialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Delete Submission</DialogTitle>
+            <DialogDescription>
+              This permanently removes {deleting?.full_name}'s submission and its PDFs. This cannot be undone.
+              This request needs approval from a different admin before it takes effect (see Admin → Approvals).
+            </DialogDescription>
+          </DialogHeader>
+          {deleting && (
+            <div className="space-y-3">
+              <div className="grid gap-1.5">
+                <Label className="text-xs">Type the exact name to confirm: {deleting.full_name}</Label>
+                <Input value={deleteConfirmName} onChange={(e) => setDeleteConfirmName(e.target.value)} autoComplete="off" />
+              </div>
+              <div className="grid gap-1.5">
+                <Label className="text-xs">Reason (audit log, min 5 chars)</Label>
+                <Textarea value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} rows={2} placeholder="e.g. Test/demo data, not a real submission" />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              disabled={
+                deleteBusy ||
+                deleteConfirmName.trim().toLowerCase() !== (deleting?.full_name ?? "").trim().toLowerCase() ||
+                deleteReason.trim().length < 5
+              }
+              onClick={async () => {
+                if (!deleting) return;
+                setDeleteBusy(true);
+                try {
+                  await callDeleteSubmission({
+                    data: { submission_id: deleting.id, confirm_name: deleteConfirmName.trim(), reason: deleteReason.trim() },
+                  });
+                  toast.success("Deletion request submitted — needs approval from a different admin");
+                  setDeleting(null);
+                } catch (e) {
+                  toast.error(getErrorMessage(e));
+                } finally {
+                  setDeleteBusy(false);
+                }
+              }}
+            >
+              {deleteBusy ? <Loader2 className="size-4 animate-spin" /> : "Delete submission"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

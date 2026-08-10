@@ -678,6 +678,66 @@ export type Database = {
           },
         ]
       }
+      pending_approvals: {
+        Row: {
+          action_type: Database["public"]["Enums"]["approval_action_type"]
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_reason: string | null
+          id: string
+          payload: Json
+          reason: string
+          requested_at: string
+          requested_by: string
+          result: Json | null
+          status: Database["public"]["Enums"]["approval_status"]
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["approval_action_type"]
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          id?: string
+          payload: Json
+          reason: string
+          requested_at?: string
+          requested_by: string
+          result?: Json | null
+          status?: Database["public"]["Enums"]["approval_status"]
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["approval_action_type"]
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          id?: string
+          payload?: Json
+          reason?: string
+          requested_at?: string
+          requested_by?: string
+          result?: Json | null
+          status?: Database["public"]["Enums"]["approval_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_approvals_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_approvals_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean
@@ -918,6 +978,17 @@ export type Database = {
     Enums: {
       app_role: "admin" | "member" | "advisor"
       application_status: "pending" | "under_review" | "approved" | "rejected"
+      approval_action_type:
+        | "member_delete"
+        | "application_delete"
+        | "role_grant"
+        | "role_revoke"
+        | "site_settings_update"
+        | "team_member_upsert"
+        | "team_member_delete"
+        | "settings_danger_action"
+        | "loa_rpa_submission_delete"
+      approval_status: "pending" | "approved" | "rejected" | "executed" | "failed"
       investment_experience: "beginner" | "intermediate" | "advanced"
       membership_tier: "general" | "active" | "patron"
     }
@@ -1049,6 +1120,18 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "member", "advisor"],
       application_status: ["pending", "under_review", "approved", "rejected"],
+      approval_action_type: [
+        "member_delete",
+        "application_delete",
+        "role_grant",
+        "role_revoke",
+        "site_settings_update",
+        "team_member_upsert",
+        "team_member_delete",
+        "settings_danger_action",
+        "loa_rpa_submission_delete",
+      ],
+      approval_status: ["pending", "approved", "rejected", "executed", "failed"],
       investment_experience: ["beginner", "intermediate", "advanced"],
       membership_tier: ["general", "active", "patron"],
     },

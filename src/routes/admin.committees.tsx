@@ -162,7 +162,7 @@ function CommitteesPage() {
                     {m.photo_url || m.profile_card_url ? (
                       <img
                         src={m.photo_url ?? m.profile_card_url ?? ""}
-                        alt=""
+                        alt={m.name}
                         className="size-full object-cover"
                       />
                     ) : (

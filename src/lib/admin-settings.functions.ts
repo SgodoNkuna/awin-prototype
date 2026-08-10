@@ -133,7 +133,7 @@ export const requestSiteSettingsUpdate = createServerFn({ method: "POST" })
       .from("pending_approvals")
       .insert({
         action_type: "site_settings_update",
-        payload: data,
+        payload: data as any,
         reason: `Publish "${data.key}" settings`,
         requested_by: context.userId,
       })
@@ -159,7 +159,7 @@ export const requestTeamMemberUpsert = createServerFn({ method: "POST" })
       .from("pending_approvals")
       .insert({
         action_type: "team_member_upsert",
-        payload: data,
+        payload: data as any,
         reason: `${data.id ? "Edit" : "Add"} team profile: ${name}`,
         requested_by: context.userId,
       })

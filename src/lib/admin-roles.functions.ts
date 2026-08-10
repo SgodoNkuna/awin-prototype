@@ -185,6 +185,54 @@ export async function executeDeleteApplication(
   return { ok: true, application_id: data.application_id };
 }
 
+export const deleteLoaRpaSubmissionSchema = z.object({
+  submission_id: z.string().uuid(),
+  confirm_name: z.string().trim().min(1),
+  reason: z.string().trim().min(5).max(500),
+});
+
+/**
+ * Admin-only, not advisor — ThuthukaSA can view/mark-reviewed but shouldn't
+ * be able to unilaterally erase FAIS-regulated records themselves; deletion
+ * stays with A-Win's own accountable admins, same two-person approval as
+ * every other destructive action here.
+ */
+export async function executeDeleteLoaRpaSubmission(
+  supabaseAdmin: any,
+  data: z.infer<typeof deleteLoaRpaSubmissionSchema>,
+  actor: { userId: string; email: string | null },
+) {
+  const { data: submission } = await supabaseAdmin
+    .from("loa_rpa_submissions")
+    .select("*")
+    .eq("id", data.submission_id)
+    .maybeSingle();
+  if (!submission) throw new Error("Submission not found");
+  if (submission.full_name.trim().toLowerCase() !== data.confirm_name.trim().toLowerCase()) {
+    throw new Error("Typed name does not match this submission's name");
+  }
+
+  const paths = [...new Set([submission.pdf_path, submission.loa_pdf_path].filter(Boolean))];
+  if (paths.length) {
+    await supabaseAdmin.storage.from("loa-rpa-documents").remove(paths);
+  }
+
+  const { error } = await supabaseAdmin.from("loa_rpa_submissions").delete().eq("id", data.submission_id);
+  if (error) throw new Error(error.message);
+
+  await supabaseAdmin.from("audit_logs").insert({
+    actor_id: actor.userId,
+    actor_email: actor.email,
+    action: "loa_rpa_submission_delete",
+    target_type: "loa_rpa_submission",
+    target_id: data.submission_id,
+    reason: data.reason,
+    details: { deleted_snapshot: { full_name: submission.full_name, email: submission.email, source: submission.source, loa_only: submission.loa_only, created_at: submission.created_at } },
+  });
+
+  return { ok: true, submission_id: data.submission_id };
+}
+
 // --- Request entry points ---------------------------------------------------
 // The UI calls these. Each just validates + files a pending_approvals row;
 // none of them perform the actual change. See admin-approvals.functions.ts
@@ -254,6 +302,27 @@ export const requestDeleteApplication = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
     notifyNewApprovalRequest("Delete application", data.reason, context.claims?.email ?? "an admin");
+    return { ok: true, approval_id: row.id };
+  });
+
+export const requestDeleteLoaRpaSubmission = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => deleteLoaRpaSubmissionSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("pending_approvals")
+      .insert({
+        action_type: "loa_rpa_submission_delete",
+        payload: data,
+        reason: data.reason,
+        requested_by: context.userId,
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    notifyNewApprovalRequest("Delete LOA/RPA submission", data.reason, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });
 

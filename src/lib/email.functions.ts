@@ -39,6 +39,7 @@ export const sendLoaRpaReceivedEmail = createServerFn({ method: "POST" })
         email: z.string().email(),
         fullName: z.string().trim().min(1).max(200),
         source: z.enum(["whatsapp", "website"]),
+        loaOnly: z.boolean().default(false),
       })
       .parse(i),
   )
@@ -49,7 +50,7 @@ export const sendLoaRpaReceivedEmail = createServerFn({ method: "POST" })
       return { ok: false as const, error: "rate limited" };
     }
     const { loaRpaReceivedEmail, adminNewLoaRpaEmail } = await import("./email-templates.server");
-    const mail = loaRpaReceivedEmail(data.fullName);
+    const mail = loaRpaReceivedEmail(data.fullName, data.loaOnly);
     // Confidentiality: LOA/RPA submissions contain FAIS-regulated financial
     // advice data, so the notification goes to ThuthukaSA (the FSP) only —
     // never to admin@awin.co.za. A-Win committee members are not bound by
@@ -65,7 +66,7 @@ export const sendLoaRpaReceivedEmail = createServerFn({ method: "POST" })
         emails: ["info@thuthuka-sa.co.za"],
         whatsapp: [THUTHUKA_WHATSAPP_NUMBER],
       });
-      const adminMail = adminNewLoaRpaEmail(data.fullName, data.email, data.source);
+      const adminMail = adminNewLoaRpaEmail(data.fullName, data.email, data.source, data.loaOnly);
       for (const to of recipients.emails) {
         void sendEmail({ to, toName: "ThuthukaSA", ...adminMail });
       }
@@ -74,7 +75,8 @@ export const sendLoaRpaReceivedEmail = createServerFn({ method: "POST" })
       // WHATSAPP_PHONE_NUMBER_ID are configured (see whatsapp.server.ts).
       void (async () => {
         const { sendWhatsAppMessage } = await import("./whatsapp.server");
-        const text = `New LOA & Risk Profile submission: ${data.fullName} (${data.email}) via ${data.source}. Review: https://awin.co.za/admin/loa-rpa`;
+        const what = data.loaOnly ? "Letter of Authority" : "LOA & Risk Profile";
+        const text = `New ${what} submission: ${data.fullName} (${data.email}) via ${data.source}. Review: https://awin.co.za/tksa`;
         await Promise.all(recipients.whatsapp.map((to) => sendWhatsAppMessage(to, text)));
       })().catch(() => {});
     }

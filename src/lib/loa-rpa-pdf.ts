@@ -269,3 +269,38 @@ export async function buildLoaRpaPdf(input: BuildInput): Promise<Blob> {
   drawRpaPage(pdf, input);
   return pdf.output("blob");
 }
+
+const BLANK_INPUT: BuildInput = {
+  fullName: "",
+  loa: { idNumber: "", telephone: "" },
+  rpa: {
+    gender: "", cellPhone: "", email: "", workNumber: "", qualification: "", occupation: "",
+    grossMonthlyIncome: "", maritalStatus: "", stokvelName: "", objective: "", term: "",
+    monthlyAmount: "", riskAppetite: "", scaredOfLosingMoney: "", withdrawSoon: "",
+    existingInvestments: "", investingKnowledge: "", emergencyFund: "", children: "",
+    savedForEducation: "", savedForRetirement: "", newsletterSubscribe: "",
+  },
+  signatureType: "typed",
+  signatureTypedName: "",
+  signatureDrawnData: "",
+  dateStr: "",
+};
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/** Blank, unsigned LOA — the original document as-is, for anyone who wants the template itself. */
+export async function downloadBlankLoaTemplate() {
+  triggerDownload(await buildLoaPdf(BLANK_INPUT), "ThuthukaSA-Letter-of-Authority-blank-template.pdf");
+}
+
+/** Blank, unsigned combined LOA + RPA — the original document as-is. */
+export async function downloadBlankLoaRpaTemplate() {
+  triggerDownload(await buildLoaRpaPdf(BLANK_INPUT), "ThuthukaSA-LOA-and-Risk-Profile-blank-template.pdf");
+}

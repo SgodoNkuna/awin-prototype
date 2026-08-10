@@ -17,6 +17,9 @@ const BRAND = {
 // URL instead, so this is served from /public (unhashed, same path every
 // deploy) rather than the Vite-bundled, content-hashed src/assets copy.
 const LOGO_URL = `${BRAND.site}/email-assets/awin-logo-white.png`;
+// Same reasoning as LOGO_URL above — a real static file, not an inline
+// data: URI, so it actually renders in Gmail/Outlook.
+const THUTHUKA_LOGO_URL = `${BRAND.site}/email-assets/thuthuka-logo.png`;
 
 function layout(title: string, bodyHtml: string): string {
   return `<!doctype html>
@@ -35,6 +38,36 @@ function layout(title: string, bodyHtml: string): string {
     <p style="margin:0;font-size:12px;color:#78716c;">
       African Women In Networking &middot; <a href="${BRAND.site}" style="color:${BRAND.color};">${BRAND.site.replace(/^https?:\/\//, "")}</a><br/>
       This is a transactional message about your A-Win account.
+    </p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+}
+
+/**
+ * LOA/RPA mail is ThuthukaSA's regulated correspondence, not A-Win's — its
+ * own branded layout (their logo, their brand orange) rather than the
+ * generic A-Win one, so it's visually clear who this email is actually from.
+ */
+function thuthukaLayout(title: string, bodyHtml: string): string {
+  return `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f5f5f4;font-family:Segoe UI,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:24px 0;">
+<tr><td align="center">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+  <tr><td style="background:#e8960a;padding:16px 32px;">
+    <img src="${THUTHUKA_LOGO_URL}" width="140" height="42" alt="ThuthukaSA — FSP No. 47992" style="height:42px;width:auto;display:block;border:0;background:#ffffff;border-radius:6px;padding:4px 8px;" />
+  </td></tr>
+  <tr><td style="padding:32px;">
+    <h1 style="margin:0 0 16px;font-size:20px;color:#1c1917;">${title}</h1>
+    ${bodyHtml}
+  </td></tr>
+  <tr><td style="padding:20px 32px;border-top:1px solid #e7e5e4;">
+    <p style="margin:0;font-size:12px;color:#78716c;">
+      ThuthukaSA &middot; Financial Services Provider No. 47992 &middot; on behalf of A-Win<br/>
+      This is a confidential, transactional message about a signed document.
     </p>
   </td></tr>
 </table>
@@ -111,27 +144,46 @@ export function adminNewApplicationEmail(fullName: string, email: string) {
   };
 }
 
-export function loaRpaReceivedEmail(fullName: string) {
+/**
+ * `loaOnly` must reflect what was actually signed — the applicant only ever
+ * completed the Risk Profile if they used the full form, and telling someone
+ * they signed something they didn't is worse than a generic thank-you.
+ */
+export function loaRpaReceivedEmail(fullName: string, loaOnly: boolean) {
+  if (loaOnly) {
+    return {
+      subject: "We received your Letter of Authority",
+      html: thuthukaLayout(
+        "Letter of Authority received",
+        p(`Hi ${strong(fullName)},`) +
+          p(
+            "Thank you for completing your Letter of Authority. A signed copy has been generated and is on file with ThuthukaSA (FSP No. 47992).",
+          ) +
+          p("No further action is needed from you right now."),
+      ),
+    };
+  }
   return {
     subject: "We received your LOA & Risk Profile submission",
-    html: layout(
-      "LOA & Risk Profile received",
+    html: thuthukaLayout(
+      "LOA &amp; Risk Profile received",
       p(`Hi ${strong(fullName)},`) +
         p(
-          "Thank you for completing your Letter of Authority and Risk Profile Analysis. A signed copy has been generated and is on file with ThuthukaSA (FSP No. 47992).",
+          "Thank you for completing your Letter of Authority and Risk Profile Analysis. A signed copy of both has been generated and is on file with ThuthukaSA (FSP No. 47992).",
         ) +
         p("No further action is needed from you right now. The A-Win committee will be in touch if anything further is required."),
     ),
   };
 }
 
-export function adminNewLoaRpaEmail(fullName: string, email: string, source: string) {
+export function adminNewLoaRpaEmail(fullName: string, email: string, source: string, loaOnly: boolean) {
+  const what = loaOnly ? "a signed Letter of Authority" : "a signed LOA &amp; Risk Profile Analysis";
   return {
-    subject: `New LOA & RPA submission: ${fullName}`,
-    html: layout(
-      "New LOA & RPA submission",
-      p(`${strong(fullName)} (${esc(email)}) submitted a signed LOA & Risk Profile Analysis via ${strong(source)}.`) +
-        btn(`${BRAND.site}/admin/loa-rpa`, "Review in admin"),
+    subject: `New ${loaOnly ? "LOA" : "LOA & RPA"} submission: ${fullName}`,
+    html: thuthukaLayout(
+      `New ${loaOnly ? "Letter of Authority" : "LOA & RPA"} submission`,
+      p(`${strong(fullName)} (${esc(email)}) submitted ${what} via ${strong(source)}.`) +
+        btn(`${BRAND.site}/tksa`, "Review on the ThuthukaSA dashboard"),
     ),
   };
 }

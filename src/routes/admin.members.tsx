@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Search, Download, Loader2, Shield, Trash2 } from "lucide-react";
+import { Search, Download, Loader2, Shield, ShieldOff, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -68,6 +68,9 @@ function MembersPage() {
   const [promoteReason, setPromoteReason] = useState("");
   const [promoteBusy, setPromoteBusy] = useState(false);
   const callSetRole = useServerFn(requestSetUserRole);
+  const [revokingAdvisor, setRevokingAdvisor] = useState<Member | null>(null);
+  const [revokeAdvisorReason, setRevokeAdvisorReason] = useState("");
+  const [revokeAdvisorBusy, setRevokeAdvisorBusy] = useState(false);
   const [deleting, setDeleting] = useState<Member | null>(null);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
   const [deleteReason, setDeleteReason] = useState("");
@@ -272,6 +275,15 @@ function MembersPage() {
                 <Button variant="outline" onClick={() => { setPromoting(detail); setPromoteReason(""); setDetail(null); }}>
                   <Shield className="size-4 mr-2" /> Manage admin role
                 </Button>
+                {roleMap[detail.id]?.has("advisor") && (
+                  <Button
+                    variant="outline"
+                    className="text-amber-700 hover:text-amber-700"
+                    onClick={() => { setRevokingAdvisor(detail); setRevokeAdvisorReason(""); setDetail(null); }}
+                  >
+                    <ShieldOff className="size-4 mr-2" /> Revoke advisor
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   className="text-destructive hover:text-destructive"
@@ -454,6 +466,49 @@ function MembersPage() {
                 finally { setPromoteBusy(false); }
               }}
             >{promoteBusy ? <Loader2 className="size-4 animate-spin" /> : "Promote to admin"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* One-click shortcut from the badge you already see on this row —
+          same requestSetUserRole revoke used in Admin > LOA & Risk Profile,
+          just reachable without leaving this page. */}
+      <Dialog open={!!revokingAdvisor} onOpenChange={(o) => !o && setRevokingAdvisor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Revoke ThuthukaSA Advisor Access</DialogTitle></DialogHeader>
+          {revokingAdvisor && (
+            <div className="space-y-3">
+              <p className="text-sm">
+                <span className="font-medium">{revokingAdvisor.full_name || revokingAdvisor.email}</span>
+                <br />
+                <span className="text-xs text-muted-foreground">{revokingAdvisor.email}</span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                They will no longer be able to see LOA/RPA submissions. Requires approval from a different admin
+                before it takes effect (see Admin → Approvals).
+              </p>
+              <div className="grid gap-2">
+                <label className="text-xs font-medium">Reason (audit log, min 5 chars)</label>
+                <Textarea value={revokeAdvisorReason} onChange={(e) => setRevokeAdvisorReason(e.target.value)} rows={3} placeholder="e.g. No longer with ThuthukaSA" />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setRevokingAdvisor(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              disabled={revokeAdvisorBusy || revokeAdvisorReason.trim().length < 5 || !revokingAdvisor}
+              onClick={async () => {
+                if (!revokingAdvisor) return;
+                setRevokeAdvisorBusy(true);
+                try {
+                  await callSetRole({ data: { user_id: revokingAdvisor.id, email: revokingAdvisor.email ?? undefined, role: "advisor", action: "revoke", reason: revokeAdvisorReason.trim() } });
+                  toast.success("Revoke request submitted — needs approval from a different admin");
+                  setRevokingAdvisor(null);
+                } catch (e: any) { toast.error(getErrorMessage(e, "Failed")); }
+                finally { setRevokeAdvisorBusy(false); }
+              }}
+            >{revokeAdvisorBusy ? <Loader2 className="size-4 animate-spin" /> : "Revoke advisor"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

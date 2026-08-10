@@ -17,6 +17,7 @@ import {
   Mail,
   ExternalLink,
   Landmark,
+  ChevronRight,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -100,6 +101,14 @@ const STATS = [
 function WhyAWinPage() {
   return (
     <>
+      <div className="border-b border-border bg-card px-4 py-3">
+        <nav aria-label="Breadcrumb" className="mx-auto flex max-w-5xl items-center gap-1.5 text-xs uppercase tracking-widest text-foreground/65">
+          <Link to="/" className="hover:text-accent transition-colors">Home</Link>
+          <ChevronRight className="h-3 w-3" />
+          <span className="font-medium text-accent">Why A-Win</span>
+        </nav>
+      </div>
+
       {/* HERO — A-Win adaptation of the MinimalistHero pattern */}
       <MinimalistHero
         mainText="A-Win is a community of African women choosing investment over debt, collaboration over isolation, and long-term wealth over short-term spending. It began with one financial advisor's conviction that women could do this, together."
