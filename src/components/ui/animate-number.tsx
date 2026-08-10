@@ -1,9 +1,14 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { animate, useMotionValue } from "framer-motion";
 
 /**
  * Animated count-up number. Uses framer-motion (already a dependency) rather
  * than a new animation library — no new deps for this.
+ *
+ * Renders the number through React state (not a ref + manual textContent
+ * mutation) — the manual-DOM version fought React's own re-renders of the
+ * same JSX children and got stomped back to the literal "0" the moment
+ * anything else in the tree re-rendered (e.g. the data finishing its load).
  */
 export function AnimateNumber({
   value,
@@ -19,24 +24,20 @@ export function AnimateNumber({
   className?: string;
 }) {
   const motionValue = useMotionValue(0);
-  const spanRef = useRef<HTMLSpanElement>(null);
+  const [display, setDisplay] = useState(0);
 
   useEffect(() => {
     const controls = animate(motionValue, value, { duration: 0.8, ease: "easeOut" });
     return controls.stop;
-  }, [value]);
+  }, [value, motionValue]);
 
-  useEffect(() => {
-    return motionValue.on("change", (v) => {
-      if (spanRef.current) {
-        spanRef.current.textContent = prefix + Math.round(v).toLocaleString(undefined, format) + suffix;
-      }
-    });
-  }, [motionValue, prefix, suffix, format]);
+  useEffect(() => motionValue.on("change", (v) => setDisplay(v)), [motionValue]);
 
   return (
-    <span ref={spanRef} className={className}>
-      {prefix}0{suffix}
+    <span className={className}>
+      {prefix}
+      {Math.round(display).toLocaleString(undefined, format)}
+      {suffix}
     </span>
   );
 }
