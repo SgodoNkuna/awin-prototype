@@ -19,6 +19,7 @@ import { Route as NewsRouteImport } from './routes/news'
 import { Route as MembershipRouteImport } from './routes/membership'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as LoaRpaRouteImport } from './routes/loa-rpa'
+import { Route as LoaRouteImport } from './routes/loa'
 import { Route as InfoRouteImport } from './routes/info'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -93,6 +94,11 @@ const MembersRoute = MembersRouteImport.update({
 const LoaRpaRoute = LoaRpaRouteImport.update({
   id: '/loa-rpa',
   path: '/loa-rpa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoaRoute = LoaRouteImport.update({
+  id: '/loa',
+  path: '/loa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InfoRoute = InfoRouteImport.update({
@@ -230,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
+  '/loa': typeof LoaRoute
   '/loa-rpa': typeof LoaRpaRoute
   '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
+  '/loa': typeof LoaRoute
   '/loa-rpa': typeof LoaRpaRoute
   '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
+  '/loa': typeof LoaRoute
   '/loa-rpa': typeof LoaRpaRoute
   '/members': typeof MembersRoute
   '/membership': typeof MembershipRoute
@@ -343,6 +352,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/events'
     | '/info'
+    | '/loa'
     | '/loa-rpa'
     | '/members'
     | '/membership'
@@ -379,6 +389,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/events'
     | '/info'
+    | '/loa'
     | '/loa-rpa'
     | '/members'
     | '/membership'
@@ -416,6 +427,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/events'
     | '/info'
+    | '/loa'
     | '/loa-rpa'
     | '/members'
     | '/membership'
@@ -454,6 +466,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   EventsRoute: typeof EventsRoute
   InfoRoute: typeof InfoRoute
+  LoaRoute: typeof LoaRoute
   LoaRpaRoute: typeof LoaRpaRoute
   MembersRoute: typeof MembersRoute
   MembershipRoute: typeof MembershipRoute
@@ -538,6 +551,13 @@ declare module '@tanstack/react-router' {
       path: '/loa-rpa'
       fullPath: '/loa-rpa'
       preLoaderRoute: typeof LoaRpaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loa': {
+      id: '/loa'
+      path: '/loa'
+      fullPath: '/loa'
+      preLoaderRoute: typeof LoaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/info': {
@@ -765,6 +785,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   EventsRoute: EventsRoute,
   InfoRoute: InfoRoute,
+  LoaRoute: LoaRoute,
   LoaRpaRoute: LoaRpaRoute,
   MembersRoute: MembersRoute,
   MembershipRoute: MembershipRoute,

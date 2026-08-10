@@ -370,22 +370,29 @@ function ShareLinksCard() {
 
   return (
     <Card>
-      <CardContent className="pt-6 space-y-3">
-        <h3 className="text-sm font-semibold">Share the LOA &amp; Risk Profile form</h3>
-        <p className="text-xs text-muted-foreground -mt-2">
-          Send the WhatsApp link when sharing in a chat — it tags the submission's source so you can tell WhatsApp
-          applicants apart from website applicants above.
-        </p>
-        <CopyLinkRow
-          label="WhatsApp"
-          icon={<MessageCircle className="size-3.5" />}
-          url={`${origin}/loa-rpa?src=whatsapp`}
-        />
-        <CopyLinkRow
-          label="Website"
-          icon={<Globe2 className="size-3.5" />}
-          url={`${origin}/loa-rpa`}
-        />
+      <CardContent className="pt-6 space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold">Share the full LOA &amp; Risk Profile form</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            For new A-Win members — includes the Risk Profile Analysis. Send the WhatsApp link when sharing in a
+            chat — it tags the submission's source so you can tell WhatsApp applicants apart from website applicants.
+          </p>
+          <div className="mt-2 space-y-2">
+            <CopyLinkRow label="WhatsApp" icon={<MessageCircle className="size-3.5" />} url={`${origin}/loa-rpa?src=whatsapp`} />
+            <CopyLinkRow label="Website" icon={<Globe2 className="size-3.5" />} url={`${origin}/loa-rpa`} />
+          </div>
+        </div>
+        <div className="border-t border-border pt-4">
+          <h3 className="text-sm font-semibold">Share the LOA-only form</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            For anyone who isn't joining A-Win, or just needs Astute-facing paperwork — skips the Risk Profile
+            questions entirely.
+          </p>
+          <div className="mt-2 space-y-2">
+            <CopyLinkRow label="WhatsApp" icon={<MessageCircle className="size-3.5" />} url={`${origin}/loa?src=whatsapp`} />
+            <CopyLinkRow label="Website" icon={<Globe2 className="size-3.5" />} url={`${origin}/loa`} />
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

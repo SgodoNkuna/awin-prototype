@@ -401,6 +401,7 @@ export type Database = {
           full_name: string
           id: string
           loa_data: Json
+          loa_only: boolean
           loa_pdf_path: string | null
           pdf_path: string | null
           phone: string | null
@@ -424,6 +425,7 @@ export type Database = {
           full_name: string
           id?: string
           loa_data?: Json
+          loa_only?: boolean
           loa_pdf_path?: string | null
           pdf_path?: string | null
           phone?: string | null
@@ -447,6 +449,7 @@ export type Database = {
           full_name?: string
           id?: string
           loa_data?: Json
+          loa_only?: boolean
           loa_pdf_path?: string | null
           pdf_path?: string | null
           phone?: string | null

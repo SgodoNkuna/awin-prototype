@@ -24,6 +24,7 @@ export type Submission = {
   signature_drawn_data: string | null;
   pdf_path: string | null;
   loa_pdf_path: string | null;
+  loa_only: boolean;
   status: string;
   created_at: string;
 };
@@ -204,6 +205,7 @@ export function SubmissionsPanel({ emptyHint }: { emptyHint?: string }) {
                       {row.source === "whatsapp" ? <MessageCircle className="size-3" /> : <Globe2 className="size-3" />}
                       {row.source}
                     </Badge>
+                    {row.loa_only && <Badge variant="outline">LOA only</Badge>}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {row.email} {row.phone && `· ${row.phone}`} · {new Date(row.created_at).toLocaleString()}
@@ -213,9 +215,11 @@ export function SubmissionsPanel({ emptyHint }: { emptyHint?: string }) {
                   <Button size="sm" variant="ghost" onClick={() => setViewing(row)}>
                     <Eye className="size-4" />
                   </Button>
-                  <Button size="sm" variant="ghost" title="Download combined LOA + RPA (internal file)" onClick={() => downloadPdf(row.pdf_path, "combined PDF")}>
-                    <Download className="size-4" />
-                  </Button>
+                  {!row.loa_only && (
+                    <Button size="sm" variant="ghost" title="Download combined LOA + RPA (internal file)" onClick={() => downloadPdf(row.pdf_path, "combined PDF")}>
+                      <Download className="size-4" />
+                    </Button>
+                  )}
                   <Button size="sm" variant="ghost" title="Download standalone LOA (for outside institutions)" onClick={() => downloadPdf(row.loa_pdf_path, "standalone LOA")}>
                     LOA
                   </Button>
@@ -248,14 +252,16 @@ export function SubmissionsPanel({ emptyHint }: { emptyHint?: string }) {
                   <Field label="Telephone" value={viewing.loa_data?.telephone} />
                 </div>
               </div>
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Risk Profile Analysis</div>
-                <div className="mt-1 grid grid-cols-2 gap-2">
-                  {RPA_LABELS.map(([key, label]) => (
-                    <Field key={key} label={label} value={viewing.rpa_data?.[key]} />
-                  ))}
+              {!viewing.loa_only && (
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Risk Profile Analysis</div>
+                  <div className="mt-1 grid grid-cols-2 gap-2">
+                    {RPA_LABELS.map(([key, label]) => (
+                      <Field key={key} label={label} value={viewing.rpa_data?.[key]} />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               <div>
                 <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Signature</div>
                 <p className="mt-1 text-xs text-muted-foreground">Type: {viewing.signature_type}</p>
