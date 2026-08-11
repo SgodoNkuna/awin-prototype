@@ -401,12 +401,12 @@ function ShareLinksCard() {
             <CopyLinkRow
               label="WhatsApp"
               icon={<MessageCircle className="size-3.5" />}
-              message={`Hi! Please complete your A-Win Letter of Authority & Risk Profile form here — takes about 5 minutes: ${origin}/loa-rpa?src=whatsapp`}
+              message={`Hi! Please complete your ThuthukaSA Letter of Authority & Risk Profile form here (via A-Win) — takes about 5 minutes: ${origin}/loa-rpa?src=whatsapp`}
             />
             <CopyLinkRow
               label="Website"
               icon={<Globe2 className="size-3.5" />}
-              message={`A-Win — Letter of Authority & Risk Profile form (ThuthukaSA, FSP No. 47992): ${origin}/loa-rpa`}
+              message={`ThuthukaSA (FSP No. 47992) — Letter of Authority & Risk Profile form, via A-Win: ${origin}/loa-rpa`}
             />
           </div>
         </div>
@@ -420,12 +420,12 @@ function ShareLinksCard() {
             <CopyLinkRow
               label="WhatsApp"
               icon={<MessageCircle className="size-3.5" />}
-              message={`Hi! Please complete this short Letter of Authority form — takes about a minute: ${origin}/loa?src=whatsapp`}
+              message={`Hi! Please complete this short ThuthukaSA Letter of Authority form — takes about a minute: ${origin}/loa?src=whatsapp`}
             />
             <CopyLinkRow
               label="Website"
               icon={<Globe2 className="size-3.5" />}
-              message={`A-Win — Letter of Authority form only, no Risk Profile (ThuthukaSA, FSP No. 47992): ${origin}/loa`}
+              message={`ThuthukaSA (FSP No. 47992) — Letter of Authority form only, no Risk Profile: ${origin}/loa`}
             />
           </div>
         </div>
