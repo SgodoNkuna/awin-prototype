@@ -389,7 +389,7 @@ function SettingsPage() {
                 ["new_application", "New membership application", "Email admin@awin.co.za when someone applies to join."],
                 ["new_message", "New contact message", "Email info@awin.co.za when the contact form is submitted."],
                 ["event_registration", "New event registration", "Email admin@awin.co.za when someone registers for an event."],
-                ["new_loa_rpa", "New LOA & RPA submission", "Email admin@awin.co.za when someone submits a signed LOA & Risk Profile Analysis."],
+                ["new_loa_rpa", "New LOA & RPA submission", "Notify ThuthukaSA's configured recipients (Admin → LOA & Risk Profile) when someone submits a signed LOA & Risk Profile Analysis. Never sent to admin@awin.co.za — this is FAIS-regulated client data."],
                 ["new_approval_request", "New approval request", "Email admin@awin.co.za when an admin files a request that needs a different admin's approval."],
               ] as const).map(([k, label, desc]) => (
                 <div key={k} className="flex items-center justify-between gap-4">

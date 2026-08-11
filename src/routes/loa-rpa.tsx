@@ -244,18 +244,22 @@ function LoaRpaPage() {
             <ChevronRight className="h-3 w-3" />
             <span className="text-accent">LOA &amp; Risk Profile</span>
           </nav>
-          <h1 className="mt-5 font-serif text-foreground">Letter of Authority &amp; Risk Profile</h1>
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-5 flex items-center gap-3">
             <img
               src={THUTHUKA_LOGO_PNG_BASE64}
               alt="ThuthukaSA"
               className="h-14 w-auto shrink-0 rounded-md bg-white p-1.5 shadow-sm"
             />
-            <p className="max-w-xl text-foreground/80 md:text-lg">
-              Two short forms required by ThuthukaSA (FSP No. 47992) so we can guide your investment appropriately.
-              Takes about 5 minutes on your phone.
-            </p>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-accent">ThuthukaSA (FSP No. 47992)</p>
+              <p className="text-sm text-foreground/70">Your appointed Financial Services Provider, via A-Win</p>
+            </div>
           </div>
+          <h1 className="mt-4 font-serif text-foreground">Letter of Authority &amp; Risk Profile</h1>
+          <p className="mt-3 max-w-xl text-foreground/80 md:text-lg">
+            Two short forms required by ThuthukaSA so we can guide your investment appropriately. Takes about 5
+            minutes on your phone.
+          </p>
           <p className="mt-4 flex items-start gap-2 rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm text-foreground/85">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
             <span>
