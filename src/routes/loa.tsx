@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, ChevronRight, Loader2, ShieldCheck, FileDown } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { sendLoaRpaReceivedEmail } from "@/lib/email.functions";
 import { buildLoaPdf, downloadBlankLoaTemplate } from "@/lib/loa-rpa-pdf";
 import { emptyLoaData, emptyRpaData, type LoaData } from "@/lib/loa-rpa-types";
 import { THUTHUKA_LOGO_PNG_BASE64 } from "@/lib/thuthuka-logo-base64";
+import { cn } from "@/lib/utils";
 
 /**
  * Short LOA-only path — no Risk Profile Analysis. For people who aren't
@@ -63,6 +64,11 @@ function LoaOnlyPage() {
   const [signatureType, setSignatureType] = useState<"typed" | "drawn">("typed");
   const [typedSignature, setTypedSignature] = useState("");
   const [drawnSignature, setDrawnSignature] = useState("");
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const detailsSectionRef = useRef<HTMLDivElement>(null);
+  const loaSectionRef = useRef<HTMLDivElement>(null);
+  const signSectionRef = useRef<HTMLDivElement>(null);
 
   const nameValid = fullName.trim().length > 2;
   const idValid = /^\d{13}$/.test(loa.idNumber.replace(/\s+/g, ""));
@@ -70,8 +76,31 @@ function LoaOnlyPage() {
   const phoneValid = /^[+\d\s()-]{8,}$/.test(phone);
   const signatureValid = signatureType === "typed" ? typedSignature.trim().length > 2 : drawnSignature.length > 0;
 
-  const canSubmit =
-    nameValid && idValid && emailValid && phoneValid && loaAgree && privacyConsent && signatureValid && !submitting;
+  const detailsInvalid = !nameValid || !idValid || !phoneValid || !emailValid;
+  const loaInvalid = !loaAgree;
+  const signInvalid = !privacyConsent || !signatureValid;
+
+  const canSubmit = !detailsInvalid && !loaInvalid && !signInvalid && !submitting;
+
+  const handleSubmitClick = () => {
+    if (submitting) return;
+    if (!canSubmit) {
+      setSubmitAttempted(true);
+      const missing: string[] = [];
+      if (!nameValid) missing.push("Full name");
+      if (!idValid) missing.push("ID number");
+      if (!phoneValid) missing.push("Cell phone number");
+      if (!emailValid) missing.push("Email address");
+      if (!loaAgree) missing.push("Letter of Authority agreement");
+      if (!privacyConsent) missing.push("Privacy consent");
+      if (!signatureValid) missing.push("Signature");
+      toast.error("Please complete: " + missing.join(", "));
+      const firstInvalidRef = detailsInvalid ? detailsSectionRef : loaInvalid ? loaSectionRef : signSectionRef;
+      firstInvalidRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    submit();
+  };
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -189,36 +218,43 @@ function LoaOnlyPage() {
 
       <section className="py-12">
         <div className="mx-auto max-w-2xl space-y-8 px-4">
-          <Card className="border-border/60">
+          <Card
+            ref={detailsSectionRef}
+            className={cn("border-border/60", submitAttempted && detailsInvalid && "border-destructive ring-2 ring-destructive/50")}
+          >
             <CardContent className="space-y-4 p-6">
               <h2 className="font-serif text-xl text-foreground">Your details</h2>
               <div className="grid gap-4">
                 <div>
                   <Label>Full name (per ID book) *</Label>
                   <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Nokuthula Dlamini" />
+                  {(submitAttempted || fullName) && !nameValid && <p className="mt-1 text-xs text-destructive">Enter your full name.</p>}
                 </div>
                 <div>
                   <Label>ID number *</Label>
                   <Input value={loa.idNumber} onChange={(e) => setLoa({ ...loa, idNumber: e.target.value })} placeholder="13 digits" maxLength={13} />
-                  {loa.idNumber && !idValid && <p className="mt-1 text-xs text-destructive">SA ID must be 13 digits.</p>}
+                  {(submitAttempted || loa.idNumber) && !idValid && <p className="mt-1 text-xs text-destructive">SA ID must be 13 digits.</p>}
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Label>Cell phone number *</Label>
                     <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+27 82 123 4567" />
-                    {phone && !phoneValid && <p className="mt-1 text-xs text-destructive">Enter a valid phone number.</p>}
+                    {(submitAttempted || phone) && !phoneValid && <p className="mt-1 text-xs text-destructive">Enter a valid phone number.</p>}
                   </div>
                   <div>
                     <Label>Email address *</Label>
                     <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                    {email && !emailValid && <p className="mt-1 text-xs text-destructive">Enter a valid email.</p>}
+                    {(submitAttempted || email) && !emailValid && <p className="mt-1 text-xs text-destructive">Enter a valid email.</p>}
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-border/60">
+          <Card
+            ref={loaSectionRef}
+            className={cn("border-border/60", submitAttempted && loaInvalid && "border-destructive ring-2 ring-destructive/50")}
+          >
             <CardContent className="space-y-4 p-6">
               <h2 className="font-serif text-xl text-foreground">Letter of Authority</h2>
               <div className="max-h-56 overflow-y-auto rounded-lg border border-border bg-secondary/20 p-4 text-sm leading-relaxed text-foreground/90">
@@ -248,10 +284,16 @@ function LoaOnlyPage() {
                 <Checkbox checked={loaAgree} onCheckedChange={(v) => setLoaAgree(!!v)} className="mt-0.5" />
                 <span className="text-sm">I have read the authorisation above and I agree to be bound by its terms.</span>
               </label>
+              {submitAttempted && !loaAgree && (
+                <p className="text-xs text-destructive">Please read and agree to the Letter of Authority to continue.</p>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="border-border/60">
+          <Card
+            ref={signSectionRef}
+            className={cn("border-border/60", submitAttempted && signInvalid && "border-destructive ring-2 ring-destructive/50")}
+          >
             <CardContent className="space-y-5 p-6">
               <h2 className="font-serif text-xl text-foreground">Sign &amp; submit</h2>
 
@@ -278,6 +320,9 @@ function LoaOnlyPage() {
                 <Checkbox checked={privacyConsent} onCheckedChange={(v) => setPrivacyConsent(!!v)} className="mt-0.5" />
                 <span className="text-sm">I consent to ThuthukaSA, as the Financial Services Provider, processing my personal information as described above.</span>
               </label>
+              {submitAttempted && !privacyConsent && (
+                <p className="text-xs text-destructive">Please consent to the processing of your personal information to continue.</p>
+              )}
 
               <div className="flex gap-2 rounded-lg border border-border p-1">
                 <button
@@ -305,15 +350,22 @@ function LoaOnlyPage() {
                     placeholder={fullName || "Type your full name"}
                     className="font-serif text-lg italic"
                   />
+                  {submitAttempted && !signatureValid && <p className="mt-1 text-xs text-destructive">Type your signature to sign.</p>}
                 </div>
               ) : (
                 <div>
                   <Label>Draw your signature *</Label>
                   <SignaturePad value={drawnSignature} onChange={setDrawnSignature} />
+                  {submitAttempted && !signatureValid && <p className="mt-1 text-xs text-destructive">Draw your signature to sign.</p>}
                 </div>
               )}
 
-              <Button onClick={submit} disabled={!canSubmit} className="w-full bg-accent text-accent-foreground hover:bg-accent/90" size="lg">
+              <Button
+                onClick={handleSubmitClick}
+                disabled={submitting}
+                className={cn("w-full bg-accent text-accent-foreground hover:bg-accent/90", !canSubmit && !submitting && "opacity-60")}
+                size="lg"
+              >
                 {submitting ? <><Loader2 className="mr-2 size-4 animate-spin" /> Submitting…</> : <>Submit Letter of Authority</>}
               </Button>
             </CardContent>
