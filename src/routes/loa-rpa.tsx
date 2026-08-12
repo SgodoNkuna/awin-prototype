@@ -81,6 +81,27 @@ function LoaRpaPage() {
   const loaSectionRef = useRef<HTMLDivElement>(null);
   const signSectionRef = useRef<HTMLDivElement>(null);
 
+  // Structured input for RPA Q10 ("Do you have children? If yes, how many
+  // and their ages?") — composes back into the plain rpa.children string the
+  // PDF/admin panel already expect, so nothing downstream needs to change.
+  const [hasChildren, setHasChildren] = useState("");
+  const [childCount, setChildCount] = useState(1);
+  const [childAges, setChildAges] = useState<string[]>([""]);
+
+  const composeChildrenAnswer = (has: string, count: number, ages: string[]) => {
+    if (has === "No") return "No";
+    if (has !== "Yes") return "";
+    const filledAges = ages.slice(0, count).map((a) => a.trim()).filter(Boolean);
+    const agesStr = filledAges.length ? ` — ages: ${filledAges.join(", ")}` : "";
+    return `Yes, ${count}${agesStr}`;
+  };
+
+  const ordinal = (n: number) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+
   // Keep the submitted value in sync with the slider's default even if the
   // applicant never touches it — onValueChange only fires on interaction.
   useEffect(() => {
@@ -521,7 +542,51 @@ function LoaRpaPage() {
               </div>
               <div>
                 <Label>10. Do you have children? If yes, how many and their ages?</Label>
-                <Textarea rows={2} value={rpa.children} onChange={(e) => setRpaField("children")(e.target.value)} />
+                <YesNo
+                  value={hasChildren}
+                  onChange={(v) => {
+                    setHasChildren(v);
+                    setRpaField("children")(composeChildrenAnswer(v, childCount, childAges));
+                  }}
+                />
+                {hasChildren === "Yes" && (
+                  <div className="mt-3 space-y-3 rounded-lg border border-border p-3">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs font-normal text-muted-foreground">Number of children</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={12}
+                        className="w-20"
+                        value={childCount}
+                        onChange={(e) => {
+                          const n = Math.min(12, Math.max(1, Number(e.target.value) || 1));
+                          const nextAges = Array.from({ length: n }, (_, i) => childAges[i] ?? "");
+                          setChildCount(n);
+                          setChildAges(nextAges);
+                          setRpaField("children")(composeChildrenAnswer(hasChildren, n, nextAges));
+                        }}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {Array.from({ length: childCount }, (_, i) => (
+                        <div key={i}>
+                          <Label className="text-xs font-normal text-muted-foreground">{ordinal(i + 1)} child's age</Label>
+                          <Input
+                            value={childAges[i] ?? ""}
+                            onChange={(e) => {
+                              const nextAges = [...childAges];
+                              nextAges[i] = e.target.value;
+                              setChildAges(nextAges);
+                              setRpaField("children")(composeChildrenAnswer(hasChildren, childCount, nextAges));
+                            }}
+                            placeholder="Age"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <Label>11. Have you saved for their university education?</Label>
