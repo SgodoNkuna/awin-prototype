@@ -163,6 +163,31 @@ export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string;
     return rows.filter((r) => r.full_name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q));
   }, [rows, search]);
 
+  // Filtering out zero-value slices means a category's position in the array
+  // — and with it, which <Cell> color it lands on — depends on which other
+  // categories happen to be empty. Carrying `fill` on each datum keeps the
+  // color tied to the category itself instead of its index.
+  const reviewChartData = useMemo(
+    () =>
+      stats
+        ? [
+            { name: "Reviewed", value: stats.reviewed, fill: CHART_ORANGE },
+            { name: "Pending review", value: stats.pending, fill: CHART_MUTED },
+          ].filter((d) => d.value > 0)
+        : [],
+    [stats],
+  );
+  const channelChartData = useMemo(
+    () =>
+      stats
+        ? [
+            { name: "WhatsApp", value: stats.whatsapp, fill: CHART_ORANGE },
+            { name: "Website", value: stats.website, fill: CHART_MUTED },
+          ].filter((d) => d.value > 0)
+        : [],
+    [stats],
+  );
+
   return (
     <>
       {stats && stats.total > 0 && (
@@ -192,18 +217,16 @@ export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string;
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
                   <Pie
-                    data={[
-                      { name: "Reviewed", value: stats.reviewed },
-                      { name: "Pending review", value: stats.pending },
-                    ].filter((d) => d.value > 0)}
+                    data={reviewChartData}
                     dataKey="value"
                     nameKey="name"
                     innerRadius={40}
                     outerRadius={60}
                     paddingAngle={2}
                   >
-                    <Cell fill={CHART_ORANGE} />
-                    <Cell fill={CHART_MUTED} />
+                    {reviewChartData.map((d) => (
+                      <Cell key={d.name} fill={d.fill} />
+                    ))}
                   </Pie>
                   <Tooltip />
                   <Legend iconSize={8} wrapperStyle={{ fontSize: 12 }} />
@@ -217,18 +240,16 @@ export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string;
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
                   <Pie
-                    data={[
-                      { name: "WhatsApp", value: stats.whatsapp },
-                      { name: "Website", value: stats.website },
-                    ].filter((d) => d.value > 0)}
+                    data={channelChartData}
                     dataKey="value"
                     nameKey="name"
                     innerRadius={40}
                     outerRadius={60}
                     paddingAngle={2}
                   >
-                    <Cell fill={CHART_ORANGE} />
-                    <Cell fill={CHART_MUTED} />
+                    {channelChartData.map((d) => (
+                      <Cell key={d.name} fill={d.fill} />
+                    ))}
                   </Pie>
                   <Tooltip />
                   <Legend iconSize={8} wrapperStyle={{ fontSize: 12 }} />
