@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus, Trash2, Loader2, Save, CloudUpload, Eye, Trash, Copy, Check, Sparkles } from "lucide-react";
+import { Plus, Trash2, Loader2, Save, CloudUpload, Eye, Trash, Copy, Check, Sparkles, Crop } from "lucide-react";
+import { ImageCropper } from "@/components/admin/ImageCropper";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -596,20 +597,20 @@ function TeamMemberDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Profile Card Image (main image)">
-              <div className="flex gap-2">
-                <Input value={draft.profile_card_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => set("profile_card_url", e.target.value)} />
-                <UploadImageButton onUploaded={(url) => set("profile_card_url", url)} />
-              </div>
-              {draft.profile_card_url ? <img src={displayImage(draft.profile_card_url) ?? undefined} alt={`${draft.name || "Team member"} profile card preview`} className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
-            </Field>
-            <Field label="Headshot (fallback)">
-              <div className="flex gap-2">
-                <Input value={draft.photo_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => set("photo_url", e.target.value)} />
-                <UploadImageButton onUploaded={(url) => set("photo_url", url)} />
-              </div>
-              {draft.photo_url ? <img src={displayImage(draft.photo_url) ?? undefined} alt={`${draft.name || "Team member"} headshot preview`} className="mt-2 h-20 w-16 rounded object-cover border" /> : null}
-            </Field>
+            <HeadshotImageField
+              label="Profile Card Image (main image)"
+              value={draft.profile_card_url}
+              onChange={(url) => set("profile_card_url", url)}
+              displaySrc={displayImage(draft.profile_card_url)}
+              altText={`${draft.name || "Team member"} profile card preview`}
+            />
+            <HeadshotImageField
+              label="Headshot (fallback)"
+              value={draft.photo_url}
+              onChange={(url) => set("photo_url", url)}
+              displaySrc={displayImage(draft.photo_url)}
+              altText={`${draft.name || "Team member"} headshot preview`}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -739,47 +740,80 @@ function TeamMemberDialog({
   );
 }
 
-/** Uploads an image to the public `gallery` bucket and returns its public URL. */
-function UploadImageButton({ onUploaded }: { onUploaded: (url: string) => void }) {
+/**
+ * Headshot/profile-image field: upload (new file → square crop → storage) or
+ * adjust the crop on whatever's already there. Crop always happens client-
+ * side before the upload — what lands in the `gallery` bucket is already the
+ * exact square headshot crop, not a raw drop-in that display CSS has to
+ * paper over.
+ */
+function HeadshotImageField({
+  label, value, onChange, displaySrc, altText,
+}: {
+  label: string;
+  value: string | null | undefined;
+  onChange: (url: string) => void;
+  displaySrc: string | null | undefined;
+  altText: string;
+}) {
   const [busy, setBusy] = useState(false);
+  const [cropSource, setCropSource] = useState<File | string | null>(null);
+
+  const upload = async (blob: Blob) => {
+    setBusy(true);
+    setCropSource(null);
+    try {
+      const path = `members/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const { error } = await supabase.storage
+        .from("gallery")
+        .upload(path, blob, { contentType: "image/jpeg", upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("gallery").getPublicUrl(path);
+      onChange(data.publicUrl);
+      toast.success("Image uploaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <label
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 text-xs cursor-pointer hover:bg-muted ${busy ? "opacity-60 pointer-events-none" : ""}`}
-    >
-      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <CloudUpload className="size-3.5" />}
-      {busy ? "Uploading…" : "Upload"}
-      <input
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          if (file.size > 8 * 1024 * 1024) {
-            toast.error("Image must be under 8 MB");
-            e.target.value = "";
-            return;
-          }
-          setBusy(true);
-          try {
-            const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-            const path = `members/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-            const { error } = await supabase.storage
-              .from("gallery")
-              .upload(path, file, { contentType: file.type, upsert: true });
-            if (error) throw error;
-            const { data } = supabase.storage.from("gallery").getPublicUrl(path);
-            onUploaded(data.publicUrl);
-            toast.success("Image uploaded");
-          } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Upload failed");
-          } finally {
-            setBusy(false);
-            e.target.value = "";
-          }
-        }}
+    <Field label={label}>
+      <div className="flex gap-2">
+        <Input value={value ?? ""} placeholder="https://… or click Upload →" onChange={(e) => onChange(e.target.value)} />
+        <label className={`inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 text-xs cursor-pointer hover:bg-muted ${busy ? "opacity-60 pointer-events-none" : ""}`}>
+          {busy ? <Loader2 className="size-3.5 animate-spin" /> : <CloudUpload className="size-3.5" />}
+          {busy ? "Uploading…" : "Upload"}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              if (file.size > 8 * 1024 * 1024) return toast.error("Image must be under 8 MB");
+              setCropSource(file);
+            }}
+          />
+        </label>
+      </div>
+      {value ? (
+        <div className="mt-2 flex items-center gap-2">
+          <img src={displaySrc ?? undefined} alt={altText} className="size-16 rounded object-cover border" />
+          <Button type="button" size="sm" variant="outline" onClick={() => setCropSource(displaySrc ?? value)}>
+            <Crop className="size-3.5 mr-1.5" /> Adjust crop
+          </Button>
+        </div>
+      ) : null}
+      <ImageCropper
+        source={cropSource}
+        open={cropSource !== null}
+        onCancel={() => setCropSource(null)}
+        onCropped={upload}
       />
-    </label>
+    </Field>
   );
 }
 

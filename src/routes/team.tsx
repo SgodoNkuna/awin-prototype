@@ -96,7 +96,7 @@ function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
               alt={m.name}
               loading="lazy"
               decoding="async"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover object-top"
             />
           </div>
         ) : (
@@ -134,7 +134,7 @@ function CommitteeCard({ m, committeeKey, onOpen }: { m: Member; committeeKey: s
             alt={m.name}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover object-top"
           />
         </div>
       ) : (
@@ -562,7 +562,7 @@ export function MembersPage() {
                       <img
                         src={active.photo_url}
                         alt={active.name}
-                        className="block w-full h-auto object-cover aspect-square"
+                        className="block w-full h-auto object-cover object-top aspect-square"
                       />
                     </div>
                   ) : (
