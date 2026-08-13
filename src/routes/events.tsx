@@ -50,6 +50,7 @@ type EventRow = {
   registration_deadline: string | null;
   is_awin_hosted: boolean;
   live_link: string | null;
+  host_website: string | null;
 };
 
 type Filter = "all" | "upcoming" | "past";
@@ -85,7 +86,7 @@ function EventsPage() {
   useEffect(() => {
     supabase
       .from("events")
-      .select("id, title, description, event_date, event_time, location, image_url, event_type, max_attendees, registration_deadline, is_awin_hosted, live_link")
+      .select("id, title, description, event_date, event_time, location, image_url, event_type, max_attendees, registration_deadline, is_awin_hosted, live_link, host_website")
       .eq("published", true)
       .order("event_date", { ascending: true })
       .then(({ data }) => setEvents((data as EventRow[]) ?? []));
@@ -314,6 +315,20 @@ function EventsPage() {
                       {!e.is_awin_hosted && (
                         <p className="mt-2 text-xs font-medium text-accent-deep">
                           Not an A-Win event. A community event where A-Win members will be present. Tickets, stall bookings and enquiries go directly to the host (see poster).
+                          {e.host_website && (
+                            <>
+                              {" "}
+                              <a
+                                href={e.host_website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(ev) => ev.stopPropagation()}
+                                className="underline hover:text-accent"
+                              >
+                                Visit host website →
+                              </a>
+                            </>
+                          )}
                         </p>
                       )}
                       {e.event_type === "online" && e.live_link && (

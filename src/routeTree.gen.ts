@@ -22,7 +22,6 @@ import { Route as LoaRpaRouteImport } from './routes/loa-rpa'
 import { Route as LoaRouteImport } from './routes/loa'
 import { Route as InfoRouteImport } from './routes/info'
 import { Route as EventsRouteImport } from './routes/events'
-import { Route as DownloadsRouteImport } from './routes/downloads'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ChangePasswordRouteImport } from './routes/change-password'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -110,11 +109,6 @@ const InfoRoute = InfoRouteImport.update({
 const EventsRoute = EventsRouteImport.update({
   id: '/events',
   path: '/events',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DownloadsRoute = DownloadsRouteImport.update({
-  id: '/downloads',
-  path: '/downloads',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -240,7 +234,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/change-password': typeof ChangePasswordRoute
   '/contact': typeof ContactRoute
-  '/downloads': typeof DownloadsRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
   '/loa': typeof LoaRoute
@@ -278,7 +271,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/change-password': typeof ChangePasswordRoute
   '/contact': typeof ContactRoute
-  '/downloads': typeof DownloadsRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
   '/loa': typeof LoaRoute
@@ -318,7 +310,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/change-password': typeof ChangePasswordRoute
   '/contact': typeof ContactRoute
-  '/downloads': typeof DownloadsRoute
   '/events': typeof EventsRoute
   '/info': typeof InfoRoute
   '/loa': typeof LoaRoute
@@ -359,7 +350,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/change-password'
     | '/contact'
-    | '/downloads'
     | '/events'
     | '/info'
     | '/loa'
@@ -397,7 +387,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/change-password'
     | '/contact'
-    | '/downloads'
     | '/events'
     | '/info'
     | '/loa'
@@ -436,7 +425,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/change-password'
     | '/contact'
-    | '/downloads'
     | '/events'
     | '/info'
     | '/loa'
@@ -476,7 +464,6 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ChangePasswordRoute: typeof ChangePasswordRoute
   ContactRoute: typeof ContactRoute
-  DownloadsRoute: typeof DownloadsRoute
   EventsRoute: typeof EventsRoute
   InfoRoute: typeof InfoRoute
   LoaRoute: typeof LoaRoute
@@ -585,13 +572,6 @@ declare module '@tanstack/react-router' {
       path: '/events'
       fullPath: '/events'
       preLoaderRoute: typeof EventsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/downloads': {
-      id: '/downloads'
-      path: '/downloads'
-      fullPath: '/downloads'
-      preLoaderRoute: typeof DownloadsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -803,7 +783,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ChangePasswordRoute: ChangePasswordRoute,
   ContactRoute: ContactRoute,
-  DownloadsRoute: DownloadsRoute,
   EventsRoute: EventsRoute,
   InfoRoute: InfoRoute,
   LoaRoute: LoaRoute,

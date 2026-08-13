@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Upload, Eye, EyeOff, ArrowUp, ArrowDown, Trash2, ImagePlus, Plus, FolderX } from "lucide-react";
+import { Loader2, Upload, Eye, EyeOff, ArrowUp, ArrowDown, Trash2, ImagePlus, Plus, FolderX, Video as VideoIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase as sb } from "@/integrations/supabase/client";
 const supabase = sb as any;
@@ -46,6 +46,7 @@ type Row = {
   event_label: string | null;
   sort_order: number;
   is_visible: boolean;
+  media_type: string;
 };
 
 // Public "gallery" bucket, under the same assets/ prefix the site's own
@@ -152,10 +153,12 @@ function GalleryAdminPage() {
   };
 
   const upload = async () => {
-    if (!file) return toast.error("Choose an image");
+    if (!file) return toast.error("Choose a photo or video");
+    const isVideo = file.type.startsWith("video/");
+    if (isVideo && file.size > 50 * 1024 * 1024) return toast.error("Video must be under 50 MB");
     setBusy(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? (isVideo ? "mp4" : "jpg");
       const path = pathFor(cat, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`);
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
@@ -164,9 +167,10 @@ function GalleryAdminPage() {
       const { error: insErr } = await supabase.from("event_gallery").insert({
         category: cat, storage_path: path, caption: caption || null,
         event_label: eventLabel || null, sort_order: nextOrder, is_visible: true,
+        media_type: isVideo ? "video" : "photo",
       });
       if (insErr) throw insErr;
-      toast.success("Image added");
+      toast.success(isVideo ? "Video added" : "Image added");
       setFile(null); setCaption(""); setEventLabel("");
       await load();
     } catch (e: any) {
@@ -239,11 +243,12 @@ function GalleryAdminPage() {
 
       <Card>
         <CardContent className="space-y-3 pt-6">
-          <div className="flex items-center gap-2 text-sm font-semibold"><ImagePlus className="size-4" /> Add photo</div>
+          <div className="flex items-center gap-2 text-sm font-semibold"><ImagePlus className="size-4" /> Add photo or video</div>
           <div className="grid gap-3 md:grid-cols-4">
             <div className="md:col-span-2">
-              <Label>Image file</Label>
-              <Input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              <Label>Photo or video file</Label>
+              <Input type="file" accept="image/*,video/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              <p className="mt-1 text-xs text-muted-foreground">Videos up to 50 MB.</p>
             </div>
             <div>
               <Label>Event label</Label>
@@ -272,9 +277,18 @@ function GalleryAdminPage() {
                 <div key={r.id} className="group overflow-hidden rounded-xl border bg-card">
                   <div className="relative aspect-square bg-muted">
                     {urls[r.id] ? (
-                      <img src={urls[r.id]} alt={r.caption ?? ""} className="h-full w-full object-cover" />
+                      r.media_type === "video" ? (
+                        <video src={urls[r.id]} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+                      ) : (
+                        <img src={urls[r.id]} alt={r.caption ?? ""} className="h-full w-full object-cover" />
+                      )
                     ) : (
                       <div className="flex h-full items-center justify-center"><Loader2 className="size-4 animate-spin text-muted-foreground" /></div>
+                    )}
+                    {r.media_type === "video" && (
+                      <div className="absolute right-2 top-2 rounded-full bg-background/80 p-1.5">
+                        <VideoIcon className="size-3.5" />
+                      </div>
                     )}
                     {!r.is_visible && (
                       <div className="absolute inset-0 flex items-center justify-center bg-background/70">

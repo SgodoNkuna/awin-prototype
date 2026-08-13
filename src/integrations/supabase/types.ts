@@ -276,6 +276,7 @@ export type Database = {
           event_label: string | null
           id: string
           is_visible: boolean
+          media_type: string
           sort_order: number
           storage_path: string
         }
@@ -286,6 +287,7 @@ export type Database = {
           event_label?: string | null
           id?: string
           is_visible?: boolean
+          media_type?: string
           sort_order?: number
           storage_path: string
         }
@@ -296,6 +298,7 @@ export type Database = {
           event_label?: string | null
           id?: string
           is_visible?: boolean
+          media_type?: string
           sort_order?: number
           storage_path?: string
         }
@@ -351,6 +354,7 @@ export type Database = {
           event_type: string
           id: string
           image_url: string | null
+          host_website: string | null
           is_awin_hosted: boolean
           live_link: string | null
           location: string
@@ -368,6 +372,7 @@ export type Database = {
           event_type?: string
           id?: string
           image_url?: string | null
+          host_website?: string | null
           is_awin_hosted?: boolean
           live_link?: string | null
           location: string
@@ -385,6 +390,7 @@ export type Database = {
           event_type?: string
           id?: string
           image_url?: string | null
+          host_website?: string | null
           is_awin_hosted?: boolean
           live_link?: string | null
           location?: string

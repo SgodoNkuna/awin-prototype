@@ -31,6 +31,7 @@ type EventRow = {
   published: boolean;
   is_awin_hosted: boolean;
   live_link: string | null;
+  host_website: string | null;
 };
 
 type Registration = {
@@ -45,7 +46,7 @@ type Registration = {
 const empty = (): Partial<EventRow> => ({
   title: "", description: "", event_date: "", event_time: "", location: "",
   image_url: "", max_attendees: null, registration_deadline: "", event_type: "in-person", published: false,
-  is_awin_hosted: true, live_link: "",
+  is_awin_hosted: true, live_link: "", host_website: "",
 });
 
 function EventsAdminPage() {
@@ -173,6 +174,7 @@ function EventsAdminPage() {
       published: editing.published ?? false,
       is_awin_hosted: editing.is_awin_hosted ?? true,
       live_link: editing.event_type === "online" ? (editing.live_link || null) : null,
+      host_website: !(editing.is_awin_hosted ?? true) ? (editing.host_website || null) : null,
     };
 
     // Detect date/time/location changes on an existing event so registered
@@ -346,6 +348,15 @@ function EventsAdminPage() {
                 <Switch checked={editing.is_awin_hosted ?? true} onCheckedChange={(v) => setEditing({ ...editing, is_awin_hosted: v })} />
                 <Label>A-Win hosts this event (off = a community/partner event; A-Win members are invited to attend, ticket &amp; payment handled by the host)</Label>
               </div>
+              {!(editing.is_awin_hosted ?? true) && (
+                <Field label="Host/organizer website">
+                  <Input
+                    value={editing.host_website ?? ""}
+                    onChange={(e) => setEditing({ ...editing, host_website: e.target.value })}
+                    placeholder="https://…"
+                  />
+                </Field>
+              )}
             </div>
           )}
           <DialogFooter>

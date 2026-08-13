@@ -503,6 +503,8 @@ export function MembersPage() {
         </section>
       )}
 
+      <DownloadsSection />
+
       <Dialog open={!!active} onOpenChange={(o) => !o && setActive(null)}>
         <DialogContent
           className="w-[100vw] max-w-[100vw] h-[100vh] max-h-[100vh] p-0 gap-0 rounded-none border-0
@@ -679,5 +681,89 @@ export function MembersPage() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+type PublicDoc = {
+  id: string;
+  name: string;
+  file_path: string;
+  folder: string;
+  size_bytes: number | null;
+  created_at: string;
+};
+
+function formatDocSize(bytes: number | null) {
+  if (!bytes) return "";
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Public documents (visibility='public'), folded into the members directory
+ * page rather than a standalone route — meeting minutes, newsletters etc. */
+function DownloadsSection() {
+  const [docs, setDocs] = useState<PublicDoc[] | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("documents")
+        .select("id, name, file_path, folder, size_bytes, created_at")
+        .order("folder")
+        .order("created_at", { ascending: false });
+      setDocs((data as PublicDoc[]) ?? []);
+    })();
+  }, []);
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, PublicDoc[]>();
+    for (const d of docs ?? []) {
+      if (!map.has(d.folder)) map.set(d.folder, []);
+      map.get(d.folder)!.push(d);
+    }
+    return Array.from(map.entries());
+  }, [docs]);
+
+  if (docs === null || grouped.length === 0) return null;
+
+  const download = async (d: PublicDoc) => {
+    setBusyId(d.id);
+    const { data, error } = await supabase.storage.from("documents").createSignedUrl(d.file_path, 60);
+    setBusyId(null);
+    if (error || !data) return;
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <section className="border-t border-border py-12">
+      <div className="mx-auto max-w-6xl px-4">
+        <h2 className="font-serif text-2xl text-foreground">Downloads</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Meeting minutes, newsletters, and other public resources.</p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {grouped.map(([folder, items]) => (
+            <div key={folder}>
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-accent">{folder}</h3>
+              <div className="mt-2 space-y-2">
+                {items.map((d) => (
+                  <div key={d.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{d.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDocSize(d.size_bytes)}{d.size_bytes ? " · " : ""}
+                        {new Date(d.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <Button size="sm" variant="outline" disabled={busyId === d.id} onClick={() => download(d)}>
+                      Download
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

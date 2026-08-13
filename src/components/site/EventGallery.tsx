@@ -3,10 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { asset } from "@/lib/cdn";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
+import { Loader2, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Photo = { id: string; src: string; caption: string; event: string; category: string };
+type Photo = { id: string; src: string; caption: string; event: string; category: string; mediaType: string };
 
 // Seed labels for the categories admin.gallery.tsx ships with — any further
 // category an admin types in there just shows up automatically, titled from
@@ -33,11 +33,11 @@ export function EventGallery({ heading = true }: { heading?: boolean }) {
     (async () => {
       const { data } = await supabase
         .from("event_gallery")
-        .select("id, category, storage_path, caption, event_label")
+        .select("id, category, storage_path, caption, event_label, media_type")
         .eq("is_visible", true)
         .order("sort_order", { ascending: true });
       if (cancelled) return;
-      const rows = (data ?? []) as { id: string; category: string; storage_path: string; caption: string | null; event_label: string | null }[];
+      const rows = (data ?? []) as { id: string; category: string; storage_path: string; caption: string | null; event_label: string | null; media_type: string }[];
       setPhotos(
         rows.map((r) => ({
           id: r.id,
@@ -45,6 +45,7 @@ export function EventGallery({ heading = true }: { heading?: boolean }) {
           caption: r.caption ?? "",
           event: r.event_label ?? labelize(r.category),
           category: r.category,
+          mediaType: r.media_type,
         })),
       );
     })();
@@ -104,12 +105,29 @@ export function EventGallery({ heading = true }: { heading?: boolean }) {
               className="group relative aspect-square overflow-hidden rounded-xl border border-border/60 shadow-[var(--shadow-elegant)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={`Open photo: ${p.caption}`}
             >
-              <img
-                src={p.src}
-                alt={p.caption}
-                loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
+              {p.mediaType === "video" ? (
+                <video
+                  src={p.src}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <img
+                  src={p.src}
+                  alt={p.caption}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              )}
+              {p.mediaType === "video" && (
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <span className="flex size-10 items-center justify-center rounded-full bg-black/50 text-white">
+                    <Play className="size-4 fill-current" />
+                  </span>
+                </span>
+              )}
               <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/40 to-transparent p-3 text-left text-[11px] font-semibold uppercase tracking-widest text-white">
                 <span className="block truncate">{p.event}</span>
                 <span className="block truncate text-[10px] font-normal normal-case tracking-normal text-white/80">
@@ -124,7 +142,13 @@ export function EventGallery({ heading = true }: { heading?: boolean }) {
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
         <DialogContent className="max-w-4xl border-0 bg-background p-0">
           <DialogTitle className="sr-only">{open?.caption ?? "Event photo"}</DialogTitle>
-          {open && <img src={open.src} alt={open.caption} className="h-auto w-full rounded-lg" />}
+          {open && (
+            open.mediaType === "video" ? (
+              <video src={open.src} controls autoPlay className="h-auto w-full rounded-lg" />
+            ) : (
+              <img src={open.src} alt={open.caption} className="h-auto w-full rounded-lg" />
+            )
+          )}
           {open && (
             <div className="px-4 pb-4 pt-2">
               <div className="text-xs uppercase tracking-widest text-muted-foreground">{open.event}</div>
