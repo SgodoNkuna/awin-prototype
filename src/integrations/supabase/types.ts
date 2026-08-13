@@ -352,6 +352,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_awin_hosted: boolean
+          live_link: string | null
           location: string
           max_attendees: number | null
           published: boolean
@@ -368,6 +369,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_awin_hosted?: boolean
+          live_link?: string | null
           location: string
           max_attendees?: number | null
           published?: boolean
@@ -384,6 +386,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_awin_hosted?: boolean
+          live_link?: string | null
           location?: string
           max_attendees?: number | null
           published?: boolean
@@ -885,6 +888,7 @@ export type Database = {
           social_url: string | null
           title: string
           updated_at: string
+          video_url: string | null
           website: string | null
         }
         Insert: {
@@ -909,6 +913,7 @@ export type Database = {
           social_url?: string | null
           title: string
           updated_at?: string
+          video_url?: string | null
           website?: string | null
         }
         Update: {
@@ -933,6 +938,7 @@ export type Database = {
           social_url?: string | null
           title?: string
           updated_at?: string
+          video_url?: string | null
           website?: string | null
         }
         Relationships: []

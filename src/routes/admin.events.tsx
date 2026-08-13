@@ -30,6 +30,7 @@ type EventRow = {
   event_type: string;
   published: boolean;
   is_awin_hosted: boolean;
+  live_link: string | null;
 };
 
 type Registration = {
@@ -44,7 +45,7 @@ type Registration = {
 const empty = (): Partial<EventRow> => ({
   title: "", description: "", event_date: "", event_time: "", location: "",
   image_url: "", max_attendees: null, registration_deadline: "", event_type: "in-person", published: false,
-  is_awin_hosted: true,
+  is_awin_hosted: true, live_link: "",
 });
 
 function EventsAdminPage() {
@@ -171,6 +172,7 @@ function EventsAdminPage() {
       event_type: editing.event_type ?? "in-person",
       published: editing.published ?? false,
       is_awin_hosted: editing.is_awin_hosted ?? true,
+      live_link: editing.event_type === "online" ? (editing.live_link || null) : null,
     };
 
     // Detect date/time/location changes on an existing event so registered
@@ -304,14 +306,12 @@ function EventsAdminPage() {
               <Field label="Location">
                 <Input value={editing.location ?? ""} onChange={(e) => setEditing({ ...editing, location: e.target.value })} />
               </Field>
-              {!editing.id && (
-                <PosterUploadExtract
-                  onUploaded={(imageUrl) => setEditing((cur) => ({ ...cur, image_url: imageUrl }))}
-                />
+              <PosterUploadExtract
+                onUploaded={(imageUrl) => setEditing((cur) => ({ ...cur, image_url: imageUrl }))}
+              />
+              {editing.image_url && (
+                <img src={editing.image_url} alt="Event cover preview" className="h-24 w-auto rounded-md border object-cover" />
               )}
-              <Field label="Image URL (paste a hosted image link)">
-                <Input value={editing.image_url ?? ""} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} placeholder="https://..." />
-              </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Max attendees">
                   <Input type="number" value={editing.max_attendees ?? ""} onChange={(e) => setEditing({ ...editing, max_attendees: e.target.value ? Number(e.target.value) : null })} />
@@ -329,6 +329,15 @@ function EventsAdminPage() {
                   </SelectContent>
                 </Select>
               </Field>
+              {editing.event_type === "online" && (
+                <Field label="Live website link (Zoom, Teams, YouTube, etc.)">
+                  <Input
+                    value={editing.live_link ?? ""}
+                    onChange={(e) => setEditing({ ...editing, live_link: e.target.value })}
+                    placeholder="https://zoom.us/j/…"
+                  />
+                </Field>
+              )}
               <div className="flex items-center gap-2 pt-2">
                 <Switch checked={editing.published ?? false} onCheckedChange={(v) => setEditing({ ...editing, published: v })} />
                 <Label>Published (visible on public events page)</Label>

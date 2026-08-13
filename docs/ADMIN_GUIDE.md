@@ -58,8 +58,9 @@ Toggles for the committee-alert emails A-Win's admin inbox receives:
 - **New membership application** → admin@awin.co.za
 - **New contact message** → info@awin.co.za
 - **New event registration** → admin@awin.co.za
-- **New LOA & RPA submission** → *not* admin@awin.co.za — goes to ThuthukaSA's recipients (see above)
 - **New approval request** → admin@awin.co.za
+
+LOA/RPA submission alerts aren't controlled here — they're always on and routed to ThuthukaSA's recipients (see above), never to admin@awin.co.za.
 
 Applicant/member-facing confirmation emails (e.g. "we received your application") always send regardless of these toggles — they're transactional, not committee alerts.
 

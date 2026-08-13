@@ -53,6 +53,7 @@ type Member = {
   committee_order: number | null;
   website_committee_position: string | null;
   website_committee_order: number | null;
+  video_url: string | null;
 };
 
 // Website Committee has its own order/position — see admin.committees.tsx
@@ -162,7 +163,7 @@ export function MembersPage() {
     (async () => {
       const { data } = await supabase
         .from("team_members")
-        .select("id, name, title, bio, photo_url, profile_card_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order, website_committee_position, website_committee_order" as any)
+        .select("id, name, title, bio, photo_url, profile_card_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order, website_committee_position, website_committee_order, video_url" as any)
         .eq("published", true)
         .order("order_index");
       const rows = ((data ?? []) as unknown) as Member[];
@@ -598,6 +599,20 @@ export function MembersPage() {
                           </Badge>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Profile video */}
+                  {active.video_url && (
+                    <div className="mt-8">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+                        Video
+                      </div>
+                      <video
+                        src={active.video_url}
+                        controls
+                        className="mt-3 w-full rounded-xl border border-border bg-secondary"
+                      />
                     </div>
                   )}
 

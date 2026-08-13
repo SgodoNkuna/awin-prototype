@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Upload, Eye, EyeOff, ArrowUp, ArrowDown, Trash2, ImagePlus, Plus } from "lucide-react";
+import { Loader2, Upload, Eye, EyeOff, ArrowUp, ArrowDown, Trash2, ImagePlus, Plus, FolderX } from "lucide-react";
 import { toast } from "sonner";
 import { supabase as sb } from "@/integrations/supabase/client";
 const supabase = sb as any;
@@ -70,14 +70,22 @@ function GalleryAdminPage() {
   const [urls, setUrls] = useState<Record<string, string>>({});
 
   // Discover any categories already in use (from earlier uploads) so custom
-  // ones added on another visit still show up as tabs here.
+  // ones added on another visit still show up as tabs here. Seed categories
+  // an admin has deleted are hidden via the `gallery_hidden_categories` site
+  // setting — they're hardcoded defaults, not real rows, so "deleting" one
+  // just needs to survive a reload rather than removing anything from the DB.
   const loadCategories = useCallback(async () => {
-    const { data } = await supabase.from("event_gallery").select("category");
+    const [{ data }, { data: hiddenSetting }] = await Promise.all([
+      supabase.from("event_gallery").select("category"),
+      supabase.from("site_settings").select("value").eq("key", "gallery_hidden_categories").maybeSingle(),
+    ]);
+    const hidden = new Set((hiddenSetting?.value as { ids?: string[] } | null)?.ids ?? []);
     const existing = Array.from(new Set(((data as { category: string }[]) ?? []).map((r) => r.category)));
-    setCategories((current) => {
-      const known = new Set(current.map((c) => c.id));
-      const extra = existing.filter((id) => !known.has(id)).map((id) => ({ id, label: labelize(id) }));
-      return extra.length ? [...current, ...extra] : current;
+    setCategories(() => {
+      const base = SEED_CATEGORIES.filter((c) => !hidden.has(c.id));
+      const known = new Set(base.map((c) => c.id));
+      const extra = existing.filter((id) => !known.has(id) && !hidden.has(id)).map((id) => ({ id, label: labelize(id) }));
+      return [...base, ...extra];
     });
   }, []);
 
@@ -109,6 +117,38 @@ function GalleryAdminPage() {
     setCat(id);
     setNewCategoryName("");
     setAddingCategory(false);
+  };
+
+  const [deletingCategory, setDeletingCategory] = useState(false);
+
+  const removeCategory = async () => {
+    const target = categories.find((c) => c.id === cat);
+    if (!target) return;
+    const photoCount = rows?.length ?? 0;
+    if (!confirm(`Delete "${target.label}"? This permanently deletes ${photoCount} photo${photoCount === 1 ? "" : "s"} in it. This cannot be undone.`)) return;
+    setDeletingCategory(true);
+    try {
+      if (rows?.length) {
+        await supabase.storage.from(BUCKET).remove(rows.map((r) => r.storage_path));
+        await supabase.from("event_gallery").delete().eq("category", cat);
+      }
+      // Seed categories are hardcoded, not DB rows — persist the hide so it
+      // survives a reload; custom categories just stop existing once their
+      // last photo is gone, so no setting write is needed for those.
+      if (SEED_CATEGORIES.some((c) => c.id === cat)) {
+        const { data: current } = await supabase.from("site_settings").select("value").eq("key", "gallery_hidden_categories").maybeSingle();
+        const hidden = Array.from(new Set([...(((current?.value as { ids?: string[] } | null)?.ids) ?? []), cat]));
+        await supabase.from("site_settings").upsert({ key: "gallery_hidden_categories", value: { ids: hidden } });
+      }
+      const remaining = categories.filter((c) => c.id !== cat);
+      setCategories(remaining);
+      setCat(remaining[0]?.id ?? "");
+      toast.success(`"${target.label}" deleted`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to delete category");
+    } finally {
+      setDeletingCategory(false);
+    }
   };
 
   const upload = async () => {
@@ -188,6 +228,11 @@ function GalleryAdminPage() {
         ) : (
           <Button size="sm" variant="outline" onClick={() => setAddingCategory(true)}>
             <Plus className="size-3.5 mr-1" /> New category
+          </Button>
+        )}
+        {cat && (
+          <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" disabled={deletingCategory} onClick={removeCategory}>
+            {deletingCategory ? <Loader2 className="size-3.5 mr-1 animate-spin" /> : <FolderX className="size-3.5 mr-1" />} Delete category
           </Button>
         )}
       </div>

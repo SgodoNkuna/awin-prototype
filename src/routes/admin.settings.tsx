@@ -57,6 +57,7 @@ type TeamMember = {
   committee: string | null;
   committee_position: string | null;
   committee_order: number | null;
+  video_url: string | null;
 };
 
 
@@ -328,6 +329,7 @@ function SettingsPage() {
                 order_index: team?.length ?? 0, published: true, category: "", expertise: [],
                 location: "", contact_email: "", website: "", linkedin_url: "", social_url: "",
                 portfolio_images: [], committee: null, committee_position: null, committee_order: 0,
+                video_url: null,
               })}
             >
               <Plus className="size-4 mr-2" />Add Member
@@ -389,7 +391,6 @@ function SettingsPage() {
                 ["new_application", "New membership application", "Email admin@awin.co.za when someone applies to join."],
                 ["new_message", "New contact message", "Email info@awin.co.za when the contact form is submitted."],
                 ["event_registration", "New event registration", "Email admin@awin.co.za when someone registers for an event."],
-                ["new_loa_rpa", "New LOA & RPA submission", "Notify ThuthukaSA's configured recipients (Admin → LOA & Risk Profile) when someone submits a signed LOA & Risk Profile Analysis. Never sent to admin@awin.co.za — this is FAIS-regulated client data."],
                 ["new_approval_request", "New approval request", "Email admin@awin.co.za when an admin files a request that needs a different admin's approval."],
               ] as const).map(([k, label, desc]) => (
                 <div key={k} className="flex items-center justify-between gap-4">
@@ -546,6 +547,7 @@ function TeamMemberDialog({
         committee: draft.committee ? sanitizeText(draft.committee) : null,
         committee_position: sanitizeOptionalText(draft.committee_position),
         committee_order: draft.committee_order ?? 0,
+        video_url: sanitizeUrl(draft.video_url),
       } as any;
       try {
         await callRequestUpsert({ data: { id: draft.id, payload } });
@@ -665,6 +667,14 @@ function TeamMemberDialog({
             />
           </Field>
 
+          <Field label="Profile video (optional)">
+            <div className="flex gap-2">
+              <Input value={draft.video_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => set("video_url", e.target.value)} />
+              <UploadVideoButton onUploaded={(url) => set("video_url", url)} />
+            </div>
+            {draft.video_url ? <video src={draft.video_url} controls className="mt-2 h-32 w-auto rounded border" /> : null}
+          </Field>
+
           <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-3">
             <Label className="text-xs font-semibold uppercase tracking-wider text-accent">Committee placement</Label>
             <p className="text-xs text-muted-foreground -mt-1">
@@ -748,6 +758,50 @@ function UploadImageButton({ onUploaded }: { onUploaded: (url: string) => void }
             const { data } = supabase.storage.from("gallery").getPublicUrl(path);
             onUploaded(data.publicUrl);
             toast.success("Image uploaded");
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Upload failed");
+          } finally {
+            setBusy(false);
+            e.target.value = "";
+          }
+        }}
+      />
+    </label>
+  );
+}
+
+/** Uploads a video to the public `gallery` bucket and returns its public URL. */
+function UploadVideoButton({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <label
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 text-xs cursor-pointer hover:bg-muted ${busy ? "opacity-60 pointer-events-none" : ""}`}
+    >
+      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <CloudUpload className="size-3.5" />}
+      {busy ? "Uploading…" : "Upload"}
+      <input
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          if (file.size > 50 * 1024 * 1024) {
+            toast.error("Video must be under 50 MB");
+            e.target.value = "";
+            return;
+          }
+          setBusy(true);
+          try {
+            const ext = file.name.split(".").pop()?.toLowerCase() || "mp4";
+            const path = `members/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const { error } = await supabase.storage
+              .from("gallery")
+              .upload(path, file, { contentType: file.type, upsert: true });
+            if (error) throw error;
+            const { data } = supabase.storage.from("gallery").getPublicUrl(path);
+            onUploaded(data.publicUrl);
+            toast.success("Video uploaded");
           } catch (err) {
             toast.error(err instanceof Error ? err.message : "Upload failed");
           } finally {

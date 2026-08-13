@@ -49,6 +49,7 @@ type EventRow = {
   max_attendees: number | null;
   registration_deadline: string | null;
   is_awin_hosted: boolean;
+  live_link: string | null;
 };
 
 type Filter = "all" | "upcoming" | "past";
@@ -84,7 +85,7 @@ function EventsPage() {
   useEffect(() => {
     supabase
       .from("events")
-      .select("id, title, description, event_date, event_time, location, image_url, event_type, max_attendees, registration_deadline, is_awin_hosted")
+      .select("id, title, description, event_date, event_time, location, image_url, event_type, max_attendees, registration_deadline, is_awin_hosted, live_link")
       .eq("published", true)
       .order("event_date", { ascending: true })
       .then(({ data }) => setEvents((data as EventRow[]) ?? []));
@@ -314,6 +315,17 @@ function EventsPage() {
                         <p className="mt-2 text-xs font-medium text-accent-deep">
                           Not an A-Win event. A community event where A-Win members will be present. Tickets, stall bookings and enquiries go directly to the host (see poster).
                         </p>
+                      )}
+                      {e.event_type === "online" && e.live_link && (
+                        <a
+                          href={e.live_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(ev) => ev.stopPropagation()}
+                          className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"
+                        >
+                          Join online →
+                        </a>
                       )}
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-3">{e.description}</p>
                       {/* mt-auto pins the button area to the bottom of the card regardless of how
