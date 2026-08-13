@@ -67,6 +67,47 @@ Applicant/member-facing confirmation emails (e.g. "we received your application"
 
 Destructive bulk actions (clear contact messages, reset settings, delete draft/unpublished members) live under **Admin → Settings → Danger zone** and go through the same two-person approval flow. Use with care — these are not easily reversible.
 
+## Making code changes: adding a new page
+
+This section is for whoever's driving changes to the website itself — even if that's someone non-technical working with an AI coding assistant (GitHub Copilot, Claude Code, or similar) rather than writing code by hand. The short version: **you describe what you want in plain English, the AI writes the code.**
+
+### Where pages live
+
+Every page on the site is one file in `src/routes/`. The filename decides the web address — `src/routes/why-a-win.tsx` is what renders at `awin.co.za/why-a-win`. Add a new file there with the right shape and the site automatically creates the page and its URL — nothing else to register or configure. This is the one fact worth knowing even if you never touch the code yourself: **"add a new page" always means "add a new file in `src/routes/`."**
+
+### Worked example: adding the A-Win Market page
+
+This is the exact kind of prompt to type into an AI coding assistant open in this repository:
+
+> Add a new page at `/market` called "A-Win Market". Use `/why-a-win` as the style reference — same header, breadcrumb, and section layout as the rest of the site. For now it should list one listing: "Family Law Mediation Services" — a short description, the flyer image, and contact details (phone/email). Show it as a card, similar to how team member profiles are shown on the `/team` page. Add a link to the new page in the main navigation menu and the footer, labeled "A-Win Market". Then test it locally and show me it works before pushing anything live.
+
+Notice what that prompt does: names the URL and title, points at an existing page to copy the *look* from, describes the *content* plainly (what a listing needs — name, description, image, contact), and says where it should be linked from. It never mentions React, routing, or any code — that's the assistant's job to figure out.
+
+### How to write a good prompt
+
+1. **Say what you want, not how to build it.** "Add a page that lists our products" beats "create a new route file that exports a component." The AI already knows the how.
+2. **Point at an existing page as the pattern.** "Make it look like `/why-a-win`" or "cards like the ones on `/team`" saves a lot of back-and-forth and keeps the new page consistent with the rest of the site.
+3. **Be concrete about content.** List the actual fields/sections you want (name, description, image, price, contact) rather than "make it nice."
+4. **One step at a time, then iterate.** Get the basic page working first, then ask for the next thing — "now add a second listing," "now make the card bigger on mobile."
+5. **Describe what's wrong, not the fix.** "The image looks stretched on my phone" is a better bug report than a guess at the CSS fix — let the assistant diagnose it.
+6. **Always ask for it to be tested before it goes live.** A well-behaved assistant will build it, check it in a browser, and only then push the change — but it's fine to say so explicitly: *"test this and show me it works before pushing live."*
+7. **Say how far it's allowed to go.** If you're fine with it touching the navigation menu and footer too (not just the one new page), say so up front.
+
+### Prompt templates to copy
+
+- *"Add a new page at `/[url]` called '[title]'. Use `/[existing-page]` as the style reference. It should [describe the sections/content]. Add it to the main navigation menu."*
+- *"On the [page name] page, add a new section that [describe what it should show]."*
+- *"The [page] page looks wrong on my phone — [describe what you see]. Please fix it and confirm it works before pushing."*
+- *"I want a form that collects [fields] and emails me when someone submits it, similar to the Contact page."*
+
+### Building the A-Win Market incrementally
+
+The end goal (an online store with checkout and payments) is a big feature — don't ask for all of it in one prompt. Build it in stages, each one a separate, testable prompt:
+
+1. **Now**: a simple listings page (the Family Law Mediation example above).
+2. **Next**: more listings, a way for admins to add/edit them without a developer (like the Team Profiles editor in Admin → Settings already works).
+3. **Later**: ordering and payment (PayFast is already integrated for membership billing — the same approach would extend to product checkout).
+
 ## Getting help
 
 If something looks wrong (a role that shouldn't have access, a submission that shouldn't be visible, an email that didn't send), check **Admin → Approvals** first for a pending or rejected request, then the relevant section's own audit trail before assuming it's a bug.
