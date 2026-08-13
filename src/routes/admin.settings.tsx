@@ -463,11 +463,24 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const PORTFOLIO_PROMPTS = [
   {
     title: "1. Write the portfolio bio",
-    text: `Write a short professional portfolio bio for [Name], a [occupation/title] and A-Win member. Include: what they do and who they serve, 2-3 concrete achievements or credentials, their investment/business focus area, and one sentence on why they joined A-Win. Keep it under 120 words, warm but professional tone, no em-dashes. End with a one-line quote in their own voice.`,
+    text: `Write a short professional portfolio bio for [Name], a [occupation/title] and A-Win member. Include: what they do and who they serve, 2-3 concrete achievements or credentials, their investment/business focus area, and one sentence on why they joined A-Win. Keep it under 120 words, warm but professional tone, no em-dashes. End with a one-line quote in their own voice. Then, separately, list: their city/location, 3-5 one-or-two-word expertise tags, and which A-Win member category best fits them (e.g. Finance & Accounting, Legal & Governance, Health & Wellness, Entrepreneurs, Technology & Business, Sales & Marketing, Creatives & Designers — or suggest your own if none fit).`,
   },
   {
     title: "2. Extract it into form fields",
-    text: `Take the portfolio text below and split it into these exact fields for the A-Win member profile form: Name | Title | Category (one of: Finance & Accounting, Legal & Governance, Health & Wellness, or best-fit) | Bio (2-3 sentences) | Location | Expertise (comma-separated tags, max 5). Output as a labeled list, one field per line, no extra commentary.\n\n[paste portfolio text here]`,
+    text: `Take the text below and split it into these exact fields for the A-Win member profile form. Output ONLY a labeled list, one field per line, in this exact order, so I can copy each value straight into the matching form field. Leave a field blank (still print the label) rather than guessing if the text doesn't cover it.
+
+Name:
+Title:
+Category:
+Bio: (2-3 sentences)
+Location:
+Expertise: (comma-separated, max 5)
+Contact email:
+Website:
+LinkedIn URL:
+Other social URL:
+
+[paste the bio text here]`,
   },
 ];
 

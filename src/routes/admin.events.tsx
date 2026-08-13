@@ -444,7 +444,17 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-const POSTER_EXTRACTION_PROMPT = `Read this event poster image and extract: Event title, Date, Time, Location/venue, Short description (1-2 sentences suitable for a public listing), and whether A-Win is hosting it or just attending (look for wording like "hosted by" or a different organization's branding). Output as a labeled list matching: Title | Date | Time | Location | Description | Is A-Win hosting (yes/no).`;
+const POSTER_EXTRACTION_PROMPT = `Read this event poster/flyer image and extract the fields below for our events form. Output ONLY a labeled list, one field per line, in this exact order, so I can copy each value straight into the matching form field. If a field isn't shown on the poster, write "not shown" rather than guessing — don't skip the line.
+
+Title:
+Description: (1-2 sentences, suitable for a public event listing)
+Date: (DD Month YYYY)
+Time: (24-hour HH:MM, leave "not shown" if no time is given)
+Location: (venue name and/or address — write "Online" if this is a virtual event)
+Event type: (In-person or Online)
+Live website link: (only fill this in if Event type is Online AND a Zoom/Teams/YouTube/other join link appears on the poster — otherwise "not shown")
+Is A-Win hosting: (Yes if A-Win's own branding/logo is the primary organizer; No if a different business or organization is hosting and A-Win is just attending/participating — look for "hosted by", a partner logo, or different branding)
+Host website: (only fill this in if "Is A-Win hosting" is No and a website/handle for that business is shown on the poster — otherwise "not shown")`;
 
 /** Upload a poster image as the event cover, plus a copy-paste prompt to run
  * through any AI chat (Claude.ai, ChatGPT, etc.) to get the fields to

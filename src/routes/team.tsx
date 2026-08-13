@@ -90,7 +90,7 @@ function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
     >
       <Card className="h-full overflow-hidden border-border/60 bg-card shadow-[var(--shadow-elegant)] transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-gold-glow)] flex flex-col">
         {previewSrc ? (
-          <div className="aspect-[3/4] w-full overflow-hidden bg-secondary">
+          <div className="aspect-square w-full overflow-hidden bg-secondary">
             <img
               src={previewSrc}
               alt={m.name}
@@ -100,7 +100,7 @@ function MemberCard({ m, onOpen }: { m: Member; onOpen: (m: Member) => void }) {
             />
           </div>
         ) : (
-          <div className="aspect-[3/4] w-full bg-accent/15 flex items-center justify-center">
+          <div className="aspect-square w-full bg-accent/15 flex items-center justify-center">
             <span className="font-serif text-5xl text-accent-deep">{initials(m.name)}</span>
           </div>
         )}
@@ -562,7 +562,7 @@ export function MembersPage() {
                       <img
                         src={active.photo_url}
                         alt={active.name}
-                        className="block w-full h-auto object-cover aspect-[3/4]"
+                        className="block w-full h-auto object-cover aspect-square"
                       />
                     </div>
                   ) : (
