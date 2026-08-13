@@ -212,49 +212,63 @@ export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string;
       {showChart && stats && stats.total > 0 && (
         <div className="mb-4 grid gap-3 sm:grid-cols-2">
           <Card>
-            <CardContent className="pt-4 pb-2">
-              <div className="mb-1 text-xs font-medium text-muted-foreground">Review status</div>
-              <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
-                  <Pie
-                    data={reviewChartData}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={40}
-                    outerRadius={60}
-                    paddingAngle={2}
-                  >
-                    {reviewChartData.map((d) => (
-                      <Cell key={d.name} fill={d.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-                </PieChart>
-              </ResponsiveContainer>
+            <CardContent className="pt-4 pb-4">
+              <div className="mb-2 text-xs font-medium text-muted-foreground">Review status</div>
+              <div className="relative">
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={reviewChartData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={48}
+                      outerRadius={72}
+                      paddingAngle={3}
+                      strokeWidth={0}
+                    >
+                      {reviewChartData.map((d) => (
+                        <Cell key={d.name} fill={d.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="pointer-events-none absolute inset-x-0 top-0 flex h-[150px] flex-col items-center justify-center">
+                  <div className="text-2xl font-semibold"><AnimateNumber value={stats.pending} /></div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">pending</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="pt-4 pb-2">
-              <div className="mb-1 text-xs font-medium text-muted-foreground">Submission channel</div>
-              <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
-                  <Pie
-                    data={channelChartData}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={40}
-                    outerRadius={60}
-                    paddingAngle={2}
-                  >
-                    {channelChartData.map((d) => (
-                      <Cell key={d.name} fill={d.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-                </PieChart>
-              </ResponsiveContainer>
+            <CardContent className="pt-4 pb-4">
+              <div className="mb-2 text-xs font-medium text-muted-foreground">Submission channel</div>
+              <div className="relative">
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={channelChartData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={48}
+                      outerRadius={72}
+                      paddingAngle={3}
+                      strokeWidth={0}
+                    >
+                      {channelChartData.map((d) => (
+                        <Cell key={d.name} fill={d.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="pointer-events-none absolute inset-x-0 top-0 flex h-[150px] flex-col items-center justify-center">
+                  <div className="text-2xl font-semibold"><AnimateNumber value={stats.total} /></div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">total</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>

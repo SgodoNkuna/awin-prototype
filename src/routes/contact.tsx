@@ -39,10 +39,12 @@ const contactSchema = z.object({
 });
 
 // Defaults — overridden by the `contact_info` site_setting (Admin → Settings → Content).
+// Primary phone is ThuthukaSA's number (the universal number to communicate
+// with); the old A-Win number is kept as the backup/alternative in `mobile`.
 const INFO_DEFAULTS = {
   email: "info@awin.co.za",
-  phone: "+27 72 236 9002",
-  mobile: "",
+  phone: "+27 69 245 0228",
+  mobile: "+27 72 236 9002",
   location: "Centurion, South Africa",
   hours: "Mon – Fri · 09:00 – 17:00 SAST",
 };

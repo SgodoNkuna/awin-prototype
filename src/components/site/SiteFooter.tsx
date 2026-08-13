@@ -54,7 +54,13 @@ export function SiteFooter() {
             </li>
             <li className="flex items-start gap-2">
               <Phone className="mt-0.5 h-4 w-4 text-[#E8960A]" />
-              <a href="tel:+27722369002" className="hover:text-[#E8960A]">+27 72 236 9002</a>
+              <a href="tel:+27692450228" className="hover:text-[#E8960A]">+27 69 245 0228</a>
+            </li>
+            <li className="flex items-start gap-2 text-white/60 text-xs">
+              <span className="mt-0.5 w-4 shrink-0" />
+              <span>
+                Alt: <a href="tel:+27722369002" className="hover:text-[#E8960A]">+27 72 236 9002</a>
+              </span>
             </li>
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 text-[#E8960A]" />
