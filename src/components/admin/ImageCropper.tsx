@@ -75,7 +75,13 @@ export function ImageCropper({
   const scale = scale0 * zoom;
 
   const onPointerDown = (e: React.PointerEvent) => {
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    // Capture can fail (e.g. no active OS-level pointer session behind this
+    // event) — that's not a reason to abandon the drag itself.
+    try {
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
     dragRef.current = { startX: e.clientX, startY: e.clientY, startPos: pos };
   };
   const onPointerMove = (e: React.PointerEvent) => {
