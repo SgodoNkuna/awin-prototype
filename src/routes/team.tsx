@@ -53,15 +53,25 @@ type Member = {
   committee_order: number | null;
   website_committee_position: string | null;
   website_committee_order: number | null;
+  property_committee_position: string | null;
+  property_committee_order: number | null;
   video_url: string | null;
 };
 
-// Website Committee has its own order/position — see admin.committees.tsx
-// for why (shared columns break once someone's rank differs by committee).
-const orderForCommittee = (m: Member, key: string) =>
-  (key === "website" ? m.website_committee_order ?? m.committee_order : m.committee_order) ?? 0;
-const positionForCommittee = (m: Member, key: string) =>
-  (key === "website" ? m.website_committee_position ?? m.committee_position : m.committee_position) ?? null;
+// Website and Property committees can each override the shared
+// position/order — a member's rank often differs per committee (e.g.
+// Ex Officio on Main, Deputy Chairperson on Property). Main committee has
+// no override columns of its own; it just uses the shared ones directly.
+const orderForCommittee = (m: Member, key: string) => {
+  if (key === "website") return m.website_committee_order ?? m.committee_order ?? 0;
+  if (key === "property") return m.property_committee_order ?? m.committee_order ?? 0;
+  return m.committee_order ?? 0;
+};
+const positionForCommittee = (m: Member, key: string) => {
+  if (key === "website") return m.website_committee_position ?? m.committee_position ?? null;
+  if (key === "property") return m.property_committee_position ?? m.committee_position ?? null;
+  return m.committee_position ?? null;
+};
 
 const CATEGORIES = ["All", ...MEMBER_CATEGORIES] as const;
 
@@ -163,7 +173,7 @@ export function MembersPage() {
     (async () => {
       const { data } = await supabase
         .from("team_members")
-        .select("id, name, title, bio, photo_url, profile_card_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order, website_committee_position, website_committee_order, video_url" as any)
+        .select("id, name, title, bio, photo_url, profile_card_url, category, expertise, location, contact_email, website, linkedin_url, social_url, portfolio_images, committee, committee_position, committee_order, website_committee_position, website_committee_order, property_committee_position, property_committee_order, video_url" as any)
         .eq("published", true)
         .order("order_index");
       const rows = ((data ?? []) as unknown) as Member[];

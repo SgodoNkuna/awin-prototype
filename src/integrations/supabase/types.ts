@@ -891,11 +891,15 @@ export type Database = {
           portfolio_images: string[]
           profile_card_url: string | null
           published: boolean
+          property_committee_order: number | null
+          property_committee_position: string | null
           social_url: string | null
           title: string
           updated_at: string
           video_url: string | null
           website: string | null
+          website_committee_order: number | null
+          website_committee_position: string | null
         }
         Insert: {
           active?: boolean
@@ -916,11 +920,15 @@ export type Database = {
           portfolio_images?: string[]
           profile_card_url?: string | null
           published?: boolean
+          property_committee_order?: number | null
+          property_committee_position?: string | null
           social_url?: string | null
           title: string
           updated_at?: string
           video_url?: string | null
           website?: string | null
+          website_committee_order?: number | null
+          website_committee_position?: string | null
         }
         Update: {
           active?: boolean
@@ -941,11 +949,15 @@ export type Database = {
           portfolio_images?: string[]
           profile_card_url?: string | null
           published?: boolean
+          property_committee_order?: number | null
+          property_committee_position?: string | null
           social_url?: string | null
           title?: string
           updated_at?: string
           video_url?: string | null
           website?: string | null
+          website_committee_order?: number | null
+          website_committee_position?: string | null
         }
         Relationships: []
       }

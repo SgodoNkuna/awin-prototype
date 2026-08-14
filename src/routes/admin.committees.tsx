@@ -21,6 +21,8 @@ type M = {
   committee_order: number | null;
   website_committee_position: string | null;
   website_committee_order: number | null;
+  property_committee_position: string | null;
+  property_committee_order: number | null;
 };
 
 const COMMITTEES: Array<{ key: string; label: string }> = [
@@ -33,17 +35,27 @@ const COMMITTEES: Array<{ key: string; label: string }> = [
 // comma-separated list of keys (e.g. "main,website"), not a single value.
 // committee_order/committee_position only hold ONE rank per person, which
 // breaks for anyone whose standing differs between committees (e.g. chairs
-// Website but isn't senior on Main). Website Committee gets its own
-// website_committee_order/_position columns for that reason; every other
-// committee still shares the original pair — add another dedicated pair
-// if a third committee ever actually needs it, don't build it speculatively.
+// Website but isn't senior on Main). Website and Property Investment each
+// get their own dedicated order/position columns for that reason; Main
+// still shares the original pair — add another dedicated pair only when a
+// further committee actually needs it, don't build it speculatively.
 const committeeKeys = (committee: string | null): string[] =>
   (committee ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 const inCommittee = (committee: string | null, key: string) => committeeKeys(committee).includes(key);
-const orderCol = (key: string) => (key === "website" ? "website_committee_order" : "committee_order") as const;
-const positionCol = (key: string) => (key === "website" ? "website_committee_position" : "committee_position") as const;
-const orderFor = (m: M, key: string) => (key === "website" ? m.website_committee_order ?? m.committee_order : m.committee_order) ?? 0;
-const positionFor = (m: M, key: string) => (key === "website" ? m.website_committee_position ?? m.committee_position : m.committee_position) ?? "";
+const orderCol = (key: string) =>
+  (key === "website" ? "website_committee_order" : key === "property" ? "property_committee_order" : "committee_order") as const;
+const positionCol = (key: string) =>
+  (key === "website" ? "website_committee_position" : key === "property" ? "property_committee_position" : "committee_position") as const;
+const orderFor = (m: M, key: string) => {
+  if (key === "website") return m.website_committee_order ?? m.committee_order ?? 0;
+  if (key === "property") return m.property_committee_order ?? m.committee_order ?? 0;
+  return m.committee_order ?? 0;
+};
+const positionFor = (m: M, key: string) => {
+  if (key === "website") return m.website_committee_position ?? m.committee_position ?? "";
+  if (key === "property") return m.property_committee_position ?? m.committee_position ?? "";
+  return m.committee_position ?? "";
+};
 
 function CommitteesPage() {
   const [rows, setRows] = useState<M[] | null>(null);
@@ -52,7 +64,7 @@ function CommitteesPage() {
   const load = async () => {
     const { data } = await supabase
       .from("team_members")
-      .select("id, name, photo_url, profile_card_url, committee, committee_position, committee_order, website_committee_position, website_committee_order")
+      .select("id, name, photo_url, profile_card_url, committee, committee_position, committee_order, website_committee_position, website_committee_order, property_committee_position, property_committee_order")
       .order("committee_order");
     setRows((data as M[]) ?? []);
   };
@@ -96,12 +108,14 @@ function CommitteesPage() {
     if (!confirm(`Remove ${m.name} from ${label}? Their member record and any other committees stay.`)) return;
     const remaining = committeeKeys(m.committee).filter((k) => k !== committeeKey);
     const clearWebsiteCols = committeeKey === "website" ? { website_committee_position: null, website_committee_order: null } : {};
+    const clearPropertyCols = committeeKey === "property" ? { property_committee_position: null, property_committee_order: null } : {};
     const clearSharedCols = remaining.length === 0 ? { committee_position: null, committee_order: 0 } : {};
     const { error } = await supabase
       .from("team_members")
       .update({
         committee: remaining.length ? remaining.join(",") : null,
         ...clearWebsiteCols,
+        ...clearPropertyCols,
         ...clearSharedCols,
       })
       .eq("id", m.id);

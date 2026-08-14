@@ -58,6 +58,10 @@ type TeamMember = {
   committee: string | null;
   committee_position: string | null;
   committee_order: number | null;
+  website_committee_position: string | null;
+  website_committee_order: number | null;
+  property_committee_position: string | null;
+  property_committee_order: number | null;
   video_url: string | null;
 };
 
@@ -330,6 +334,8 @@ function SettingsPage() {
                 order_index: team?.length ?? 0, published: true, category: "", expertise: [],
                 location: "", contact_email: "", website: "", linkedin_url: "", social_url: "",
                 portfolio_images: [], committee: null, committee_position: null, committee_order: 0,
+                website_committee_position: null, website_committee_order: null,
+                property_committee_position: null, property_committee_order: null,
                 video_url: null,
               })}
             >
@@ -561,6 +567,10 @@ function TeamMemberDialog({
         committee: draft.committee ? sanitizeText(draft.committee) : null,
         committee_position: sanitizeOptionalText(draft.committee_position),
         committee_order: draft.committee_order ?? 0,
+        website_committee_position: sanitizeOptionalText(draft.website_committee_position),
+        website_committee_order: draft.website_committee_order,
+        property_committee_position: sanitizeOptionalText(draft.property_committee_position),
+        property_committee_order: draft.property_committee_order,
         video_url: sanitizeUrl(draft.video_url),
       } as any;
       try {
@@ -692,7 +702,9 @@ function TeamMemberDialog({
           <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-3">
             <Label className="text-xs font-semibold uppercase tracking-wider text-accent">Committee placement</Label>
             <p className="text-xs text-muted-foreground -mt-1">
-              A member can sit on more than one committee. Position/order apply across all of them.
+              A member can sit on more than one committee. Position/order below is the default for all of
+              them — Website and Property can each override it if this member's rank differs there (e.g.
+              Ex Officio on Main, Deputy Chairperson on Property).
             </p>
             <div className="grid grid-cols-3 gap-3">
               {(
@@ -719,13 +731,33 @@ function TeamMemberDialog({
               })}
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Position">
+              <Field label="Position (default)">
                 <Input value={draft.committee_position ?? ""} placeholder="Chairman, Secretary…" onChange={(e) => set("committee_position", e.target.value)} />
               </Field>
-              <Field label="Order">
+              <Field label="Order (default)">
                 <Input type="number" value={draft.committee_order ?? 0} onChange={(e) => set("committee_order", Number(e.target.value))} />
               </Field>
             </div>
+            {(draft.committee ?? "").split(",").map((s) => s.trim()).includes("property") && (
+              <div className="grid grid-cols-2 gap-3 border-t border-accent/20 pt-3">
+                <Field label="Property Investment position (optional override)">
+                  <Input value={draft.property_committee_position ?? ""} placeholder="Defaults to the position above" onChange={(e) => set("property_committee_position", e.target.value || null)} />
+                </Field>
+                <Field label="Property Investment order (optional override)">
+                  <Input type="number" value={draft.property_committee_order ?? ""} placeholder="Defaults to the order above" onChange={(e) => set("property_committee_order", e.target.value === "" ? null : Number(e.target.value))} />
+                </Field>
+              </div>
+            )}
+            {(draft.committee ?? "").split(",").map((s) => s.trim()).includes("website") && (
+              <div className="grid grid-cols-2 gap-3 border-t border-accent/20 pt-3">
+                <Field label="Website Committee position (optional override)">
+                  <Input value={draft.website_committee_position ?? ""} placeholder="Defaults to the position above" onChange={(e) => set("website_committee_position", e.target.value || null)} />
+                </Field>
+                <Field label="Website Committee order (optional override)">
+                  <Input type="number" value={draft.website_committee_order ?? ""} placeholder="Defaults to the order above" onChange={(e) => set("website_committee_order", e.target.value === "" ? null : Number(e.target.value))} />
+                </Field>
+              </div>
+            )}
           </div>
         </div>
         <DialogFooter>
