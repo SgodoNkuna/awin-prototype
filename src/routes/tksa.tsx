@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, ShieldCheck, Clock } from "lucide-react";
+import { LogOut, ShieldCheck, Clock, MessageCircleMore, Users2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { SubmissionsPanel } from "@/components/loa-rpa/SubmissionsPanel";
 import { NotifyRecipientsCard } from "@/components/loa-rpa/NotifyRecipientsCard";
 import { ShareLinksCard } from "@/components/loa-rpa/ShareLinksCard";
+import { TksaHighlights } from "@/components/loa-rpa/TksaHighlights";
 import { AdvisorAccessSection } from "@/components/admin/AdvisorAccessSection";
 import { THUTHUKA_LOGO_PNG_BASE64 } from "@/lib/thuthuka-logo-base64";
 
@@ -74,15 +75,7 @@ function TksaDashboard() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl space-y-6 px-4 py-8">
-        <div className="flex items-start gap-2 rounded-lg border p-3 text-sm" style={{ borderColor: "rgba(232,150,10,0.4)", background: "rgba(232,150,10,0.08)", color: "#f5e6c8" }}>
-          <ShieldCheck className="mt-0.5 size-4 shrink-0" style={{ color: "#e8960a" }} />
-          <span>
-            This data is confidential to ThuthukaSA under FAIS and POPIA — Letters of Authority and Risk Profile
-            Analyses submitted by A-Win members. It is not visible to A-Win committee or admin accounts.
-          </span>
-        </div>
-
+      <main className="mx-auto max-w-4xl space-y-8 px-4 py-8">
         <div>
           <h1 className="font-serif text-2xl text-white">Letters of Authority &amp; Risk Profiles</h1>
           <p className="mt-1 text-sm text-white/60">
@@ -91,26 +84,44 @@ function TksaDashboard() {
           </p>
         </div>
 
-        <div>
-          <h2 className="font-serif text-lg text-white">Share the forms</h2>
-          <p className="mt-1 text-sm text-white/60">
-            Ready-to-send WhatsApp/website links for new applicants.
-          </p>
+        <TksaHighlights />
+
+        <div className="flex items-start gap-2 rounded-lg border p-3 text-sm" style={{ borderColor: "rgba(232,150,10,0.4)", background: "rgba(232,150,10,0.08)", color: "#f5e6c8" }}>
+          <ShieldCheck className="mt-0.5 size-4 shrink-0" style={{ color: "#e8960a" }} />
+          <span>
+            This data is confidential to ThuthukaSA under FAIS and POPIA — Letters of Authority and Risk Profile
+            Analyses submitted by A-Win members. It is not visible to A-Win committee or admin accounts.
+          </span>
         </div>
-        <ShareLinksCard />
+
+        <section className="space-y-3">
+          <div>
+            <h2 className="flex items-center gap-2 font-serif text-lg text-white">
+              <MessageCircleMore className="size-4" style={{ color: "#e8960a" }} /> Share the forms
+            </h2>
+            <p className="mt-1 text-sm text-white/60">
+              Ready-to-send WhatsApp/website links for new applicants.
+            </p>
+          </div>
+          <ShareLinksCard />
+        </section>
 
         <SubmissionsPanel emptyHint="No submissions yet." showChart />
 
         <NotifyRecipientsCard />
 
-        <div>
-          <h2 className="font-serif text-lg text-white">Team access</h2>
-          <p className="mt-1 text-sm text-white/60">
-            Request a new colleague's account, or grant/revoke advisor access on an existing one. An A-Win admin
-            still has to approve each request before it takes effect.
-          </p>
-        </div>
-        <AdvisorAccessSection />
+        <section className="space-y-3">
+          <div>
+            <h2 className="flex items-center gap-2 font-serif text-lg text-white">
+              <Users2 className="size-4" style={{ color: "#e8960a" }} /> Team access
+            </h2>
+            <p className="mt-1 text-sm text-white/60">
+              Request a new colleague's account, or grant/revoke advisor access on an existing one. An A-Win admin
+              still has to approve each request before it takes effect.
+            </p>
+          </div>
+          <AdvisorAccessSection />
+        </section>
 
         <DeletionRequestsPanel />
       </main>
