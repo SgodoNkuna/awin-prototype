@@ -1,12 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, ShieldCheck, Clock, MessageCircleMore, Users2 } from "lucide-react";
+import { LogOut, ShieldCheck, Clock, MessageCircleMore, Users2, LayoutGrid, FileStack, Settings2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { SubmissionsPanel } from "@/components/loa-rpa/SubmissionsPanel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLoaRpaSubmissions, SubmissionsOverview, SubmissionsList } from "@/components/loa-rpa/SubmissionsPanel";
 import { NotifyRecipientsCard } from "@/components/loa-rpa/NotifyRecipientsCard";
 import { ShareLinksCard } from "@/components/loa-rpa/ShareLinksCard";
 import { TksaHighlights } from "@/components/loa-rpa/TksaHighlights";
@@ -30,9 +30,13 @@ export const Route = createFileRoute("/tksa")({
   }),
 });
 
+const TKSA_TAB_TRIGGER =
+  "gap-1.5 text-white/60 data-[state=active]:bg-[#e8960a] data-[state=active]:text-[#1a1815] data-[state=active]:shadow-none";
+
 function TksaDashboard() {
   const { user, loading, isAdvisor, forcePasswordChange, signOut } = useAuth();
   const navigate = useNavigate();
+  const { rows, stats, reload } = useLoaRpaSubmissions();
 
   useEffect(() => {
     if (loading) return;
@@ -75,7 +79,7 @@ function TksaDashboard() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl space-y-8 px-4 py-8">
+      <main className="mx-auto max-w-4xl space-y-6 px-4 py-8">
         <div>
           <h1 className="font-serif text-2xl text-white">Letters of Authority &amp; Risk Profiles</h1>
           <p className="mt-1 text-sm text-white/60">
@@ -94,36 +98,55 @@ function TksaDashboard() {
           </span>
         </div>
 
-        <section className="space-y-3">
-          <div>
-            <h2 className="flex items-center gap-2 font-serif text-lg text-white">
-              <MessageCircleMore className="size-4" style={{ color: "#e8960a" }} /> Share the forms
-            </h2>
-            <p className="mt-1 text-sm text-white/60">
-              Ready-to-send WhatsApp/website links for new applicants.
-            </p>
-          </div>
-          <ShareLinksCard />
-        </section>
+        <Tabs defaultValue="overview">
+          <TabsList className="grid w-full grid-cols-4 border border-[#e8960a]/20 bg-[#1a1815] p-1">
+            <TabsTrigger value="overview" className={TKSA_TAB_TRIGGER}>
+              <LayoutGrid className="size-3.5" /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="submissions" className={TKSA_TAB_TRIGGER}>
+              <FileStack className="size-3.5" /> Submissions
+            </TabsTrigger>
+            <TabsTrigger value="settings" className={TKSA_TAB_TRIGGER}>
+              <Settings2 className="size-3.5" /> Settings
+            </TabsTrigger>
+            <TabsTrigger value="team" className={TKSA_TAB_TRIGGER}>
+              <Users2 className="size-3.5" /> Team
+            </TabsTrigger>
+          </TabsList>
 
-        <SubmissionsPanel emptyHint="No submissions yet." showChart />
+          <TabsContent value="overview" className="mt-4">
+            <SubmissionsOverview stats={stats} />
+          </TabsContent>
 
-        <NotifyRecipientsCard />
+          <TabsContent value="submissions" className="mt-4">
+            <SubmissionsList rows={rows} reload={reload} emptyHint="No submissions yet. Copy a link from Settings to get started." />
+          </TabsContent>
 
-        <section className="space-y-3">
-          <div>
-            <h2 className="flex items-center gap-2 font-serif text-lg text-white">
-              <Users2 className="size-4" style={{ color: "#e8960a" }} /> Team access
-            </h2>
-            <p className="mt-1 text-sm text-white/60">
-              Request a new colleague's account, or grant/revoke advisor access on an existing one. An A-Win admin
-              still has to approve each request before it takes effect.
-            </p>
-          </div>
-          <AdvisorAccessSection />
-        </section>
+          <TabsContent value="settings" className="mt-4 space-y-6">
+            <div>
+              <h2 className="flex items-center gap-2 font-serif text-lg text-white">
+                <MessageCircleMore className="size-4" style={{ color: "#60a5fa" }} /> Share the forms
+              </h2>
+              <p className="mt-1 text-sm text-white/60">Ready-to-send WhatsApp/website links for new applicants.</p>
+            </div>
+            <ShareLinksCard />
+            <NotifyRecipientsCard />
+          </TabsContent>
 
-        <DeletionRequestsPanel />
+          <TabsContent value="team" className="mt-4 space-y-6">
+            <div>
+              <h2 className="flex items-center gap-2 font-serif text-lg text-white">
+                <Users2 className="size-4" style={{ color: "#c084fc" }} /> Team access
+              </h2>
+              <p className="mt-1 text-sm text-white/60">
+                Request a new colleague's account, or grant/revoke advisor access on an existing one. An A-Win admin
+                still has to approve each request before it takes effect.
+              </p>
+            </div>
+            <AdvisorAccessSection />
+            <DeletionRequestsPanel />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
@@ -171,30 +194,28 @@ function DeletionRequestsPanel() {
   if (!rows || rows.length === 0) return null;
 
   return (
-    <Card>
-      <CardContent className="pt-6 space-y-3">
-        <h3 className="flex items-center gap-2 text-sm font-semibold">
-          <Clock className="size-4 text-accent" /> Submission deletion requests
-        </h3>
-        <p className="text-xs text-muted-foreground -mt-2">
-          View-only — a different, accountable A-Win admin decides these in Admin → Approvals, same
-          two-person rule as any other deletion.
-        </p>
-        <div className="space-y-2">
-          {rows.map((r) => (
-            <div key={r.id} className="rounded-md border border-border p-2.5 text-sm">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-medium">{r.payload?.confirm_name ?? "Submission"}</span>
-                <Badge variant="outline">{STATUS_LABEL[r.status] ?? r.status}</Badge>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground italic">"{r.reason}"</p>
-              {r.decision_reason && (
-                <p className="mt-1 text-xs text-muted-foreground">Decision: "{r.decision_reason}"</p>
-              )}
+    <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-5 space-y-3">
+      <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+        <Clock className="size-4" style={{ color: "#c084fc" }} /> Submission deletion requests
+      </h3>
+      <p className="-mt-2 text-xs text-white/50">
+        View-only — a different, accountable A-Win admin decides these in Admin → Approvals, same
+        two-person rule as any other deletion.
+      </p>
+      <div className="space-y-2">
+        {rows.map((r) => (
+          <div key={r.id} className="rounded-md border border-white/10 bg-white/5 p-2.5 text-sm">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-medium text-white">{r.payload?.confirm_name ?? "Submission"}</span>
+              <Badge className="border-white/25 bg-transparent text-white/70" variant="outline">{STATUS_LABEL[r.status] ?? r.status}</Badge>
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            <p className="mt-1 text-xs italic text-white/50">"{r.reason}"</p>
+            {r.decision_reason && (
+              <p className="mt-1 text-xs text-white/50">Decision: "{r.decision_reason}"</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

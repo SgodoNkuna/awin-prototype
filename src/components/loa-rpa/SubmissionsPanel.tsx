@@ -70,13 +70,6 @@ function Field({ label, value }: { label: string; value: string | undefined }) {
   );
 }
 
-/**
- * The signed LOA/RPA submissions list + view/download dialog — shared
- * shown on the standalone ThuthukaSA dashboard (tksa.tsx) — the equivalent
- * A-Win admin page was removed; advisor account/access management moved to
- * admin.members.tsx instead. RLS already scopes what rows come back per
- * caller's role, so this component doesn't need to know who's looking at it.
- */
 function exportCsv(rows: Submission[]) {
   const header = ["Name", "Email", "Phone", "Source", "Status", "ID Number", "Submitted"];
   const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
@@ -99,17 +92,13 @@ function exportCsv(rows: Submission[]) {
 const CHART_ORANGE = "#e8960a";
 const CHART_MUTED = "#57534e";
 
-export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string; showChart?: boolean }) {
-  const { isAdmin } = useAuth();
-  const callDeleteSubmission = useServerFn(requestDeleteLoaRpaSubmission);
+/**
+ * Single data source for the whole ThuthukaSA dashboard — fetched once,
+ * split across an Overview tab (stats/charts) and a Submissions tab
+ * (search/list/export) instead of one long scrolling panel.
+ */
+export function useLoaRpaSubmissions() {
   const [rows, setRows] = useState<Submission[] | null>(null);
-  const [viewing, setViewing] = useState<Submission | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [deleting, setDeleting] = useState<Submission | null>(null);
-  const [deleteConfirmName, setDeleteConfirmName] = useState("");
-  const [deleteReason, setDeleteReason] = useState("");
-  const [deleteBusy, setDeleteBusy] = useState(false);
 
   const load = async () => {
     const { data, error } = await supabase
@@ -124,27 +113,6 @@ export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string;
     load();
   }, []);
 
-  const markReviewed = async (row: Submission) => {
-    setBusy(row.id);
-    const { data: userData } = await supabase.auth.getUser();
-    const { error } = await supabase
-      .from("loa_rpa_submissions")
-      .update({ status: "reviewed", reviewed_by: userData.user?.id ?? null, reviewed_at: new Date().toISOString() })
-      .eq("id", row.id);
-    setBusy(null);
-    if (error) return toast.error(error.message);
-    toast.success("Marked reviewed");
-    load();
-  };
-
-  const downloadPdf = async (path: string | null, label: string) => {
-    if (!path) return toast.error(`No ${label} on file for this submission`);
-    const { data, error } = await supabase.storage.from("loa-rpa-documents").createSignedUrl(path, 300);
-    if (error || !data) return toast.error(error?.message ?? "Could not sign PDF URL");
-    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
-  };
-
-  // Derived from the same rows already fetched above — no extra queries.
   const stats = useMemo(() => {
     if (!rows) return null;
     return {
@@ -156,13 +124,13 @@ export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string;
     };
   }, [rows]);
 
-  const filtered = useMemo(() => {
-    if (!rows) return rows;
-    const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter((r) => r.full_name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q));
-  }, [rows, search]);
+  return { rows, stats, reload: load };
+}
 
+type Stats = NonNullable<ReturnType<typeof useLoaRpaSubmissions>["stats"]>;
+
+/** Stat tiles + review-status/channel donut charts — the dashboard's "Overview" tab. */
+export function SubmissionsOverview({ stats }: { stats: Stats | null }) {
   // Filtering out zero-value slices means a category's position in the array
   // — and with it, which <Cell> color it lands on — depends on which other
   // categories happen to be empty. Carrying `fill` on each datum keeps the
@@ -188,99 +156,175 @@ export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string;
     [stats],
   );
 
+  if (!stats) {
+    return (
+      <div className="py-8 flex justify-center">
+        <Loader2 className="size-5 animate-spin text-white/60" />
+      </div>
+    );
+  }
+
+  if (stats.total === 0) {
+    return (
+      <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] py-12 text-center text-sm text-white/50">
+        No submissions yet — stats and charts will appear here once the first one comes in.
+      </div>
+    );
+  }
+
   return (
-    <>
-      {stats && stats.total > 0 && (
-        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
-          {[
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {(
+          [
             ["Total", stats.total],
             ["Pending review", stats.pending],
             ["Reviewed", stats.reviewed],
             ["Via WhatsApp", stats.whatsapp],
             ["Via website", stats.website],
-          ].map(([label, value]) => (
-            <Card key={label as string}>
-              <CardContent className="pt-4 pb-3">
-                <div className="text-2xl font-semibold"><AnimateNumber value={value as number} /></div>
-                <div className="text-xs text-muted-foreground">{label}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+          ] as const
+        ).map(([label, value]) => (
+          <div key={label} className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] px-4 pt-4 pb-3">
+            <div className="text-2xl font-semibold text-white"><AnimateNumber value={value} /></div>
+            <div className="text-xs text-white/50">{label}</div>
+          </div>
+        ))}
+      </div>
 
-      {showChart && stats && stats.total > 0 && (
-        <div className="mb-4 grid gap-3 sm:grid-cols-2">
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <div className="mb-2 text-xs font-medium text-muted-foreground">Review status</div>
-              <div className="relative">
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie
-                      data={reviewChartData}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={48}
-                      outerRadius={72}
-                      paddingAngle={3}
-                      strokeWidth={0}
-                    >
-                      {reviewChartData.map((d) => (
-                        <Cell key={d.name} fill={d.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="pointer-events-none absolute inset-x-0 top-0 flex h-[150px] flex-col items-center justify-center">
-                  <div className="text-2xl font-semibold"><AnimateNumber value={stats.pending} /></div>
-                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">pending</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <div className="mb-2 text-xs font-medium text-muted-foreground">Submission channel</div>
-              <div className="relative">
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie
-                      data={channelChartData}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={48}
-                      outerRadius={72}
-                      paddingAngle={3}
-                      strokeWidth={0}
-                    >
-                      {channelChartData.map((d) => (
-                        <Cell key={d.name} fill={d.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="pointer-events-none absolute inset-x-0 top-0 flex h-[150px] flex-col items-center justify-center">
-                  <div className="text-2xl font-semibold"><AnimateNumber value={stats.total} /></div>
-                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">total</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] px-4 pt-4 pb-4">
+          <div className="mb-2 text-xs font-medium text-white/60">Review status</div>
+          <div className="relative">
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie
+                  data={reviewChartData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={48}
+                  outerRadius={72}
+                  paddingAngle={3}
+                  strokeWidth={0}
+                >
+                  {reviewChartData.map((d) => (
+                    <Cell key={d.name} fill={d.fill} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend
+                  iconSize={8}
+                  wrapperStyle={{ fontSize: 12, paddingTop: 8, color: "rgba(255,255,255,0.7)" }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="pointer-events-none absolute inset-x-0 top-0 flex h-[150px] flex-col items-center justify-center">
+              <div className="text-2xl font-semibold text-white"><AnimateNumber value={stats.pending} /></div>
+              <div className="text-[10px] uppercase tracking-wide text-white/50">pending</div>
+            </div>
+          </div>
         </div>
-      )}
+        <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] px-4 pt-4 pb-4">
+          <div className="mb-2 text-xs font-medium text-white/60">Submission channel</div>
+          <div className="relative">
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie
+                  data={channelChartData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={48}
+                  outerRadius={72}
+                  paddingAngle={3}
+                  strokeWidth={0}
+                >
+                  {channelChartData.map((d) => (
+                    <Cell key={d.name} fill={d.fill} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend
+                  iconSize={8}
+                  wrapperStyle={{ fontSize: 12, paddingTop: 8, color: "rgba(255,255,255,0.7)" }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="pointer-events-none absolute inset-x-0 top-0 flex h-[150px] flex-col items-center justify-center">
+              <div className="text-2xl font-semibold text-white"><AnimateNumber value={stats.total} /></div>
+              <div className="text-[10px] uppercase tracking-wide text-white/50">total</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+/** Search, export, the row list, and the view/delete dialogs — the dashboard's "Submissions" tab. */
+export function SubmissionsList({
+  rows,
+  reload,
+  emptyHint,
+}: {
+  rows: Submission[] | null;
+  reload: () => void | Promise<void>;
+  emptyHint?: string;
+}) {
+  const { isAdmin } = useAuth();
+  const callDeleteSubmission = useServerFn(requestDeleteLoaRpaSubmission);
+  const [viewing, setViewing] = useState<Submission | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [deleting, setDeleting] = useState<Submission | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
+
+  const markReviewed = async (row: Submission) => {
+    setBusy(row.id);
+    const { data: userData } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("loa_rpa_submissions")
+      .update({ status: "reviewed", reviewed_by: userData.user?.id ?? null, reviewed_at: new Date().toISOString() })
+      .eq("id", row.id);
+    setBusy(null);
+    if (error) return toast.error(error.message);
+    toast.success("Marked reviewed");
+    reload();
+  };
+
+  const downloadPdf = async (path: string | null, label: string) => {
+    if (!path) return toast.error(`No ${label} on file for this submission`);
+    const { data, error } = await supabase.storage.from("loa-rpa-documents").createSignedUrl(path, 300);
+    if (error || !data) return toast.error(error?.message ?? "Could not sign PDF URL");
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const filtered = useMemo(() => {
+    if (!rows) return rows;
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) => r.full_name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q));
+  }, [rows, search]);
+
+  return (
+    <>
       {rows && rows.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-48">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8" />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-white/40" />
+            <Input
+              placeholder="Search by name or email"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="border-[#e8960a]/20 bg-[#1a1815] pl-8 text-white placeholder:text-white/40"
+            />
           </div>
-          <Button size="sm" variant="outline" onClick={() => exportCsv(filtered ?? rows)}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-[#e8960a]/40 bg-transparent text-white hover:bg-[#e8960a]/15 hover:text-white"
+            onClick={() => exportCsv(filtered ?? rows)}
+          >
             <FileDown className="mr-1.5 size-4" /> Export CSV
           </Button>
         </div>
@@ -288,68 +332,87 @@ export function SubmissionsPanel({ emptyHint, showChart }: { emptyHint?: string;
 
       {rows === null ? (
         <div className="py-8 flex justify-center">
-          <Loader2 className="size-5 animate-spin" />
+          <Loader2 className="size-5 animate-spin text-white/60" />
         </div>
       ) : rows.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            {emptyHint ?? "No submissions yet."}
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] py-12 text-center text-sm text-white/50">
+          {emptyHint ?? "No submissions yet."}
+        </div>
       ) : filtered && filtered.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">No submissions match "{search}".</CardContent>
-        </Card>
+        <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] py-12 text-center text-sm text-white/50">
+          No submissions match "{search}".
+        </div>
       ) : (
         <div className="grid gap-3">
           {(filtered ?? rows).map((row) => (
-            <Card key={row.id}>
-              <CardContent className="pt-6 flex flex-wrap items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h3 className="font-semibold">{row.full_name}</h3>
-                    <Badge variant={row.status === "reviewed" ? "default" : "outline"}>{row.status}</Badge>
-                    <Badge variant="secondary" className="gap-1">
-                      {row.source === "whatsapp" ? <MessageCircle className="size-3" /> : <Globe2 className="size-3" />}
-                      {row.source}
-                    </Badge>
-                    {row.loa_only && <Badge variant="outline">LOA only</Badge>}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {row.email} {row.phone && `· ${row.phone}`} · {new Date(row.created_at).toLocaleString()}
-                  </p>
+            <div key={row.id} className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-4 flex flex-wrap items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-white">{row.full_name}</h3>
+                  <Badge
+                    className={row.status === "reviewed" ? "border-transparent bg-[#e8960a] text-[#1a1815]" : "border-white/25 bg-transparent text-white/70"}
+                    variant={row.status === "reviewed" ? "default" : "outline"}
+                  >
+                    {row.status}
+                  </Badge>
+                  <Badge className="gap-1 border-transparent bg-white/10 text-white/80">
+                    {row.source === "whatsapp" ? <MessageCircle className="size-3" /> : <Globe2 className="size-3" />}
+                    {row.source}
+                  </Badge>
+                  {row.loa_only && <Badge className="border-white/25 bg-transparent text-white/70" variant="outline">LOA only</Badge>}
                 </div>
-                <div className="flex gap-1">
-                  <Button size="sm" variant="ghost" onClick={() => setViewing(row)}>
-                    <Eye className="size-4" />
+                <p className="text-xs text-white/50">
+                  {row.email} {row.phone && `· ${row.phone}`} · {new Date(row.created_at).toLocaleString()}
+                </p>
+              </div>
+              <div className="flex gap-1">
+                <Button size="sm" variant="ghost" className="text-white/70 hover:bg-white/10 hover:text-white" onClick={() => setViewing(row)}>
+                  <Eye className="size-4" />
+                </Button>
+                {!row.loa_only && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-white/70 hover:bg-white/10 hover:text-white"
+                    title="Download combined LOA + RPA (internal file)"
+                    onClick={() => downloadPdf(row.pdf_path, "combined PDF")}
+                  >
+                    <Download className="size-4" />
                   </Button>
-                  {!row.loa_only && (
-                    <Button size="sm" variant="ghost" title="Download combined LOA + RPA (internal file)" onClick={() => downloadPdf(row.pdf_path, "combined PDF")}>
-                      <Download className="size-4" />
-                    </Button>
-                  )}
-                  <Button size="sm" variant="ghost" title="Download standalone LOA (for outside institutions)" onClick={() => downloadPdf(row.loa_pdf_path, "standalone LOA")}>
-                    LOA
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-white/70 hover:bg-white/10 hover:text-white"
+                  title="Download standalone LOA (for outside institutions)"
+                  onClick={() => downloadPdf(row.loa_pdf_path, "standalone LOA")}
+                >
+                  LOA
+                </Button>
+                {row.status !== "reviewed" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-[#e8960a]/40 bg-transparent text-white hover:bg-[#e8960a]/15 hover:text-white"
+                    disabled={busy === row.id}
+                    onClick={() => markReviewed(row)}
+                  >
+                    {busy === row.id ? <Loader2 className="size-4 animate-spin" /> : "Mark reviewed"}
                   </Button>
-                  {row.status !== "reviewed" && (
-                    <Button size="sm" variant="outline" disabled={busy === row.id} onClick={() => markReviewed(row)}>
-                      {busy === row.id ? <Loader2 className="size-4 animate-spin" /> : "Mark reviewed"}
-                    </Button>
-                  )}
-                  {isAdmin && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      title="Delete this submission"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => { setDeleting(row); setDeleteConfirmName(""); setDeleteReason(""); }}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                )}
+                {isAdmin && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="Delete this submission"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => { setDeleting(row); setDeleteConfirmName(""); setDeleteReason(""); }}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       )}

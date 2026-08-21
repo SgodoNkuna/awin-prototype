@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Bell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -65,27 +64,35 @@ export function NotifyRecipientsCard() {
   if (!loaded) return null;
 
   return (
-    <Card>
-      <CardContent className="pt-6 space-y-3">
-        <h3 className="flex items-center gap-2 text-sm font-semibold">
-          <Bell className="size-4 text-accent" /> Notification recipients
-        </h3>
-        <p className="text-xs text-muted-foreground -mt-2">
-          Every new LOA/RPA submission alerts these addresses/numbers — never A-Win's admin inbox. Add other
-          ThuthukaSA staff here as needed.
-        </p>
-        <div className="grid gap-2">
-          <label className="text-xs font-medium">Emails (comma-separated)</label>
-          <Input value={emails} onChange={(e) => setEmails(e.target.value)} placeholder="info@thuthuka-sa.co.za" />
-        </div>
-        <div className="grid gap-2">
-          <label className="text-xs font-medium">WhatsApp numbers, international format, no + or spaces (comma-separated)</label>
-          <Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="27692450228" />
-        </div>
-        <Button size="sm" disabled={saving} onClick={save}>
-          {saving ? <Loader2 className="size-4 animate-spin" /> : "Save recipients"}
-        </Button>
-      </CardContent>
-    </Card>
+    <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-5 space-y-3">
+      <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+        <Bell className="size-4" style={{ color: "#60a5fa" }} /> Notification recipients
+      </h3>
+      <p className="-mt-2 text-xs text-white/50">
+        Every new LOA/RPA submission alerts these addresses/numbers — never A-Win's admin inbox. Add other
+        ThuthukaSA staff here as needed.
+      </p>
+      <div className="grid gap-2">
+        <label className="text-xs font-medium text-white/70">Emails (comma-separated)</label>
+        <Input
+          value={emails}
+          onChange={(e) => setEmails(e.target.value)}
+          placeholder="info@thuthuka-sa.co.za"
+          className="border-[#e8960a]/20 bg-[#12110f] text-white placeholder:text-white/40"
+        />
+      </div>
+      <div className="grid gap-2">
+        <label className="text-xs font-medium text-white/70">WhatsApp numbers, international format, no + or spaces (comma-separated)</label>
+        <Input
+          value={whatsapp}
+          onChange={(e) => setWhatsapp(e.target.value)}
+          placeholder="27692450228"
+          className="border-[#e8960a]/20 bg-[#12110f] text-white placeholder:text-white/40"
+        />
+      </div>
+      <Button size="sm" disabled={saving} className="bg-[#e8960a] text-[#1a1815] hover:bg-[#e8960a]/90" onClick={save}>
+        {saving ? <Loader2 className="size-4 animate-spin" /> : "Save recipients"}
+      </Button>
+    </div>
   );
 }
