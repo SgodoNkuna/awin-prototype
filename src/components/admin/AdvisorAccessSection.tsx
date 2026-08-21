@@ -7,41 +7,39 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { requestSetUserRole, createAdvisorAccount } from "@/lib/admin-roles.functions";
+import { requestAdvisorRoleChange, createAdvisorAccount } from "@/lib/admin-roles.functions";
 
 function getErrorMessage(e: unknown, fallback: string) {
   return e instanceof Error ? e.message : fallback;
 }
 
 /**
- * Admin-only: create a brand-new website account for a ThuthukaSA staff
- * member who doesn't have one yet (e.g. info@thuthuka-sa.co.za), with
- * 'advisor' already granted. This is the account-creation step "Grant
- * advisor" below can't do on its own — that one only elevates an existing
- * account. Shows the generated temp password exactly once; it is never
- * stored anywhere client-side, so copy it before navigating away.
+ * Request a brand-new website account for a ThuthukaSA staff member who
+ * doesn't have one yet (e.g. info@thuthuka-sa.co.za), with 'advisor' to be
+ * granted once approved. This is the account-creation step "Grant advisor"
+ * below can't do on its own — that one only elevates an existing account.
  *
- * Deliberately kept in A-Win Admin, not ThuthukaSA's own dashboard — who
- * can log in as an advisor is an A-Win access decision, not something
- * ThuthukaSA should be able to grant itself.
+ * ThuthukaSA can file this request themselves, but creating a live login is
+ * sensitive enough that it still needs an A-Win admin's approval (Admin >
+ * Approvals) before the account — and its one-time temp password — actually
+ * gets created.
  */
 function CreateAdvisorAccountCard() {
   const callCreate = useServerFn(createAdvisorAccount);
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ email: string; tempPassword: string } | null>(null);
+  const [requested, setRequested] = useState<string | null>(null);
 
   const submit = async () => {
     if (!email.trim() || !fullName.trim()) return;
-    if (!confirm(`Create a new ThuthukaSA advisor account for ${email.trim()}? This grants "advisor" access immediately (no second-admin approval — it's a brand-new account, not a promotion).`)) return;
     setBusy(true);
     try {
-      const res = await callCreate({ data: { email: email.trim(), fullName: fullName.trim() } });
-      setResult({ email: res.email, tempPassword: res.tempPassword });
+      await callCreate({ data: { email: email.trim(), fullName: fullName.trim() } });
+      setRequested(email.trim());
       setEmail("");
       setFullName("");
-      toast.success("Account created — copy the temp password below now, it won't be shown again");
+      toast.success("Requested — needs approval from an A-Win admin");
     } catch (e) {
       toast.error(getErrorMessage(e, "Failed"));
     } finally {
@@ -59,16 +57,16 @@ function CreateAdvisorAccountCard() {
           For a ThuthukaSA staff member who doesn't have a website account yet — e.g. info@thuthuka-sa.co.za. Already
           have an account? Use "Grant advisor" below instead.
         </p>
-        {result ? (
+        {requested ? (
           <div className="rounded-lg border border-accent/50 bg-accent/10 p-3 text-sm space-y-1">
-            <p className="font-medium">Account created for {result.email}</p>
-            <p>
-              Temp password: <code className="rounded bg-background px-1.5 py-0.5 font-mono">{result.tempPassword}</code>
-            </p>
+            <p className="font-medium">Requested account for {requested}</p>
             <p className="text-xs text-muted-foreground">
-              Send this to them now — it's shown once and isn't stored anywhere. They'll be forced to set their own
-              password on first login.
+              An A-Win admin needs to approve this before it's created — once they do, they'll have the temp
+              password to send you.
             </p>
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setRequested(null)}>
+              Request another
+            </Button>
           </div>
         ) : (
           <>
@@ -83,7 +81,7 @@ function CreateAdvisorAccountCard() {
               </div>
             </div>
             <Button size="sm" disabled={busy || !email.trim() || !fullName.trim()} onClick={submit}>
-              {busy ? <Loader2 className="size-4 animate-spin" /> : "Create account"}
+              {busy ? <Loader2 className="size-4 animate-spin" /> : "Request account"}
             </Button>
           </>
         )}
@@ -93,11 +91,14 @@ function CreateAdvisorAccountCard() {
 }
 
 /**
- * Admin-only: grant/revoke the 'advisor' role (ThuthukaSA) that RLS
- * requires to read LOA/RPA submissions and their storage bucket.
+ * Grant/revoke the 'advisor' role (ThuthukaSA) that RLS requires to read
+ * LOA/RPA submissions and their storage bucket. Uses the narrow
+ * requestAdvisorRoleChange (role hardcoded server-side to 'advisor'), so
+ * ThuthukaSA can file this themselves — an A-Win admin still has to approve
+ * it before it takes effect.
  */
 function AdvisorAccessCard() {
-  const callSetRole = useServerFn(requestSetUserRole);
+  const callSetRole = useServerFn(requestAdvisorRoleChange);
   const [email, setEmail] = useState("");
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<"grant" | "revoke" | null>(null);
@@ -106,8 +107,8 @@ function AdvisorAccessCard() {
     if (!email.trim() || reason.trim().length < 5) return;
     setBusy(action);
     try {
-      await callSetRole({ data: { email: email.trim(), role: "advisor", action, reason: reason.trim() } });
-      toast.success(`${action === "grant" ? "Grant" : "Revoke"} request submitted — needs approval from a different admin`);
+      await callSetRole({ data: { email: email.trim(), action, reason: reason.trim() } });
+      toast.success(`${action === "grant" ? "Grant" : "Revoke"} request submitted — needs approval from an A-Win admin`);
       setEmail("");
       setReason("");
     } catch (e) {
@@ -126,7 +127,7 @@ function AdvisorAccessCard() {
         <p className="text-xs text-muted-foreground -mt-2">
           Only accounts with the <strong>advisor</strong> role can see LOA/RPA submissions — regular A-Win admins
           can no longer read this data (confidentiality). Grant it to a ThuthukaSA staff member's existing website
-          account by email. Requires approval from a different admin, same as promoting an admin.
+          account by email. Requires approval from an A-Win admin.
         </p>
         <div className="grid gap-2">
           <label className="text-xs font-medium">ThuthukaSA staff email (must already have an account)</label>

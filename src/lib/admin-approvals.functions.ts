@@ -7,6 +7,7 @@ import {
   executeDeleteMember,
   executeDeleteApplication,
   executeDeleteLoaRpaSubmission,
+  executeAdvisorAccountBootstrap,
 } from "@/lib/admin-roles.functions";
 import {
   executeSiteSettingsUpdate,
@@ -22,7 +23,7 @@ export const listPendingApprovals = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("pending_approvals")
-      .select("id, action_type, payload, reason, status, requested_by, requested_at, decided_by, decided_at, decision_reason")
+      .select("id, action_type, payload, reason, status, requested_by, requested_at, decided_by, decided_at, decision_reason, result")
       .order("requested_at", { ascending: false })
       .limit(100);
     if (error) throw new Error(error.message);
@@ -140,6 +141,9 @@ export const decideApproval = createServerFn({ method: "POST" })
         case "role_grant":
         case "role_revoke":
           result = await executeUserRoleChange(supabaseAdmin, payload, actor);
+          break;
+        case "advisor_account_bootstrap":
+          result = await executeAdvisorAccountBootstrap(supabaseAdmin, payload, actor);
           break;
         case "site_settings_update":
           result = await executeSiteSettingsUpdate(supabaseAdmin, payload, actor);

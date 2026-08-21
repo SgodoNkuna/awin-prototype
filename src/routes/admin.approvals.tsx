@@ -33,7 +33,8 @@ type ApprovalRequest = {
     | "site_settings_update"
     | "team_member_upsert"
     | "team_member_delete"
-    | "settings_danger_action";
+    | "settings_danger_action"
+    | "advisor_account_bootstrap";
   payload: Record<string, unknown>;
   reason: string;
   status: "pending" | "approved" | "rejected" | "executed" | "failed";
@@ -42,6 +43,7 @@ type ApprovalRequest = {
   decided_by: string | null;
   decided_at: string | null;
   decision_reason: string | null;
+  result: { tempPassword?: string; email?: string } | null;
   requester: Requester;
   is_own_request: boolean;
 };
@@ -49,12 +51,13 @@ type ApprovalRequest = {
 const ACTION_LABELS: Record<ApprovalRequest["action_type"], string> = {
   member_delete: "Delete member",
   application_delete: "Delete application",
-  role_grant: "Grant admin role",
-  role_revoke: "Revoke admin role",
+  role_grant: "Grant advisor/admin role",
+  role_revoke: "Revoke advisor/admin role",
   site_settings_update: "Publish settings change",
   team_member_upsert: "Add/edit team profile",
   team_member_delete: "Delete team profile",
   settings_danger_action: "Danger zone action",
+  advisor_account_bootstrap: "Create ThuthukaSA advisor account",
 };
 
 function getErrorMessage(e: unknown, fallback: string) {
@@ -79,6 +82,8 @@ function payloadSummary(req: ApprovalRequest): string {
       return `Profile: ${p.name}`;
     case "settings_danger_action":
       return `Operation: ${p.op}`;
+    case "advisor_account_bootstrap":
+      return `New account: ${p.email} (${p.fullName})`;
     default:
       return "";
   }
@@ -156,6 +161,18 @@ function ApprovalsPage() {
                   <p className="text-xs text-muted-foreground italic">"{req.reason}"</p>
                   {req.decision_reason && (
                     <p className="text-xs text-muted-foreground">Decision note: "{req.decision_reason}"</p>
+                  )}
+                  {req.action_type === "advisor_account_bootstrap" && req.status === "executed" && req.result?.tempPassword && (
+                    <div className="rounded-lg border border-accent/50 bg-accent/10 p-2.5 text-xs">
+                      <p className="font-medium">Account created for {req.result.email}</p>
+                      <p>
+                        Temp password: <code className="rounded bg-background px-1.5 py-0.5 font-mono">{req.result.tempPassword}</code>
+                      </p>
+                      <p className="text-muted-foreground mt-0.5">
+                        Relay this to them now — it's shown once and isn't stored anywhere else. They'll be forced to
+                        set their own password on first login.
+                      </p>
+                    </div>
                   )}
                   <details className="text-xs">
                     <summary className="cursor-pointer text-muted-foreground">View full details before deciding</summary>

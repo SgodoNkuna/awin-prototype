@@ -2,26 +2,42 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export async function ensureAdmin(ctx: { supabase: any; userId: string }) {
-  const { data: ok } = await ctx.supabase.rpc("has_role", {
-    _user_id: ctx.userId,
-    _role: "admin",
-  });
-  if (!ok) throw new Error("Forbidden: admin role required");
-
+async function ensureNotForcedPasswordChange(ctx: { supabase: any; userId: string }) {
   // A password reset by the committee flags the account until the owner
   // sets their own password — block every privileged server action for
   // that window too, not just the client-side redirect. Otherwise anyone
-  // holding a still-shared/unrotated temp password has full admin power
-  // via direct API calls, defeating the point of forcing a change.
+  // holding a still-shared/unrotated temp password has full privileged
+  // power via direct API calls, defeating the point of forcing a change.
   const { data: profile } = await ctx.supabase
     .from("profiles")
     .select("force_password_change")
     .eq("id", ctx.userId)
     .maybeSingle();
   if (profile?.force_password_change) {
-    throw new Error("Forbidden: change your password before performing admin actions");
+    throw new Error("Forbidden: change your password before performing this action");
   }
+}
+
+export async function ensureAdmin(ctx: { supabase: any; userId: string }) {
+  const { data: ok } = await ctx.supabase.rpc("has_role", {
+    _user_id: ctx.userId,
+    _role: "admin",
+  });
+  if (!ok) throw new Error("Forbidden: admin role required");
+  await ensureNotForcedPasswordChange(ctx);
+}
+
+/**
+ * For ThuthukaSA self-service actions that are narrow enough to trust an
+ * advisor with directly (requesting a new colleague's account, requesting
+ * advisor access for someone) — as opposed to anything that can touch the
+ * admin role or site-wide settings, which stays admin-only via ensureAdmin.
+ */
+export async function ensureAdminOrAdvisor(ctx: { supabase: any; userId: string }) {
+  const { data: isAdmin } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
+  const { data: isAdvisor } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "advisor" });
+  if (!isAdmin && !isAdvisor) throw new Error("Forbidden: admin or advisor role required");
+  await ensureNotForcedPasswordChange(ctx);
 }
 
 /**
@@ -347,11 +363,75 @@ function generateTempPassword() {
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "A").replace(/\//g, "b").replace(/=+$/, "") + "!9";
 }
 
+/**
+ * Runs at approval time (see admin-approvals.functions.ts) — creates the
+ * account, grants 'advisor', and generates the one-time temp password. Kept
+ * separate from the request fn below so the password is only ever minted
+ * once someone with real authority has signed off on it existing.
+ */
+export async function executeAdvisorAccountBootstrap(
+  supabaseAdmin: any,
+  data: z.infer<typeof createAdvisorAccountSchema>,
+  actor: { userId: string; email: string | null },
+) {
+  const { data: existing } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .eq("email", data.email)
+    .maybeSingle();
+  if (existing) {
+    throw new Error("An account with this email already exists — use “Grant advisor” instead of creating a new one.");
+  }
+
+  const tempPassword = generateTempPassword();
+  const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+    email: data.email,
+    password: tempPassword,
+    email_confirm: true,
+    user_metadata: { full_name: data.fullName },
+  });
+  if (createErr || !created.user) throw new Error(createErr?.message ?? "Could not create account");
+  const userId = created.user.id;
+
+  // The on_auth_user_created trigger already inserted a profiles row and a
+  // 'member' role — fill in the name/force-change flag and layer 'advisor'
+  // on top (additive; 'member' staying alongside it is harmless).
+  await supabaseAdmin
+    .from("profiles")
+    .update({ full_name: data.fullName, force_password_change: true })
+    .eq("id", userId);
+  const { error: roleErr } = await supabaseAdmin
+    .from("user_roles")
+    .upsert({ user_id: userId, role: "advisor" }, { onConflict: "user_id,role" });
+  if (roleErr) throw new Error(roleErr.message);
+
+  await supabaseAdmin.from("audit_logs").insert({
+    actor_id: actor.userId,
+    actor_email: actor.email,
+    action: "advisor_account_bootstrap",
+    target_type: "user_role",
+    target_id: userId,
+    reason: "ThuthukaSA advisor account creation, approved",
+    details: { role: "advisor", target_email: data.email },
+  });
+
+  return { ok: true, user_id: userId, email: data.email, tempPassword };
+}
+
+/**
+ * ThuthukaSA can request a new colleague's account for themselves (self-
+ * service, no A-Win admin needed to be the one typing it in) — but creating
+ * a live login is still sensitive enough that it goes through the same
+ * two-person approval as any other privileged change, same as granting
+ * advisor access to an existing account below. The temp password only gets
+ * minted once an admin approves (see executeAdvisorAccountBootstrap) — the
+ * approving admin relays it to whoever requested the account.
+ */
 export const createAdvisorAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => createAdvisorAccountSchema.parse(i))
   .handler(async ({ data, context }) => {
-    await ensureAdmin(context);
+    await ensureAdminOrAdvisor(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: existing } = await supabaseAdmin
@@ -360,42 +440,61 @@ export const createAdvisorAccount = createServerFn({ method: "POST" })
       .eq("email", data.email)
       .maybeSingle();
     if (existing) {
-      throw new Error("An account with this email already exists — use “Grant advisor” below instead of creating a new one.");
+      throw new Error("An account with this email already exists — use “Grant advisor” instead of creating a new one.");
     }
 
-    const tempPassword = generateTempPassword();
-    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: { full_name: data.fullName },
-    });
-    if (createErr || !created.user) throw new Error(createErr?.message ?? "Could not create account");
-    const userId = created.user.id;
+    const { data: row, error } = await supabaseAdmin
+      .from("pending_approvals")
+      .insert({
+        action_type: "advisor_account_bootstrap",
+        payload: data,
+        reason: `New ThuthukaSA advisor account for ${data.email}`,
+        requested_by: context.userId,
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    notifyNewApprovalRequest("Create ThuthukaSA advisor account", `New account for ${data.email}`, context.claims?.email ?? "ThuthukaSA");
+    return { ok: true, approval_id: row.id };
+  });
 
-    // The on_auth_user_created trigger already inserted a profiles row and a
-    // 'member' role — fill in the name/force-change flag and layer 'advisor'
-    // on top (additive; 'member' staying alongside it is harmless).
-    await supabaseAdmin
-      .from("profiles")
-      .update({ full_name: data.fullName, force_password_change: true })
-      .eq("id", userId);
-    const { error: roleErr } = await supabaseAdmin
-      .from("user_roles")
-      .upsert({ user_id: userId, role: "advisor" }, { onConflict: "user_id,role" });
-    if (roleErr) throw new Error(roleErr.message);
+export const advisorRoleChangeSchema = z.object({
+  email: z.string().email(),
+  action: z.enum(["grant", "revoke"]),
+  reason: z.string().trim().min(5).max(500),
+});
 
-    await supabaseAdmin.from("audit_logs").insert({
-      actor_id: context.userId,
-      actor_email: context.claims?.email ?? null,
-      action: "advisor_account_bootstrap",
-      target_type: "user_role",
-      target_id: userId,
-      reason: "Initial ThuthukaSA advisor account creation",
-      details: { role: "advisor", target_email: data.email },
-    });
-
-    return { ok: true, user_id: userId, email: data.email, tempPassword };
+/**
+ * Narrow version of requestSetUserRole for ThuthukaSA's own self-service —
+ * the role is hardcoded to 'advisor' server-side (never trusts a client-
+ * supplied role), so this can safely accept an advisor caller as well as an
+ * admin, unlike the general role-change request which can also touch the
+ * admin role and must stay admin-only.
+ */
+export const requestAdvisorRoleChange = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => advisorRoleChangeSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await ensureAdminOrAdvisor(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const payload = { email: data.email, role: "advisor" as const, action: data.action, reason: data.reason };
+    const { data: row, error } = await supabaseAdmin
+      .from("pending_approvals")
+      .insert({
+        action_type: data.action === "grant" ? "role_grant" : "role_revoke",
+        payload,
+        reason: data.reason,
+        requested_by: context.userId,
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    notifyNewApprovalRequest(
+      data.action === "grant" ? "Grant ThuthukaSA advisor access" : "Revoke ThuthukaSA advisor access",
+      data.reason,
+      context.claims?.email ?? "ThuthukaSA",
+    );
+    return { ok: true, approval_id: row.id };
   });
 
 // --- Password reset (existing account) --------------------------------------

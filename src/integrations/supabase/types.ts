@@ -1012,6 +1012,7 @@ export type Database = {
         | "team_member_delete"
         | "settings_danger_action"
         | "loa_rpa_submission_delete"
+        | "advisor_account_bootstrap"
       approval_status: "pending" | "approved" | "rejected" | "executed" | "failed"
       investment_experience: "beginner" | "intermediate" | "advanced"
       membership_tier: "general" | "active" | "patron"
@@ -1154,6 +1155,7 @@ export const Constants = {
         "team_member_delete",
         "settings_danger_action",
         "loa_rpa_submission_delete",
+        "advisor_account_bootstrap",
       ],
       approval_status: ["pending", "approved", "rejected", "executed", "failed"],
       investment_experience: ["beginner", "intermediate", "advanced"],

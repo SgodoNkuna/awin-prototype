@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { SubmissionsPanel } from "@/components/loa-rpa/SubmissionsPanel";
 import { NotifyRecipientsCard } from "@/components/loa-rpa/NotifyRecipientsCard";
 import { ShareLinksCard } from "@/components/loa-rpa/ShareLinksCard";
+import { AdvisorAccessSection } from "@/components/admin/AdvisorAccessSection";
 import { THUTHUKA_LOGO_PNG_BASE64 } from "@/lib/thuthuka-logo-base64";
 
 /**
@@ -101,6 +102,15 @@ function TksaDashboard() {
         <SubmissionsPanel emptyHint="No submissions yet." showChart />
 
         <NotifyRecipientsCard />
+
+        <div>
+          <h2 className="font-serif text-lg text-white">Team access</h2>
+          <p className="mt-1 text-sm text-white/60">
+            Request a new colleague's account, or grant/revoke advisor access on an existing one. An A-Win admin
+            still has to approve each request before it takes effect.
+          </p>
+        </div>
+        <AdvisorAccessSection />
 
         <DeletionRequestsPanel />
       </main>

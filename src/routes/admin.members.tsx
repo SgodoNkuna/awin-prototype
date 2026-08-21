@@ -14,7 +14,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescrip
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { requestSetUserRole, requestDeleteMember, resetAccountPassword } from "@/lib/admin-roles.functions";
-import { AdvisorAccessSection } from "@/components/admin/AdvisorAccessSection";
 import { getErrorMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/admin/members")({
@@ -154,19 +153,6 @@ function MembersPage() {
           <Download className="size-4 mr-2" /> Export CSV
         </Button>
       </div>
-
-      {/* Who can log in as a ThuthukaSA advisor is an A-Win access decision
-          (moved off /admin/loa-rpa, which no longer exists), not something
-          ThuthukaSA should be able to grant itself — kept here, collapsed by
-          default since it's occasional-use, not part of daily member triage. */}
-      <details className="rounded-lg border border-accent/30 bg-accent/5">
-        <summary className="cursor-pointer p-4 text-sm font-medium text-accent-deep">
-          ThuthukaSA advisor access
-        </summary>
-        <div className="p-4 pt-0">
-          <AdvisorAccessSection />
-        </div>
-      </details>
 
       <Card>
         <CardContent className="pt-6 space-y-4">
