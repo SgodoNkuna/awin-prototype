@@ -30,6 +30,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as DebugRoutesRouteImport } from './routes/debug.routes'
+import { Route as AdminStorageRouteImport } from './routes/admin.storage'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminNewsRouteImport } from './routes/admin.news'
 import { Route as AdminMessagesRouteImport } from './routes/admin.messages'
@@ -151,6 +152,11 @@ const DebugRoutesRoute = DebugRoutesRouteImport.update({
   path: '/debug/routes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminStorageRoute = AdminStorageRouteImport.update({
+  id: '/storage',
+  path: '/storage',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/storage': typeof AdminStorageRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -298,6 +305,7 @@ export interface FileRoutesByTo {
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/storage': typeof AdminStorageRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -337,6 +345,7 @@ export interface FileRoutesById {
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/storage': typeof AdminStorageRoute
   '/debug/routes': typeof DebugRoutesRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -377,6 +386,7 @@ export interface FileRouteTypes {
     | '/admin/messages'
     | '/admin/news'
     | '/admin/settings'
+    | '/admin/storage'
     | '/debug/routes'
     | '/admin/'
     | '/api/public/payfast/itn'
@@ -414,6 +424,7 @@ export interface FileRouteTypes {
     | '/admin/messages'
     | '/admin/news'
     | '/admin/settings'
+    | '/admin/storage'
     | '/debug/routes'
     | '/admin'
     | '/api/public/payfast/itn'
@@ -452,6 +463,7 @@ export interface FileRouteTypes {
     | '/admin/messages'
     | '/admin/news'
     | '/admin/settings'
+    | '/admin/storage'
     | '/debug/routes'
     | '/admin/'
     | '/api/public/payfast/itn'
@@ -630,6 +642,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DebugRoutesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/storage': {
+      id: '/admin/storage'
+      path: '/storage'
+      fullPath: '/admin/storage'
+      preLoaderRoute: typeof AdminStorageRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/settings'
@@ -753,6 +772,7 @@ interface AdminRouteChildren {
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminNewsRoute: typeof AdminNewsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminStorageRoute: typeof AdminStorageRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -771,6 +791,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMessagesRoute: AdminMessagesRoute,
   AdminNewsRoute: AdminNewsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
+  AdminStorageRoute: AdminStorageRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 

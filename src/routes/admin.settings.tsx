@@ -692,11 +692,24 @@ function TeamMemberDialog({
           </Field>
 
           <Field label="Profile video (optional)">
-            <div className="flex gap-2">
-              <Input value={draft.video_url ?? ""} placeholder="https://… or click Upload →" onChange={(e) => set("video_url", e.target.value)} />
+            {draft.video_url ? (
+              <div className="flex items-start gap-2">
+                <video src={draft.video_url} controls className="h-32 w-auto rounded border" />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => {
+                    if (confirm("Remove this video? This clears it from the profile — the file itself isn't deleted from storage.")) set("video_url", null);
+                  }}
+                >
+                  <Trash2 className="size-3.5 mr-1.5" /> Remove video
+                </Button>
+              </div>
+            ) : (
               <UploadVideoButton onUploaded={(url) => set("video_url", url)} />
-            </div>
-            {draft.video_url ? <video src={draft.video_url} controls className="mt-2 h-32 w-auto rounded border" /> : null}
+            )}
           </Field>
 
           <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-3">
@@ -810,35 +823,64 @@ function HeadshotImageField({
     }
   };
 
+  const [pasteMode, setPasteMode] = useState(false);
+  const uploadLabel = (
+    <label className={`inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 text-xs cursor-pointer hover:bg-muted ${busy ? "opacity-60 pointer-events-none" : ""}`}>
+      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <CloudUpload className="size-3.5" />}
+      {busy ? "Uploading…" : "Upload"}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (!file) return;
+          if (file.size > 8 * 1024 * 1024) return toast.error("Image must be under 8 MB");
+          setCropSource(file);
+        }}
+      />
+    </label>
+  );
+
   return (
     <Field label={label}>
-      <div className="flex gap-2">
-        <Input value={value ?? ""} placeholder="https://… or click Upload →" onChange={(e) => onChange(e.target.value)} />
-        <label className={`inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 text-xs cursor-pointer hover:bg-muted ${busy ? "opacity-60 pointer-events-none" : ""}`}>
-          {busy ? <Loader2 className="size-3.5 animate-spin" /> : <CloudUpload className="size-3.5" />}
-          {busy ? "Uploading…" : "Upload"}
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (!file) return;
-              if (file.size > 8 * 1024 * 1024) return toast.error("Image must be under 8 MB");
-              setCropSource(file);
-            }}
-          />
-        </label>
-      </div>
       {value ? (
-        <div className="mt-2 flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <img src={displaySrc ?? undefined} alt={altText} className="size-16 rounded object-cover border" />
-          <Button type="button" size="sm" variant="outline" onClick={() => setCropSource(displaySrc ?? value)}>
-            <Crop className="size-3.5 mr-1.5" /> Adjust crop
-          </Button>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex gap-1.5">
+              <Button type="button" size="sm" variant="outline" onClick={() => setCropSource(displaySrc ?? value)}>
+                <Crop className="size-3.5 mr-1.5" /> Adjust crop
+              </Button>
+              {uploadLabel}
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="w-fit text-destructive hover:text-destructive"
+              onClick={() => {
+                if (confirm("Remove this image? This clears it from the profile — the file itself isn't deleted from storage.")) onChange("");
+              }}
+            >
+              <Trash2 className="size-3.5 mr-1.5" /> Remove image
+            </Button>
+          </div>
         </div>
-      ) : null}
+      ) : pasteMode ? (
+        <div className="flex gap-2">
+          <Input value={value ?? ""} placeholder="https://…" onChange={(e) => onChange(e.target.value)} autoFocus />
+          {uploadLabel}
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          {uploadLabel}
+          <button type="button" className="text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={() => setPasteMode(true)}>
+            or paste a URL
+          </button>
+        </div>
+      )}
       <ImageCropper
         source={cropSource}
         open={cropSource !== null}

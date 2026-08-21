@@ -1,10 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LogOut, ShieldCheck, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { SubmissionsPanel } from "@/components/loa-rpa/SubmissionsPanel";
+import { NotifyRecipientsCard } from "@/components/loa-rpa/NotifyRecipientsCard";
 import { THUTHUKA_LOGO_PNG_BASE64 } from "@/lib/thuthuka-logo-base64";
 
 /**
@@ -87,7 +90,81 @@ function TksaDashboard() {
         </div>
 
         <SubmissionsPanel emptyHint="No submissions yet." showChart />
+
+        <NotifyRecipientsCard />
+
+        <DeletionRequestsPanel />
       </main>
     </div>
+  );
+}
+
+type ApprovalRow = {
+  id: string;
+  status: string;
+  reason: string;
+  requested_at: string;
+  decided_at: string | null;
+  decision_reason: string | null;
+  payload: { confirm_name?: string };
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  executed: "Deleted",
+  failed: "Failed",
+};
+
+/**
+ * Read-only — advisors can see that a submission-deletion was requested and
+ * how it was decided, but deciding it stays with a different, accountable
+ * A-Win admin (Admin → Approvals). This is visibility into what's happening
+ * to their data, not a new way to action it from here.
+ */
+function DeletionRequestsPanel() {
+  const [rows, setRows] = useState<ApprovalRow[] | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("pending_approvals")
+        .select("id, status, reason, requested_at, decided_at, decision_reason, payload")
+        .eq("action_type", "loa_rpa_submission_delete")
+        .order("requested_at", { ascending: false })
+        .limit(20);
+      setRows((data as unknown as ApprovalRow[]) ?? []);
+    })();
+  }, []);
+
+  if (!rows || rows.length === 0) return null;
+
+  return (
+    <Card>
+      <CardContent className="pt-6 space-y-3">
+        <h3 className="flex items-center gap-2 text-sm font-semibold">
+          <Clock className="size-4 text-accent" /> Submission deletion requests
+        </h3>
+        <p className="text-xs text-muted-foreground -mt-2">
+          View-only — a different, accountable A-Win admin decides these in Admin → Approvals, same
+          two-person rule as any other deletion.
+        </p>
+        <div className="space-y-2">
+          {rows.map((r) => (
+            <div key={r.id} className="rounded-md border border-border p-2.5 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium">{r.payload?.confirm_name ?? "Submission"}</span>
+                <Badge variant="outline">{STATUS_LABEL[r.status] ?? r.status}</Badge>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground italic">"{r.reason}"</p>
+              {r.decision_reason && (
+                <p className="mt-1 text-xs text-muted-foreground">Decision: "{r.decision_reason}"</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
