@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, RotateCw, ShieldAlert, ShieldCheck, History, FileText } from "lucide-react";
+import { Loader2, RotateCw, ShieldAlert, ShieldCheck, History, FileText, Landmark } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -145,11 +145,12 @@ function BillingAdminPage() {
       </div>
 
       <Tabs defaultValue="payments">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
           <TabsTrigger value="payments"><FileText className="size-4 mr-1.5" />Payments</TabsTrigger>
           <TabsTrigger value="events"><RotateCw className="size-4 mr-1.5" />Webhooks</TabsTrigger>
           <TabsTrigger value="override"><ShieldAlert className="size-4 mr-1.5" />Overrides</TabsTrigger>
           <TabsTrigger value="audit"><History className="size-4 mr-1.5" />Audit</TabsTrigger>
+          <TabsTrigger value="gateways"><Landmark className="size-4 mr-1.5" />Gateways</TabsTrigger>
         </TabsList>
 
         {/* PAYMENTS */}
@@ -327,6 +328,75 @@ function BillingAdminPage() {
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* GATEWAYS — static reference from Lusandla's payment gateway
+            briefing (22 Jul 2026), not live data. Update this text if the
+            underlying status changes (PayGate approved, Ozow applied, etc). */}
+        <TabsContent value="gateways" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment methods — status at a glance</CardTitle>
+              <CardDescription>From Lusandla's payment gateway briefing, 22 July 2026. Nothing here is blocking membership operations — direct EFT is live and free.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Method</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Annual cost at ~50 members</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">Direct EFT (ABSA + proof of payment)</TableCell>
+                    <TableCell><Badge className="bg-primary text-primary-foreground">Live — in use now</Badge></TableCell>
+                    <TableCell>R0</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">PayFast</TableCell>
+                    <TableCell><Badge variant="destructive">Declined — stokvel/investment-club merchant category, non-appealable</Badge></TableCell>
+                    <TableCell>—</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">PayGate</TableCell>
+                    <TableCell><Badge variant="outline">Offered by Network International — application in progress</Badge></TableCell>
+                    <TableCell>R4,338 (yr 1) / R4,088 ongoing</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Ozow</TableCell>
+                    <TableCell><Badge variant="outline">Not yet applied — highest approval odds, recommended next</Badge></TableCell>
+                    <TableCell>R4,650</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Peach Payments</TableCell>
+                    <TableCell><Badge variant="outline">Not yet applied — moderate odds, on hold</Badge></TableCell>
+                    <TableCell>R9,225</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Yoco</TableCell>
+                    <TableCell><Badge variant="outline">Not yet applied — same card-scheme risk as PayFast, on hold</Badge></TableCell>
+                    <TableCell>R9,640</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recommended path</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-foreground/90">
+              <p>1. Keep direct EFT as the primary method — already working, zero cost, zero approval risk.</p>
+              <p>2. Let the PayGate application run its course — already in motion.</p>
+              <p>3. Apply to Ozow in parallel — highest approval odds of the independent options, and cheapest if approved.</p>
+              <p>4. Hold off on Peach and Yoco unless both PayGate and Ozow are declined.</p>
+              <p>5. Longer-term: begin the NPC/Co-operative registration conversation — the only fix that removes the stokvel merchant-category restriction permanently, at any future gateway.</p>
+              <p className="text-xs text-muted-foreground pt-2">PayFast was declined over A-Win's merchant category (investment club/stokvel), not paperwork — Lusandla is a fully registered company and still got declined. Reapplying elsewhere with better documents won't fix it on its own.</p>
             </CardContent>
           </Card>
         </TabsContent>
