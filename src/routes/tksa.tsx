@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SubmissionsPanel } from "@/components/loa-rpa/SubmissionsPanel";
 import { NotifyRecipientsCard } from "@/components/loa-rpa/NotifyRecipientsCard";
+import { ShareLinksCard } from "@/components/loa-rpa/ShareLinksCard";
 import { THUTHUKA_LOGO_PNG_BASE64 } from "@/lib/thuthuka-logo-base64";
 
 /**
@@ -88,6 +89,14 @@ function TksaDashboard() {
             LOA safe to forward to Astute or any other institution on its own.
           </p>
         </div>
+
+        <div>
+          <h2 className="font-serif text-lg text-white">Share the forms</h2>
+          <p className="mt-1 text-sm text-white/60">
+            Ready-to-send WhatsApp/website links for new applicants.
+          </p>
+        </div>
+        <ShareLinksCard />
 
         <SubmissionsPanel emptyHint="No submissions yet." showChart />
 

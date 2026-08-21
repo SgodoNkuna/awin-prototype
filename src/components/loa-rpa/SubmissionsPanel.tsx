@@ -72,10 +72,10 @@ function Field({ label, value }: { label: string; value: string | undefined }) {
 
 /**
  * The signed LOA/RPA submissions list + view/download dialog — shared
- * between the A-Win admin console (admin.loa-rpa.tsx, alongside the
- * access-management cards) and the standalone ThuthukaSA dashboard
- * (tksa.tsx). RLS already scopes what rows come back per caller's role, so
- * this component doesn't need to know who's looking at it.
+ * shown on the standalone ThuthukaSA dashboard (tksa.tsx) — the equivalent
+ * A-Win admin page was removed; advisor account/access management moved to
+ * admin.members.tsx instead. RLS already scopes what rows come back per
+ * caller's role, so this component doesn't need to know who's looking at it.
  */
 function exportCsv(rows: Submission[]) {
   const header = ["Name", "Email", "Phone", "Source", "Status", "ID Number", "Submitted"];

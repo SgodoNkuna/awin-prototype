@@ -1,70 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, MessageCircle, Globe2, Copy, Check, ShieldAlert, UserPlus, History, AlertTriangle, Eye } from "lucide-react";
+import { Loader2, UserPlus, History, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/lib/use-auth";
 import { requestSetUserRole, createAdvisorAccount } from "@/lib/admin-roles.functions";
-import { SubmissionsPanel } from "@/components/loa-rpa/SubmissionsPanel";
 
 function getErrorMessage(e: unknown, fallback: string) {
   return e instanceof Error ? e.message : fallback;
-}
-
-export const Route = createFileRoute("/admin/loa-rpa")({
-  component: LoaRpaAdminPage,
-});
-
-/**
- * Copies `message` (not a bare URL) — whatever gets pasted into a WhatsApp
- * chat or anywhere else should explain itself with no extra context needed.
- * The code box shows exactly what's copied, so there's no surprise between
- * what you see and what lands on the clipboard.
- */
-function CopyLinkRow({ label, icon, message }: { label: string; icon: React.ReactNode; message: string }) {
-  const [copied, setCopied] = useState(false);
-  const [previewing, setPreviewing] = useState(false);
-
-  const copy = async () => {
-    await navigator.clipboard.writeText(message);
-    setCopied(true);
-    toast.success("Copied — ready to paste");
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3">
-      <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground w-32 shrink-0 sm:pt-1.5">
-        {icon} {label}
-      </span>
-      <div className="flex flex-1 flex-col gap-2 min-w-0">
-        <div className="flex items-start gap-2 min-w-0">
-          <code className="flex-1 min-w-0 whitespace-pre-wrap break-words rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs">
-            {message}
-          </code>
-          <Button size="sm" variant="ghost" onClick={() => setPreviewing((v) => !v)} className="shrink-0" title="Preview how this looks in a chat">
-            <Eye className="size-3.5" />
-          </Button>
-          <Button size="sm" variant="outline" onClick={copy} className="shrink-0">
-            {copied ? <Check className="size-3.5 mr-1.5 text-primary" /> : <Copy className="size-3.5 mr-1.5" />}
-            {copied ? "Copied" : "Copy"}
-          </Button>
-        </div>
-        {previewing && (
-          <div className="flex justify-start">
-            <div className="max-w-[85%] rounded-lg rounded-tl-none bg-[#dcf8c6] px-3 py-2 text-sm text-[#111b21] shadow-sm dark:bg-[#005c4b] dark:text-[#e9edef]">
-              {message}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }
 
 /**
@@ -74,6 +20,10 @@ function CopyLinkRow({ label, icon, message }: { label: string; icon: React.Reac
  * advisor" below can't do on its own — that one only elevates an existing
  * account. Shows the generated temp password exactly once; it is never
  * stored anywhere client-side, so copy it before navigating away.
+ *
+ * Deliberately kept in A-Win Admin, not ThuthukaSA's own dashboard — who
+ * can log in as an advisor is an A-Win access decision, not something
+ * ThuthukaSA should be able to grant itself.
  */
 function CreateAdvisorAccountCard() {
   const callCreate = useServerFn(createAdvisorAccount);
@@ -143,10 +93,8 @@ function CreateAdvisorAccountCard() {
 }
 
 /**
- * Admin-only: grant/revoke the 'advisor' role (ThuthukaSA) that RLS now
- * requires to read this table and its storage bucket — see the
- * 20260809100001 migration. The target must already have a website account
- * (sign up first); this only elevates an existing profile.
+ * Admin-only: grant/revoke the 'advisor' role (ThuthukaSA) that RLS
+ * requires to read LOA/RPA submissions and their storage bucket.
  */
 function AdvisorAccessCard() {
   const callSetRole = useServerFn(requestSetUserRole);
@@ -176,9 +124,9 @@ function AdvisorAccessCard() {
           <UserPlus className="size-4 text-accent" /> ThuthukaSA advisor access
         </h3>
         <p className="text-xs text-muted-foreground -mt-2">
-          Only accounts with the <strong>advisor</strong> role can see LOA/RPA submissions below — regular A-Win
-          admins can no longer read this data (confidentiality). Grant it to a ThuthukaSA staff member's existing
-          website account by email. Requires approval from a different admin, same as promoting an admin.
+          Only accounts with the <strong>advisor</strong> role can see LOA/RPA submissions — regular A-Win admins
+          can no longer read this data (confidentiality). Grant it to a ThuthukaSA staff member's existing website
+          account by email. Requires approval from a different admin, same as promoting an admin.
         </p>
         <div className="grid gap-2">
           <label className="text-xs font-medium">ThuthukaSA staff email (must already have an account)</label>
@@ -246,11 +194,9 @@ function describeAuditRow(row: AuditLogRow): string {
 }
 
 /**
- * Admin-only: the two-person approval flow already writes every
- * recipient/role change to audit_logs — this just makes that visible in the
- * UI instead of requiring a direct DB query to check "who changed what."
- * Scoped to actions relevant to this page (advisor access, notification
- * recipients, WhatsApp delivery failures) rather than the whole audit log.
+ * The two-person approval flow already writes every recipient/role change
+ * to audit_logs — this just makes that visible in the UI instead of
+ * requiring a direct DB query to check "who changed what."
  */
 function RecentChangesCard() {
   const [rows, setRows] = useState<AuditLogRow[] | null>(null);
@@ -299,107 +245,13 @@ function RecentChangesCard() {
   );
 }
 
-function ShareLinksCard() {
-  const [origin, setOrigin] = useState("");
-  useEffect(() => { setOrigin(window.location.origin); }, []);
-  if (!origin) return null;
-
+/** Everything to do with who can log in as a ThuthukaSA advisor, and an audit trail of changes to that. */
+export function AdvisorAccessSection() {
   return (
-    <Card className="border-accent/40">
-      <CardContent className="pt-6 space-y-4">
-        <div>
-          <h3 className="text-sm font-semibold">Share the full LOA &amp; Risk Profile form</h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            For new A-Win members — includes the Risk Profile Analysis. Copy the WhatsApp version straight into a
-            chat — it's a ready-to-send message, not just a bare link, and it tags the submission's source so you
-            can tell WhatsApp applicants apart from website applicants.
-          </p>
-          <div className="mt-2 space-y-2">
-            <CopyLinkRow
-              label="WhatsApp"
-              icon={<MessageCircle className="size-3.5" />}
-              message={`Hi! Please complete your ThuthukaSA Letter of Authority & Risk Profile form here (via A-Win) — takes about 5 minutes: ${origin}/loa-rpa?src=whatsapp`}
-            />
-            <CopyLinkRow
-              label="Website"
-              icon={<Globe2 className="size-3.5" />}
-              message={`ThuthukaSA (FSP No. 47992) — Letter of Authority & Risk Profile form, via A-Win: ${origin}/loa-rpa`}
-            />
-          </div>
-        </div>
-        <div className="border-t border-border pt-4">
-          <h3 className="text-sm font-semibold">Share the LOA-only form</h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            For anyone who isn't joining A-Win, or just needs Astute-facing paperwork — skips the Risk Profile
-            questions entirely.
-          </p>
-          <div className="mt-2 space-y-2">
-            <CopyLinkRow
-              label="WhatsApp"
-              icon={<MessageCircle className="size-3.5" />}
-              message={`Hi! Please complete this short ThuthukaSA Letter of Authority form — takes about a minute: ${origin}/loa?src=whatsapp`}
-            />
-            <CopyLinkRow
-              label="Website"
-              icon={<Globe2 className="size-3.5" />}
-              message={`ThuthukaSA (FSP No. 47992) — Letter of Authority form only, no Risk Profile: ${origin}/loa`}
-            />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function LoaRpaAdminPage() {
-  const { isAdmin, isAdvisor } = useAuth();
-
-  return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="font-serif text-2xl md:text-3xl">LOA &amp; Risk Profile</h1>
-        <p className="text-sm text-muted-foreground">
-          Signed Letters of Authority and Risk Profile Analyses collected via WhatsApp or the website, on file with
-          ThuthukaSA (FSP 47992).
-        </p>
-      </div>
-
-      {/* 1. Links first — this is what most visits to this page are actually for. */}
-      <section className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">1. Share the forms</h2>
-        <ShareLinksCard />
-      </section>
-
-      {/* 2. Who can see the data, and how that's managed. */}
-      {isAdmin && (
-        <section className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">2. Access &amp; confidentiality</h2>
-          <div className="space-y-4">
-            <CreateAdvisorAccountCard />
-            <AdvisorAccessCard />
-            <RecentChangesCard />
-          </div>
-        </section>
-      )}
-
-      {isAdmin && !isAdvisor && (
-        <Card className="border-destructive/40 bg-destructive/5">
-          <CardContent className="pt-6 flex items-start gap-2 text-sm">
-            <ShieldAlert className="mt-0.5 size-4 shrink-0 text-destructive" />
-            <span>
-              You have A-Win admin access but not the ThuthukaSA <strong>advisor</strong> role, so submissions below
-              are hidden by design — this data is confidential to ThuthukaSA. Grant yourself advisor access above if
-              you're authorised to see it.
-            </span>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 3. The actual submissions, last — only advisor accounts see anything here. */}
-      <section className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">3. Submissions</h2>
-        <SubmissionsPanel emptyHint="No submissions yet. Copy a link above and share it to get started." />
-      </section>
+    <div className="space-y-4">
+      <CreateAdvisorAccountCard />
+      <AdvisorAccessCard />
+      <RecentChangesCard />
     </div>
   );
 }
