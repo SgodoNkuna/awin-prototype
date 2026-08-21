@@ -112,6 +112,11 @@ type SignatureInput = {
   dateStr: string;
 };
 
+// Mirrors Astute's actual paper form (CC001E, 11/2007) field-for-field,
+// including its two independent "Client signature" blocks — one for the
+// data-request authorisation (§1), one for the intermediary appointment
+// (§2). Both are stamped with the same signature the applicant drew/typed
+// once — they're one continuous signing action, not two separate asks.
 function drawLoaPage(
   pdf: import("jspdf").jsPDF,
   input: { fullName: string; loa: LoaData } & SignatureInput,
@@ -125,37 +130,83 @@ function drawLoaPage(
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(10.5);
   pdf.setTextColor(40, 40, 40);
-  const loaIntro = pdf.splitTextToSize(
-    "To whom it may concern. 1. Authorisation to request information. I, the undersigned, hereby authorise Phumelele Ndumo to obtain any information on my behalf regarding my assurance and/or investment portfolio, and any of my employee benefits, from any life office, retirement fund or other financial institution directly, or by using the services of The Financial Services Exchange (Pty.) Ltd., trading as Astute.",
-    colW,
-  );
-  pdf.text(loaIntro, margin, y);
-  y += loaIntro.length * 13 + 10;
+  pdf.text("To whom it may concern", margin, y);
+  y += 20;
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(11.5);
+  pdf.text("1. Authorisation to request information", margin, y);
+  y += 18;
 
+  y = field(pdf, "I, the undersigned", input.fullName, margin, y, colW);
+  y = field(pdf, "Identity number", input.loa.idNumber, margin, y, colW);
+  y = field(pdf, "Telephone number", input.loa.telephone, margin, y, colW);
+  y = field(pdf, "Hereby authorise", "Phumelele Ndumo", margin, y, colW);
+  if (input.loa.staffMember.trim()) {
+    y = field(pdf, "Or any/the following member of his/her staff", input.loa.staffMember, margin, y, colW);
+  }
+  y += 4;
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(10.5);
+  pdf.setTextColor(40, 40, 40);
   const loaConsent = pdf.splitTextToSize(
-    "I hereby give consent to any financial institution or employer in possession of information regarding my insurance, investment and employee benefits portfolio to release that information upon request directly to the person who is in terms of this document authorised to request it, or to the authorised person via Astute. For this purpose I confirm that the authorised person is acting on my behalf and/or in my interest. It was explained to me, and I understand, that this consent may possibly have a restricting influence on my constitutional right to privacy. This authorisation shall remain valid for 6 months (180 days) from date of my signature.",
+    "to obtain any information on my behalf regarding my assurance- and/or investment portfolio, and any of my employee benefits, from any life office, retirement fund or other financial institution directly, or by using the services of The Financial Services Exchange (Pty.) Ltd., trading as Astute. I hereby give consent to any financial institution or employer in possession of information regarding my insurance-, investment- and employee benefits portfolio to release that information upon request directly to the person who is in terms of this document authorised to request it, or to the authorised person via Astute. For this purpose I confirm that the authorised person is acting on my behalf and/or in my interest. It was explained to me, and I understand, that this consent may possibly have a restricting influence on my constitutional right to privacy. This authorisation shall remain valid for 6 months (180 days) from date of my signature.",
     colW,
   );
   pdf.text(loaConsent, margin, y);
-  y += loaConsent.length * 13 + 10;
+  y += loaConsent.length * 13 + 16;
 
+  // Signature block #1 — closes out §1, exactly as the paper form does.
+  addSignatureBlock(pdf, margin, y, input.signatureType, input.signatureTypedName, input.signatureDrawnData, input.dateStr);
+  y += 100;
+
+  if (y > 620) {
+    pdf.addPage();
+    y = 60;
+  }
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(11.5);
+  pdf.setTextColor(20, 20, 20);
+  pdf.text("2. Appointment of new official care intermediary", margin, y);
+  y += 18;
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(10.5);
+  pdf.setTextColor(40, 40, 40);
   const loaAppointment = pdf.splitTextToSize(
-    "2. Appointment of new official care intermediary. I further request the financial institutions with whom Phumelele Ndumo has a sales agreement, to indicate him/her on their records as my official care intermediary. I have been properly counselled on the consequences of this letter of appointment. This appointment may be revoked by me in writing at any time.",
+    "I further request the financial institutions with whom Phumelele Ndumo has a sales agreement, to indicate him/her on their records as my official care intermediary. I have been properly counselled on the consequences of this letter of appointment. This appointment may be revoked by me in writing at any time.",
     colW,
   );
   pdf.text(loaAppointment, margin, y);
-  y += loaAppointment.length * 13 + 20;
+  y += loaAppointment.length * 13 + 16;
 
-  y = field(pdf, "Full name", input.fullName, margin, y, colW);
-  y = field(pdf, "ID number", input.loa.idNumber, margin, y, colW);
-  y = field(pdf, "Telephone number", input.loa.telephone, margin, y, colW);
-  y += 10;
+  if (y > 650) {
+    pdf.addPage();
+    y = 60;
+  }
+  // Signature block #2 — closes out §2, the second signature spot the
+  // paper form has and the earlier digital version was missing.
   addSignatureBlock(pdf, margin, y, input.signatureType, input.signatureTypedName, input.signatureDrawnData, input.dateStr);
+  y += 100;
 
+  if (y > 680) {
+    pdf.addPage();
+    y = 60;
+  }
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(10.5);
+  pdf.setTextColor(20, 20, 20);
+  pdf.text("Intermediary information", margin, y);
+  y += 16;
   pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(9);
+  pdf.setFontSize(9.5);
   pdf.setTextColor(90, 90, 90);
-  pdf.text("Intermediary: Phumelele Ndumo · Code 627 518 · 011 568 2635 · phumelele@thuthuka-sa.co.za", margin, y + 110, { maxWidth: colW });
+  pdf.text("Name: Phumelele Ndumo   ·   Code: 627 518   ·   Telephone: 011 568 2635   ·   e-mail: phumelele@thuthuka-sa.co.za", margin, y, { maxWidth: colW });
+  y += 20;
+  pdf.setFont("helvetica", "italic");
+  pdf.setFontSize(8.5);
+  pdf.text("Note: Any changes must please be initialed by the client.", margin, y);
+
   drawFooter(pdf);
 }
 
@@ -183,7 +234,7 @@ function drawRpaPage(
   y = field(pdf, "Qualification", input.rpa.qualification, margin + colHalf + 20, rowStartY3, colHalf);
   const rowStartY4 = y;
   field(pdf, "Occupation", input.rpa.occupation, margin, rowStartY4, colHalf);
-  y = field(pdf, "Gross monthly income", input.rpa.grossMonthlyIncome, margin + colHalf + 20, rowStartY4, colHalf);
+  y = field(pdf, "Gross monthly income (before deductions)", input.rpa.grossMonthlyIncome, margin + colHalf + 20, rowStartY4, colHalf);
   const rowStartY5 = y;
   field(pdf, "Marital status", input.rpa.maritalStatus, margin, rowStartY5, colHalf);
   y = field(pdf, "Stokvel name", input.rpa.stokvelName, margin + colHalf + 20, rowStartY5, colHalf);
@@ -201,28 +252,39 @@ function drawRpaPage(
   pdf.text("Risk analysis assessment", margin, y);
   y += 20;
 
-  const QUESTIONS: [string, string][] = [
-    ["1. What is the objective for the investment?", input.rpa.objective],
+  // Numbered and worded to match the paper form exactly, including its
+  // jump from 9 straight to 11 (no question 10 on the original either).
+  const QUESTIONS: [string, string, string?][] = [
+    ["1. What is the objective for the investment? e.g: saving for school/varsity fees", input.rpa.objective],
     ["2. What is the term of your investment?", input.rpa.term],
-    ["3. How much would you like to invest per month? (min. R500)", input.rpa.monthlyAmount],
+    ["3. How much would you like to invest per month? Minimum is R500", input.rpa.monthlyAmount],
     ["4. What is your risk appetite? (Aggressive, moderate or conservative)", input.rpa.riskAppetite],
-    ["5. Are you scared of losing money?", input.rpa.scaredOfLosingMoney],
-    ["6. Are you likely to withdraw your money in the next 12 or 24 months?", input.rpa.withdrawSoon],
+    ["5. Are you scared of losing money? Yes/No", input.rpa.scaredOfLosingMoney,
+      "Note: With equities, you can lose money in the short term but you are likely to have good capital growth in the long term i.e. 5 years +"],
+    ["6. Are you likely to withdraw your money in the next 12 months or 24 months? Yes/No", input.rpa.withdrawSoon],
     ["7. Do you have investments? If yes, where and how much?", input.rpa.existingInvestments],
     ["8. How much do you know about investing?", input.rpa.investingKnowledge],
-    ["9. Do you have an emergency fund?", input.rpa.emergencyFund],
-    ["10. Do you have children? If yes, how many and their ages?", input.rpa.children],
-    ["11. Have you saved for their university education?", input.rpa.savedForEducation],
-    ["12. Have you saved for your own retirement?", input.rpa.savedForRetirement],
-    ["Would you like to subscribe to our newsletter?", input.rpa.newsletterSubscribe],
+    ["9. Do you have an emergency fund? Yes/No", input.rpa.emergencyFund],
+    ["11. Do you have children, if yes how many? Please include their ages", input.rpa.children],
+    ["12. Have you saved for their university education?", input.rpa.savedForEducation],
+    ["13. Have you saved for your own retirement?", input.rpa.savedForRetirement],
+    ["Would you like to subscribe to our newsletter? It's a free subscription", input.rpa.newsletterSubscribe],
   ];
 
-  for (const [q, a] of QUESTIONS) {
-    if (y > 720) {
+  for (const [q, a, note] of QUESTIONS) {
+    if (y > 700) {
       pdf.addPage();
       y = 60;
     }
     y = field(pdf, q, a, margin, y, colW);
+    if (note) {
+      pdf.setFont("helvetica", "italic");
+      pdf.setFontSize(8.5);
+      pdf.setTextColor(120, 120, 120);
+      const noteLines = pdf.splitTextToSize(note, colW);
+      pdf.text(noteLines, margin, y);
+      y += noteLines.length * 11 + 8;
+    }
   }
 
   if (y > 620) {
@@ -272,7 +334,7 @@ export async function buildLoaRpaPdf(input: BuildInput): Promise<Blob> {
 
 const BLANK_INPUT: BuildInput = {
   fullName: "",
-  loa: { idNumber: "", telephone: "" },
+  loa: { idNumber: "", telephone: "", staffMember: "" },
   rpa: {
     gender: "", cellPhone: "", email: "", workNumber: "", qualification: "", occupation: "",
     grossMonthlyIncome: "", maritalStatus: "", stokvelName: "", objective: "", term: "",

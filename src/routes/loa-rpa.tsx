@@ -442,6 +442,14 @@ function LoaRpaPage() {
                   me in writing at any time.
                 </p>
               </div>
+              <div>
+                <Label>Or any/the following member of his/her staff (optional)</Label>
+                <Input
+                  value={loa.staffMember}
+                  onChange={(e) => setLoa({ ...loa, staffMember: e.target.value })}
+                  placeholder="Leave blank unless a specific staff member was named to you"
+                />
+              </div>
               <label className="flex items-start gap-3 rounded-lg border border-border p-4 cursor-pointer hover:bg-secondary/30">
                 <Checkbox checked={loaAgree} onCheckedChange={(v) => setLoaAgree(!!v)} className="mt-0.5" />
                 <span className="text-sm">I have read the authorisation above and I agree to be bound by its terms.</span>

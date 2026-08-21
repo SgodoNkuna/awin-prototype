@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { requestSetUserRole, requestDeleteMember } from "@/lib/admin-roles.functions";
+import { requestSetUserRole, requestDeleteMember, resetAccountPassword } from "@/lib/admin-roles.functions";
 import { getErrorMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/admin/members")({
@@ -76,6 +76,9 @@ function MembersPage() {
   const [deleteReason, setDeleteReason] = useState("");
   const [deleteBusy, setDeleteBusy] = useState(false);
   const callDeleteMember = useServerFn(requestDeleteMember);
+  const callResetPassword = useServerFn(resetAccountPassword);
+  const [resetPwBusy, setResetPwBusy] = useState(false);
+  const [resetPwResult, setResetPwResult] = useState<{ email: string | null; tempPassword: string } | null>(null);
 
   const load = async () => {
     const [{ data, error }, { data: roleRows }] = await Promise.all([
@@ -286,6 +289,26 @@ function MembersPage() {
                 )}
                 <Button
                   variant="outline"
+                  disabled={resetPwBusy}
+                  onClick={async () => {
+                    if (!confirm(`Reset ${detail.full_name || detail.email}'s password? A new temporary password is generated immediately and they'll be forced to set their own on next login.`)) return;
+                    setResetPwBusy(true);
+                    try {
+                      const res = await callResetPassword({ data: { user_id: detail.id } });
+                      setResetPwResult({ email: res.email, tempPassword: res.tempPassword });
+                      setDetail(null);
+                    } catch (e) {
+                      toast.error(getErrorMessage(e, "Failed"));
+                    } finally {
+                      setResetPwBusy(false);
+                    }
+                  }}
+                >
+                  {resetPwBusy ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Shield className="size-4 mr-2" />}
+                  Reset password
+                </Button>
+                <Button
+                  variant="outline"
                   className="text-destructive hover:text-destructive"
                   onClick={() => { setDeleting(detail); setDeleteConfirmEmail(""); setDeleteReason(""); setDetail(null); }}
                 >
@@ -299,6 +322,28 @@ function MembersPage() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      {/* Shown once right after a reset — the temp password is never stored
+          client-side anywhere else, so this is the only chance to copy it. */}
+      <Dialog open={!!resetPwResult} onOpenChange={(o) => !o && setResetPwResult(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Password reset</DialogTitle>
+            <DialogDescription>
+              Send this to {resetPwResult?.email ?? "the account owner"} now — it's shown once and isn't stored
+              anywhere. They'll be forced to set their own password on next login.
+            </DialogDescription>
+          </DialogHeader>
+          {resetPwResult && (
+            <div className="rounded-lg border border-accent/50 bg-accent/10 p-3 text-sm">
+              Temp password: <code className="rounded bg-background px-1.5 py-0.5 font-mono">{resetPwResult.tempPassword}</code>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setResetPwResult(null)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete member — requires typing the exact email + a reason, so a single
           misclick can never delete an account. */}

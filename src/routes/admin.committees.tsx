@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Loader2, ArrowUp, ArrowDown, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { signPortfolioUrls } from "@/lib/portfolio-storage.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,13 +62,33 @@ const positionFor = (m: M, key: string) => {
 function CommitteesPage() {
   const [rows, setRows] = useState<M[] | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  const sign = useServerFn(signPortfolioUrls);
 
   const load = async () => {
     const { data } = await supabase
       .from("team_members")
       .select("id, name, photo_url, profile_card_url, committee, committee_position, committee_order, website_committee_position, website_committee_order, property_committee_position, property_committee_order")
       .order("committee_order");
-    setRows((data as M[]) ?? []);
+    const list = (data as M[]) ?? [];
+
+    // photo_url/profile_card_url are private member-portfolios storage keys,
+    // not directly loadable URLs — sign them the same way team.tsx does, or
+    // every committee photo here renders broken.
+    const keys = new Set<string>();
+    for (const m of list) {
+      if (m.photo_url) keys.add(m.photo_url);
+      if (m.profile_card_url) keys.add(m.profile_card_url);
+    }
+    let urlMap: Record<string, string> = {};
+    if (keys.size > 0) {
+      try {
+        urlMap = (await sign({ data: { keys: [...keys] } })).urls;
+      } catch (e) {
+        console.error("signPortfolioUrls failed", e);
+      }
+    }
+    const swap = (v: string | null) => (v && urlMap[v]) || v;
+    setRows(list.map((m) => ({ ...m, photo_url: swap(m.photo_url), profile_card_url: swap(m.profile_card_url) })));
   };
   useEffect(() => {
     load();

@@ -1,7 +1,11 @@
-/** Fields captured for the Letter of Authorisation (Astute standard form). */
+/** Fields captured for the Letter of Authorisation (Astute standard form CC001E). */
 export type LoaData = {
   idNumber: string;
   telephone: string;
+  // "or any/the following member of his/her staff" on the paper form —
+  // optional named second person who may also request info on the client's
+  // behalf. Left blank for the common case of just authorising Phumelele.
+  staffMember: string;
 };
 
 /** Fields captured for the ThuthukaSA Risk Profile Analysis (FSP 47992). */
@@ -30,7 +34,7 @@ export type RpaData = {
   newsletterSubscribe: string;
 };
 
-export const emptyLoaData = (): LoaData => ({ idNumber: "", telephone: "" });
+export const emptyLoaData = (): LoaData => ({ idNumber: "", telephone: "", staffMember: "" });
 
 export const emptyRpaData = (): RpaData => ({
   gender: "",

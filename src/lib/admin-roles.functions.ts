@@ -397,3 +397,48 @@ export const createAdvisorAccount = createServerFn({ method: "POST" })
 
     return { ok: true, user_id: userId, email: data.email, tempPassword };
   });
+
+// --- Password reset (existing account) --------------------------------------
+// For an account that's already live but locked out / needs rotating — e.g.
+// ThuthukaSA's shared inbox login. Same immediate-execute + audit-log
+// treatment as the bootstrap above: it's operational access recovery, not a
+// role/data change, so it doesn't need a second admin's approval either.
+
+export const resetAccountPasswordSchema = z.object({
+  user_id: z.string().uuid(),
+});
+
+export const resetAccountPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => resetAccountPasswordSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("id, email")
+      .eq("id", data.user_id)
+      .maybeSingle();
+    if (!profile) throw new Error("Account not found");
+
+    const tempPassword = generateTempPassword();
+    const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+      password: tempPassword,
+    });
+    if (updateErr) throw new Error(updateErr.message);
+
+    await supabaseAdmin.from("profiles").update({ force_password_change: true }).eq("id", data.user_id);
+
+    await supabaseAdmin.from("audit_logs").insert({
+      actor_id: context.userId,
+      actor_email: context.claims?.email ?? null,
+      action: "account_password_reset",
+      target_type: "profile",
+      target_id: data.user_id,
+      reason: "Admin-triggered password reset",
+      details: { target_email: profile.email },
+    });
+
+    return { ok: true, email: profile.email as string | null, tempPassword };
+  });

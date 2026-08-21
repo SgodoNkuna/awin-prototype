@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Crown, HeartHandshake, GraduationCap, Gem, ChevronRight, Sprout, Globe2, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { signPortfolioUrls } from "@/lib/portfolio-storage.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -59,16 +61,38 @@ type TeamMember = {
 
 function AboutPage() {
   const [team, setTeam] = useState<TeamMember[]>([]);
+  const sign = useServerFn(signPortfolioUrls);
   useEffect(() => {
     // Main committee, in committee order — the actual leadership.
-    supabase
-      .from("team_members")
-      .select("id, name, title, photo_url, profile_card_url, committee_position")
-      .eq("published", true)
-      .eq("committee", "main")
-      .order("committee_order")
-      .then(({ data }) => setTeam((data as TeamMember[]) ?? []));
-  }, []);
+    (async () => {
+      const { data } = await supabase
+        .from("team_members")
+        .select("id, name, title, photo_url, profile_card_url, committee_position")
+        .eq("published", true)
+        .eq("committee", "main")
+        .order("committee_order");
+      const rows = (data as TeamMember[]) ?? [];
+
+      // photo_url/profile_card_url are private member-portfolios storage
+      // keys, not directly loadable URLs — sign them or every photo here
+      // renders as a blank circle.
+      const keys = new Set<string>();
+      for (const m of rows) {
+        if (m.photo_url) keys.add(m.photo_url);
+        if (m.profile_card_url) keys.add(m.profile_card_url);
+      }
+      let urlMap: Record<string, string> = {};
+      if (keys.size > 0) {
+        try {
+          urlMap = (await sign({ data: { keys: [...keys] } })).urls;
+        } catch (e) {
+          console.error("signPortfolioUrls failed", e);
+        }
+      }
+      const swap = (v: string | null) => (v && urlMap[v]) || v;
+      setTeam(rows.map((m) => ({ ...m, photo_url: swap(m.photo_url), profile_card_url: swap(m.profile_card_url) })));
+    })();
+  }, [sign]);
 
   return (
     <>
