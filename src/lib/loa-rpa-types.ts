@@ -34,7 +34,10 @@ export type RpaData = {
   newsletterSubscribe: string;
 };
 
-export const emptyLoaData = (): LoaData => ({ idNumber: "", telephone: "", staffMember: "" });
+// Defaults to Amantle — ThuthukaSA's day-to-day contact for these forms —
+// same idea as rpa.stokvelName defaulting to "A-Win" below. Still editable
+// per submission if a different staff member is actually the right one.
+export const emptyLoaData = (): LoaData => ({ idNumber: "", telephone: "", staffMember: "Amantle" });
 
 export const emptyRpaData = (): RpaData => ({
   gender: "",
