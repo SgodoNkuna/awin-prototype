@@ -363,6 +363,35 @@ function generateTempPassword() {
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "A").replace(/\//g, "b").replace(/=+$/, "") + "!9";
 }
 
+async function assertNoExistingAccount(supabaseAdmin: any, email: string) {
+  const { data: existing } = await supabaseAdmin.from("profiles").select("id").eq("email", email).maybeSingle();
+  if (existing) {
+    throw new Error("An account with this email already exists — use “Grant advisor” instead of creating a new one.");
+  }
+}
+
+// Shared by both "a temp password was just issued" paths (new account, or
+// reset on an existing one): force a real password on next login, and log it.
+async function finishPasswordIssuance(
+  supabaseAdmin: any,
+  userId: string,
+  actor: { userId: string; email: string | null },
+  action: string,
+  reason: string,
+  details: Record<string, unknown>,
+) {
+  await supabaseAdmin.from("profiles").update({ force_password_change: true }).eq("id", userId);
+  await supabaseAdmin.from("audit_logs").insert({
+    actor_id: actor.userId,
+    actor_email: actor.email,
+    action,
+    target_type: action === "account_password_reset" ? "profile" : "user_role",
+    target_id: userId,
+    reason,
+    details,
+  });
+}
+
 /**
  * Runs at approval time (see admin-approvals.functions.ts) — creates the
  * account, grants 'advisor', and generates the one-time temp password. Kept
@@ -374,14 +403,7 @@ export async function executeAdvisorAccountBootstrap(
   data: z.infer<typeof createAdvisorAccountSchema>,
   actor: { userId: string; email: string | null },
 ) {
-  const { data: existing } = await supabaseAdmin
-    .from("profiles")
-    .select("id")
-    .eq("email", data.email)
-    .maybeSingle();
-  if (existing) {
-    throw new Error("An account with this email already exists — use “Grant advisor” instead of creating a new one.");
-  }
+  await assertNoExistingAccount(supabaseAdmin, data.email);
 
   const tempPassword = generateTempPassword();
   const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
@@ -394,25 +416,17 @@ export async function executeAdvisorAccountBootstrap(
   const userId = created.user.id;
 
   // The on_auth_user_created trigger already inserted a profiles row and a
-  // 'member' role — fill in the name/force-change flag and layer 'advisor'
-  // on top (additive; 'member' staying alongside it is harmless).
-  await supabaseAdmin
-    .from("profiles")
-    .update({ full_name: data.fullName, force_password_change: true })
-    .eq("id", userId);
+  // 'member' role — fill in the name and layer 'advisor' on top (additive;
+  // 'member' staying alongside it is harmless).
+  await supabaseAdmin.from("profiles").update({ full_name: data.fullName }).eq("id", userId);
   const { error: roleErr } = await supabaseAdmin
     .from("user_roles")
     .upsert({ user_id: userId, role: "advisor" }, { onConflict: "user_id,role" });
   if (roleErr) throw new Error(roleErr.message);
 
-  await supabaseAdmin.from("audit_logs").insert({
-    actor_id: actor.userId,
-    actor_email: actor.email,
-    action: "advisor_account_bootstrap",
-    target_type: "user_role",
-    target_id: userId,
-    reason: "ThuthukaSA advisor account creation, approved",
-    details: { role: "advisor", target_email: data.email },
+  await finishPasswordIssuance(supabaseAdmin, userId, actor, "advisor_account_bootstrap", "ThuthukaSA advisor account creation, approved", {
+    role: "advisor",
+    target_email: data.email,
   });
 
   return { ok: true, user_id: userId, email: data.email, tempPassword };
@@ -434,14 +448,7 @@ export const createAdvisorAccount = createServerFn({ method: "POST" })
     await ensureAdminOrAdvisor(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: existing } = await supabaseAdmin
-      .from("profiles")
-      .select("id")
-      .eq("email", data.email)
-      .maybeSingle();
-    if (existing) {
-      throw new Error("An account with this email already exists — use “Grant advisor” instead of creating a new one.");
-    }
+    await assertNoExistingAccount(supabaseAdmin, data.email);
 
     const { data: row, error } = await supabaseAdmin
       .from("pending_approvals")
@@ -527,17 +534,14 @@ export const resetAccountPassword = createServerFn({ method: "POST" })
     });
     if (updateErr) throw new Error(updateErr.message);
 
-    await supabaseAdmin.from("profiles").update({ force_password_change: true }).eq("id", data.user_id);
-
-    await supabaseAdmin.from("audit_logs").insert({
-      actor_id: context.userId,
-      actor_email: context.claims?.email ?? null,
-      action: "account_password_reset",
-      target_type: "profile",
-      target_id: data.user_id,
-      reason: "Admin-triggered password reset",
-      details: { target_email: profile.email },
-    });
+    await finishPasswordIssuance(
+      supabaseAdmin,
+      data.user_id,
+      { userId: context.userId, email: context.claims?.email ?? null },
+      "account_password_reset",
+      "Admin-triggered password reset",
+      { target_email: profile.email },
+    );
 
     return { ok: true, email: profile.email as string | null, tempPassword };
   });

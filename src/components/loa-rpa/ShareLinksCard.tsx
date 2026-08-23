@@ -33,7 +33,7 @@ function CopyLinkRow({ label, icon, message }: { label: string; icon: React.Reac
           <Button size="sm" variant="ghost" onClick={() => setPreviewing((v) => !v)} className="shrink-0 text-white/60 hover:bg-white/10 hover:text-white" title="Preview how this looks in a chat">
             <Eye className="size-3.5" />
           </Button>
-          <Button size="sm" variant="outline" onClick={copy} className="shrink-0 border-[#e8960a]/40 bg-transparent text-white hover:bg-[#e8960a]/15 hover:text-white">
+          <Button size="sm" variant="outline" onClick={copy} className="shrink-0 border-tksa-orange/40 bg-transparent text-white hover:bg-tksa-orange/15 hover:text-white">
             {copied ? <Check className="size-3.5 mr-1.5 text-[#34d399]" /> : <Copy className="size-3.5 mr-1.5" />}
             {copied ? "Copied" : "Copy"}
           </Button>
@@ -57,7 +57,7 @@ export function ShareLinksCard() {
   if (!origin) return null;
 
   return (
-    <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-5 space-y-4">
+    <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark p-5 space-y-4">
       <div>
         <h3 className="text-sm font-semibold text-white">Share the full LOA &amp; Risk Profile form</h3>
         <p className="mt-1 text-xs text-white/50">

@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { requestSetUserRole, requestDeleteMember, resetAccountPassword } from "@/lib/admin-roles.functions";
 import { getErrorMessage } from "@/lib/errors";
+import { AdvisorAccessSection } from "@/components/admin/AdvisorAccessSection";
 
 export const Route = createFileRoute("/admin/members")({
   component: MembersPage,
@@ -153,6 +154,18 @@ function MembersPage() {
           <Download className="size-4 mr-2" /> Export CSV
         </Button>
       </div>
+
+      {/* Also self-service on /tksa for advisors — but a plain admin with no
+          advisor role of their own needs a way in too, since /tksa redirects
+          them away. Collapsed by default, occasional-use. */}
+      <details className="rounded-lg border border-accent/30 bg-accent/5">
+        <summary className="cursor-pointer p-4 text-sm font-medium text-accent-deep">
+          ThuthukaSA advisor access
+        </summary>
+        <div className="p-4 pt-0">
+          <AdvisorAccessSection />
+        </div>
+      </details>
 
       <Card>
         <CardContent className="pt-6 space-y-4">

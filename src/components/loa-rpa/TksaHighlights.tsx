@@ -21,7 +21,7 @@ const ITEMS = [
     icon: BadgeCheck,
     title: "Compliant",
     body: "Matches Astute's own paper form field-for-field — FSP No. 47992.",
-    color: "#e8960a",
+    color: "var(--tksa-orange)",
   },
   {
     icon: Lock,
@@ -39,7 +39,7 @@ const ITEMS = [
  */
 export function TksaHighlights() {
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-5 rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-5 sm:grid-cols-4 sm:gap-6 sm:p-6">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-5 rounded-xl border border-tksa-orange/20 bg-tksa-dark p-5 sm:grid-cols-4 sm:gap-6 sm:p-6">
       {ITEMS.map(({ icon: Icon, title, body, color }) => (
         <div key={title} className="space-y-1.5">
           <div className="flex items-center gap-2">

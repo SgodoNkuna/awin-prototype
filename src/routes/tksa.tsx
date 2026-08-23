@@ -31,7 +31,7 @@ export const Route = createFileRoute("/tksa")({
 });
 
 const TKSA_TAB_TRIGGER =
-  "gap-1.5 text-white/60 data-[state=active]:bg-[#e8960a] data-[state=active]:text-[#1a1815] data-[state=active]:shadow-none";
+  "gap-1.5 text-white/60 data-[state=active]:bg-tksa-orange data-[state=active]:text-tksa-dark data-[state=active]:shadow-none";
 
 function TksaDashboard() {
   const { user, loading, isAdvisor, forcePasswordChange, signOut } = useAuth();
@@ -55,8 +55,8 @@ function TksaDashboard() {
   return (
     <div className="min-h-screen bg-[#12110f]">
       {/* ThuthukaSA's brand orange — same rgb(232,150,10) as their PDF letterhead. */}
-      <div className="h-1" style={{ background: "#e8960a" }} />
-      <header className="border-b border-[#e8960a]/20 bg-[#1a1815]">
+      <div className="h-1" style={{ background: "var(--tksa-orange)" }} />
+      <header className="border-b border-tksa-orange/20 bg-tksa-dark">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-4">
           <div className="flex items-center gap-3">
             <img src={THUTHUKA_LOGO_PNG_BASE64} alt="ThuthukaSA" className="h-10 w-auto rounded-md bg-white p-1" />
@@ -68,7 +68,7 @@ function TksaDashboard() {
           <Button
             size="sm"
             variant="outline"
-            className="border-[#e8960a]/40 bg-transparent text-white hover:bg-[#e8960a]/15 hover:text-white"
+            className="border-tksa-orange/40 bg-transparent text-white hover:bg-tksa-orange/15 hover:text-white"
             onClick={async () => {
               await supabase.auth.signOut();
               signOut();
@@ -91,7 +91,7 @@ function TksaDashboard() {
         <TksaHighlights />
 
         <div className="flex items-start gap-2 rounded-lg border p-3 text-sm" style={{ borderColor: "rgba(232,150,10,0.4)", background: "rgba(232,150,10,0.08)", color: "#f5e6c8" }}>
-          <ShieldCheck className="mt-0.5 size-4 shrink-0" style={{ color: "#e8960a" }} />
+          <ShieldCheck className="mt-0.5 size-4 shrink-0" style={{ color: "var(--tksa-orange)" }} />
           <span>
             This data is confidential to ThuthukaSA under FAIS and POPIA — Letters of Authority and Risk Profile
             Analyses submitted by A-Win members. It is not visible to A-Win committee or admin accounts.
@@ -99,7 +99,7 @@ function TksaDashboard() {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="grid w-full grid-cols-4 border border-[#e8960a]/20 bg-[#1a1815] p-1">
+          <TabsList className="grid w-full grid-cols-4 border border-tksa-orange/20 bg-tksa-dark p-1">
             <TabsTrigger value="overview" className={TKSA_TAB_TRIGGER}>
               <LayoutGrid className="size-3.5" /> Overview
             </TabsTrigger>
@@ -194,7 +194,7 @@ function DeletionRequestsPanel() {
   if (!rows || rows.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-5 space-y-3">
+    <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark p-5 space-y-3">
       <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
         <Clock className="size-4" style={{ color: "#c084fc" }} /> Submission deletion requests
       </h3>

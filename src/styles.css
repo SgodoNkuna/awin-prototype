@@ -41,6 +41,8 @@
   --color-accent-soft: var(--accent-soft);
   --color-accent-deep: var(--accent-deep);
   --color-primary-light: var(--primary-light);
+  --color-tksa-orange: var(--tksa-orange);
+  --color-tksa-dark: var(--tksa-dark);
 
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
@@ -87,6 +89,13 @@
   --primary-foreground: #FFFFFF;
   --primary-deep: #479938;
   --primary-light: #EEF9E6;
+
+  /* ThuthukaSA's own brand (dashboard at /tksa, PDF letterhead) — a second,
+     fixed-dark brand living alongside A-Win's, not tied to the light/dark
+     toggle above. Same orange/dark pair repeated ~38x as raw hex before
+     this — one definition, referenced via bg-tksa-dark etc. or var(). */
+  --tksa-orange: #e8960a;
+  --tksa-dark: #1a1815;
   --hero-foreground: #FFFFFF;
   --hero-muted: rgba(255, 255, 255, 0.97);
   --hero-surface: rgba(255, 255, 255, 0.16);

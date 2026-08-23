@@ -4,10 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-function getErrorMessage(e: unknown, fallback: string) {
-  return e instanceof Error ? e.message : fallback;
-}
+import { getErrorMessage } from "@/lib/errors";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // International format, no + or spaces — matches the placeholder/help text
@@ -47,6 +44,7 @@ export function NotifyRecipientsCard() {
     if (badEmails.length > 0) return toast.error(`Not a valid email: ${badEmails.join(", ")}`);
     const badNumbers = waList.filter((w) => !WHATSAPP_RE.test(w));
     if (badNumbers.length > 0) return toast.error(`WhatsApp numbers must be digits only, country code first, no + or spaces: ${badNumbers.join(", ")}`);
+    if (!confirm(`Save new LOA/RPA alert recipients?\n\nEmails: ${emailList.join(", ")}\nWhatsApp: ${waList.join(", ") || "(none)"}`)) return;
     setSaving(true);
     try {
       const { data: current } = await supabase.from("site_settings").select("value").eq("key", "notify_recipients").maybeSingle();
@@ -64,7 +62,7 @@ export function NotifyRecipientsCard() {
   if (!loaded) return null;
 
   return (
-    <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-5 space-y-3">
+    <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark p-5 space-y-3">
       <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
         <Bell className="size-4" style={{ color: "#60a5fa" }} /> Notification recipients
       </h3>
@@ -78,7 +76,7 @@ export function NotifyRecipientsCard() {
           value={emails}
           onChange={(e) => setEmails(e.target.value)}
           placeholder="info@thuthuka-sa.co.za"
-          className="border-[#e8960a]/20 bg-[#12110f] text-white placeholder:text-white/40"
+          className="border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40"
         />
       </div>
       <div className="grid gap-2">
@@ -87,10 +85,10 @@ export function NotifyRecipientsCard() {
           value={whatsapp}
           onChange={(e) => setWhatsapp(e.target.value)}
           placeholder="27692450228"
-          className="border-[#e8960a]/20 bg-[#12110f] text-white placeholder:text-white/40"
+          className="border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40"
         />
       </div>
-      <Button size="sm" disabled={saving} className="bg-[#e8960a] text-[#1a1815] hover:bg-[#e8960a]/90" onClick={save}>
+      <Button size="sm" disabled={saving} className="bg-tksa-orange text-tksa-dark hover:bg-tksa-orange/90" onClick={save}>
         {saving ? <Loader2 className="size-4 animate-spin" /> : "Save recipients"}
       </Button>
     </div>

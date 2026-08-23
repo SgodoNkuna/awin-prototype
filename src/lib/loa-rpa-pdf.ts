@@ -278,6 +278,10 @@ function drawRpaPage(
     }
     y = field(pdf, q, a, margin, y, colW);
     if (note) {
+      if (y > 700) {
+        pdf.addPage();
+        y = 60;
+      }
       pdf.setFont("helvetica", "italic");
       pdf.setFontSize(8.5);
       pdf.setTextColor(120, 120, 120);

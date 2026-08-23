@@ -7,10 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { requestAdvisorRoleChange, createAdvisorAccount } from "@/lib/admin-roles.functions";
-
-function getErrorMessage(e: unknown, fallback: string) {
-  return e instanceof Error ? e.message : fallback;
-}
+import { getErrorMessage } from "@/lib/errors";
 
 /**
  * Request a brand-new website account for a ThuthukaSA staff member who
@@ -47,7 +44,7 @@ function CreateAdvisorAccountCard() {
   };
 
   return (
-    <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-5 space-y-3">
+    <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark p-5 space-y-3">
       <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
         <UserPlus className="size-4" style={{ color: "#c084fc" }} /> Create ThuthukaSA advisor account
       </h3>
@@ -56,7 +53,7 @@ function CreateAdvisorAccountCard() {
         have an account? Use "Grant advisor" below instead.
       </p>
       {requested ? (
-        <div className="space-y-1 rounded-lg border border-[#e8960a]/40 bg-[#e8960a]/10 p-3 text-sm">
+        <div className="space-y-1 rounded-lg border border-tksa-orange/40 bg-tksa-orange/10 p-3 text-sm">
           <p className="font-medium text-white">Requested account for {requested}</p>
           <p className="text-xs text-white/60">
             An A-Win admin needs to approve this before it's created — once they do, they'll have the temp
@@ -71,14 +68,14 @@ function CreateAdvisorAccountCard() {
           <div className="grid gap-2 sm:grid-cols-2">
             <div>
               <label className="text-xs font-medium text-white/70">Full name</label>
-              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="ThuthukaSA Advisor" className="border-[#e8960a]/20 bg-[#12110f] text-white placeholder:text-white/40" />
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="ThuthukaSA Advisor" className="border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40" />
             </div>
             <div>
               <label className="text-xs font-medium text-white/70">Email</label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="info@thuthuka-sa.co.za" className="border-[#e8960a]/20 bg-[#12110f] text-white placeholder:text-white/40" />
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="info@thuthuka-sa.co.za" className="border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40" />
             </div>
           </div>
-          <Button size="sm" disabled={busy || !email.trim() || !fullName.trim()} className="bg-[#e8960a] text-[#1a1815] hover:bg-[#e8960a]/90" onClick={submit}>
+          <Button size="sm" disabled={busy || !email.trim() || !fullName.trim()} className="bg-tksa-orange text-tksa-dark hover:bg-tksa-orange/90" onClick={submit}>
             {busy ? <Loader2 className="size-4 animate-spin" /> : "Request account"}
           </Button>
         </>
@@ -116,7 +113,7 @@ function AdvisorAccessCard() {
   };
 
   return (
-    <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-5 space-y-3">
+    <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark p-5 space-y-3">
       <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
         <UserPlus className="size-4" style={{ color: "#c084fc" }} /> ThuthukaSA advisor access
       </h3>
@@ -127,17 +124,17 @@ function AdvisorAccessCard() {
       </p>
       <div className="grid gap-2">
         <label className="text-xs font-medium text-white/70">ThuthukaSA staff email (must already have an account)</label>
-        <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="advisor@thuthuka-sa.co.za" className="border-[#e8960a]/20 bg-[#12110f] text-white placeholder:text-white/40" />
+        <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="advisor@thuthuka-sa.co.za" className="border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40" />
       </div>
       <div className="grid gap-2">
         <label className="text-xs font-medium text-white/70">Reason (audit log, min 5 chars)</label>
-        <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="e.g. ThuthukaSA advisor onboarded 2026-08-09" className="border-[#e8960a]/20 bg-[#12110f] text-white placeholder:text-white/40" />
+        <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="e.g. ThuthukaSA advisor onboarded 2026-08-09" className="border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40" />
       </div>
       <div className="flex gap-2">
         <Button
           variant="outline"
           size="sm"
-          className="border-[#e8960a]/40 bg-transparent text-white hover:bg-[#e8960a]/15 hover:text-white"
+          className="border-tksa-orange/40 bg-transparent text-white hover:bg-tksa-orange/15 hover:text-white"
           disabled={busy !== null || !email.trim() || reason.trim().length < 5}
           onClick={() => submit("revoke")}
         >
@@ -145,7 +142,7 @@ function AdvisorAccessCard() {
         </Button>
         <Button
           size="sm"
-          className="bg-[#e8960a] text-[#1a1815] hover:bg-[#e8960a]/90"
+          className="bg-tksa-orange text-tksa-dark hover:bg-tksa-orange/90"
           disabled={busy !== null || !email.trim() || reason.trim().length < 5}
           onClick={() => submit("grant")}
         >
@@ -215,7 +212,7 @@ function RecentChangesCard() {
   if (!rows || rows.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-5 space-y-3">
+    <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark p-5 space-y-3">
       <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
         <History className="size-4" style={{ color: "#c084fc" }} /> Recent access &amp; delivery changes
       </h3>

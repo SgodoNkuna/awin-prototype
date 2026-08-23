@@ -89,7 +89,7 @@ function exportCsv(rows: Submission[]) {
 
 // ThuthukaSA's brand orange — the same rgb(232,150,10) used on their PDF
 // letterhead (see loa-rpa-pdf.ts) — plus a muted charcoal for the "other" slice.
-const CHART_ORANGE = "#e8960a";
+const CHART_ORANGE = "var(--tksa-orange)";
 const CHART_MUTED = "#57534e";
 
 /**
@@ -166,7 +166,7 @@ export function SubmissionsOverview({ stats }: { stats: Stats | null }) {
 
   if (stats.total === 0) {
     return (
-      <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] py-12 text-center text-sm text-white/50">
+      <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark py-12 text-center text-sm text-white/50">
         No submissions yet — stats and charts will appear here once the first one comes in.
       </div>
     );
@@ -184,7 +184,7 @@ export function SubmissionsOverview({ stats }: { stats: Stats | null }) {
             ["Via website", stats.website],
           ] as const
         ).map(([label, value]) => (
-          <div key={label} className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] px-4 pt-4 pb-3">
+          <div key={label} className="rounded-xl border border-tksa-orange/20 bg-tksa-dark px-4 pt-4 pb-3">
             <div className="text-2xl font-semibold text-white"><AnimateNumber value={value} /></div>
             <div className="text-xs text-white/50">{label}</div>
           </div>
@@ -192,7 +192,7 @@ export function SubmissionsOverview({ stats }: { stats: Stats | null }) {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] px-4 pt-4 pb-4">
+        <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark px-4 pt-4 pb-4">
           <div className="mb-2 text-xs font-medium text-white/60">Review status</div>
           <div className="relative">
             <ResponsiveContainer width="100%" height={180}>
@@ -223,7 +223,7 @@ export function SubmissionsOverview({ stats }: { stats: Stats | null }) {
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] px-4 pt-4 pb-4">
+        <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark px-4 pt-4 pb-4">
           <div className="mb-2 text-xs font-medium text-white/60">Submission channel</div>
           <div className="relative">
             <ResponsiveContainer width="100%" height={180}>
@@ -316,13 +316,13 @@ export function SubmissionsList({
               placeholder="Search by name or email"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="border-[#e8960a]/20 bg-[#1a1815] pl-8 text-white placeholder:text-white/40"
+              className="border-tksa-orange/20 bg-tksa-dark pl-8 text-white placeholder:text-white/40"
             />
           </div>
           <Button
             size="sm"
             variant="outline"
-            className="border-[#e8960a]/40 bg-transparent text-white hover:bg-[#e8960a]/15 hover:text-white"
+            className="border-tksa-orange/40 bg-transparent text-white hover:bg-tksa-orange/15 hover:text-white"
             onClick={() => exportCsv(filtered ?? rows)}
           >
             <FileDown className="mr-1.5 size-4" /> Export CSV
@@ -335,22 +335,22 @@ export function SubmissionsList({
           <Loader2 className="size-5 animate-spin text-white/60" />
         </div>
       ) : rows.length === 0 ? (
-        <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] py-12 text-center text-sm text-white/50">
+        <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark py-12 text-center text-sm text-white/50">
           {emptyHint ?? "No submissions yet."}
         </div>
       ) : filtered && filtered.length === 0 ? (
-        <div className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] py-12 text-center text-sm text-white/50">
+        <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark py-12 text-center text-sm text-white/50">
           No submissions match "{search}".
         </div>
       ) : (
         <div className="grid gap-3">
           {(filtered ?? rows).map((row) => (
-            <div key={row.id} className="rounded-xl border border-[#e8960a]/20 bg-[#1a1815] p-4 flex flex-wrap items-start justify-between gap-4">
+            <div key={row.id} className="rounded-xl border border-tksa-orange/20 bg-tksa-dark p-4 flex flex-wrap items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
                   <h3 className="font-semibold text-white">{row.full_name}</h3>
                   <Badge
-                    className={row.status === "reviewed" ? "border-transparent bg-[#e8960a] text-[#1a1815]" : "border-white/25 bg-transparent text-white/70"}
+                    className={row.status === "reviewed" ? "border-transparent bg-tksa-orange text-tksa-dark" : "border-white/25 bg-transparent text-white/70"}
                     variant={row.status === "reviewed" ? "default" : "outline"}
                   >
                     {row.status}
@@ -393,7 +393,7 @@ export function SubmissionsList({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="border-[#e8960a]/40 bg-transparent text-white hover:bg-[#e8960a]/15 hover:text-white"
+                    className="border-tksa-orange/40 bg-transparent text-white hover:bg-tksa-orange/15 hover:text-white"
                     disabled={busy === row.id}
                     onClick={() => markReviewed(row)}
                   >

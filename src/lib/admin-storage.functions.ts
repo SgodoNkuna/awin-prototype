@@ -57,7 +57,7 @@ export const getStorageOverview = createServerFn({ method: "GET" })
     ]);
     const referenced = new Set<string>();
     for (const r of galleryRows ?? []) {
-      if (r.storage_path) referenced.add(String(r.storage_path).replace(/^assets\//, ""));
+      if (r.storage_path) referenced.add(String(r.storage_path));
     }
     for (const r of teamRows ?? []) {
       for (const v of [r.photo_url, r.profile_card_url, r.video_url]) {
