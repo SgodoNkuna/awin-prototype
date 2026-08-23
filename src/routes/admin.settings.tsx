@@ -489,6 +489,15 @@ Other social URL:
 
 [paste the bio text here]`,
   },
+  {
+    title: "3. Design a bio poster (one-shot)",
+    text: `Design a 1600×1500px landscape professional bio poster on a white background. On one side (about 42% of the width), build a faceted geometric panel from 2-3 overlapping diagonal color blocks in a dark/light pair of a single brand color, plus one thin neutral-gray diagonal sliver for contrast. Float a portrait photo on top of the facets inside a parallelogram frame (sharp diagonal cut on one edge, ~15% slant), with a soft drop shadow so it reads as layered above the shapes. Beneath the photo, place a small logo/brand mark card. Mirror two small triangular accents from the same palette into the opposite bottom corner for symmetry.
+On the remaining ~58% of the canvas (white background), stack: a small bold uppercase eyebrow (organization/brand name) in the brand's dark accent color; a very large bold uppercase name in the same dark accent color (Poppins/geometric sans, 800 weight); one or two plain credential lines beneath it in dark gray; then 2-3 short content sections (e.g. About Us, Vision, Core Services), each with a bold uppercase letter-spaced heading in the accent color followed by a left-aligned body paragraph in dark gray (17-18px, 1.6 line-height); and a final "Contact" section with label/value pairs (phone, mobile, email, address) laid out in a wrapping row. Use only one accent color family throughout (shapes, headings, and name all share it) so the piece reads as a single coordinated brand system, never more than the one accent plus near-black body text on white.
+
+Fill in for [Name]: organization/brand name, name, credential/title line(s), tagline, About Us / Vision / Core Services text, and contact details — everything below is real content, not a placeholder to guess at:
+
+[paste the member's bio, title, tagline, and contact details here]`,
+  },
 ];
 
 function CopyPromptBlock({ title, text }: { title: string; text: string }) {
