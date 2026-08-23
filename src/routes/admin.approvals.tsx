@@ -95,6 +95,10 @@ function ApprovalsPage() {
   const [deciding, setDeciding] = useState<{ req: ApprovalRequest; decision: "approve" | "reject" } | null>(null);
   const [decisionReason, setDecisionReason] = useState("");
   const [busy, setBusy] = useState(false);
+  // Only ever populated from this call's own live response, never from a
+  // stored/reloaded row — the DB copy is redacted specifically so this is
+  // the one and only place the real password is ever visible.
+  const [revealedPassword, setRevealedPassword] = useState<{ email: string; tempPassword: string } | null>(null);
 
   const callList = useServerFn(listPendingApprovals);
   const callDecide = useServerFn(decideApproval);
@@ -162,16 +166,10 @@ function ApprovalsPage() {
                   {req.decision_reason && (
                     <p className="text-xs text-muted-foreground">Decision note: "{req.decision_reason}"</p>
                   )}
-                  {req.action_type === "advisor_account_bootstrap" && req.status === "executed" && req.result?.tempPassword && (
-                    <div className="rounded-lg border border-accent/50 bg-accent/10 p-2.5 text-xs">
-                      <p className="font-medium">Account created for {req.result.email}</p>
-                      <p>
-                        Temp password: <code className="rounded bg-background px-1.5 py-0.5 font-mono">{req.result.tempPassword}</code>
-                      </p>
-                      <p className="text-muted-foreground mt-0.5">
-                        Relay this to them now — it's shown once and isn't stored anywhere else. They'll be forced to
-                        set their own password on first login.
-                      </p>
+                  {req.action_type === "advisor_account_bootstrap" && req.status === "executed" && req.result?.email && (
+                    <div className="rounded-lg border border-border bg-muted/30 p-2.5 text-xs text-muted-foreground">
+                      Account created for {req.result.email}. The temp password was shown once, to whoever approved
+                      this, and isn't stored anywhere — if it's needed again, reset the password from Admin → Members.
                     </div>
                   )}
                   <details className="text-xs">
@@ -242,7 +240,7 @@ function ApprovalsPage() {
                 if (!deciding) return;
                 setBusy(true);
                 try {
-                  await callDecide({
+                  const res = await callDecide({
                     data: {
                       approval_id: deciding.req.id,
                       decision: deciding.decision,
@@ -250,6 +248,9 @@ function ApprovalsPage() {
                     },
                   });
                   toast.success(deciding.decision === "approve" ? "Approved and executed" : "Rejected");
+                  if (deciding.req.action_type === "advisor_account_bootstrap" && res.result?.tempPassword && res.result?.email) {
+                    setRevealedPassword({ email: res.result.email, tempPassword: res.result.tempPassword });
+                  }
                   setDeciding(null);
                   load();
                 } catch (e: any) {
@@ -262,6 +263,30 @@ function ApprovalsPage() {
               {busy && <Loader2 className="size-4 animate-spin mr-2" />}
               Confirm {deciding?.decision === "approve" ? "approval" : "rejection"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* The only place the real temp password is ever shown — populated
+          directly from decideApproval's live response, never from a
+          reloaded/stored row (the DB copy is redacted). Closing this loses
+          it for good, same as the old pre-approval-flow behavior. */}
+      <Dialog open={!!revealedPassword} onOpenChange={(o) => !o && setRevealedPassword(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Account created</DialogTitle>
+            <DialogDescription>
+              Relay this to {revealedPassword?.email} now — it's shown once, right here, and isn't stored anywhere.
+              They'll be forced to set their own password on first login.
+            </DialogDescription>
+          </DialogHeader>
+          {revealedPassword && (
+            <div className="rounded-lg border border-accent/50 bg-accent/10 p-3 text-sm">
+              Temp password: <code className="rounded bg-background px-1.5 py-0.5 font-mono">{revealedPassword.tempPassword}</code>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setRevealedPassword(null)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, Database, HardDrive, Loader2, Trash2 } from "lucide-react";
+import { AlertTriangle, Database, HardDrive, Loader2, Lock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -164,9 +164,15 @@ function StoragePage() {
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <span className="text-xs tabular-nums text-muted-foreground">{formatBytes(f.bytes)}</span>
-                    <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busyKey === key} onClick={() => remove(f.bucket_id, f.name)}>
-                      {busyKey === key ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
-                    </Button>
+                    {f.bucket_id === "loa-rpa-documents" ? (
+                      <span title="FAIS-regulated — delete via the submission itself, which requires a second admin's approval" className="text-muted-foreground">
+                        <Lock className="size-3.5" />
+                      </span>
+                    ) : (
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={busyKey === key} onClick={() => remove(f.bucket_id, f.name)}>
+                        {busyKey === key ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+                      </Button>
+                    )}
                   </div>
                 </div>
               );

@@ -78,8 +78,13 @@ export const getStorageOverview = createServerFn({ method: "GET" })
     return { buckets, largestFiles, totalBytes, unreferencedGallery };
   });
 
+// loa-rpa-documents is deliberately excluded — those PDFs already have a
+// dedicated delete path (requestDeleteLoaRpaSubmission) that requires a
+// second admin's approval plus typing the exact submission name, since
+// they're FAIS-regulated records. This generic storage-cleanup tool must
+// never be able to bypass that by deleting the file directly.
 const deleteSchema = z.object({
-  bucket: z.enum(["gallery", "member-portfolios", "onboarding-uploads", "loa-rpa-documents", "event-gallery", "documents"]),
+  bucket: z.enum(["gallery", "member-portfolios", "onboarding-uploads", "event-gallery", "documents"]),
   path: z.string().trim().min(1),
 });
 

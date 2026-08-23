@@ -161,9 +161,18 @@ export const decideApproval = createServerFn({ method: "POST" })
           throw new Error(`Unknown action_type: ${row.action_type}`);
       }
 
+      // A generated temp password must never be persisted in plain text —
+      // it's a live credential, not an audit fact. Store a redacted copy;
+      // the real value only ever goes out once, in this call's own return
+      // value, to the admin who is approving it right now.
+      const storedResult =
+        result && typeof result === "object" && "tempPassword" in (result as Record<string, unknown>)
+          ? { ...(result as Record<string, unknown>), tempPassword: "[redacted — shown once at approval time]" }
+          : result;
+
       await supabaseAdmin
         .from("pending_approvals")
-        .update({ status: "executed", result: result as any })
+        .update({ status: "executed", result: storedResult as any })
         .eq("id", data.approval_id);
 
       return { ok: true, status: "executed" as const, result: result as any };
