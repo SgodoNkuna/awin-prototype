@@ -283,7 +283,7 @@ function drawRpaPage(
         y = 60;
       }
       pdf.setFont("helvetica", "italic");
-      pdf.setFontSize(8.5);
+      pdf.setFontSize(7);
       pdf.setTextColor(120, 120, 120);
       const noteLines = pdf.splitTextToSize(note, colW);
       pdf.text(noteLines, margin, y);
