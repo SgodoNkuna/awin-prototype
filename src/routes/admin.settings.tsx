@@ -622,6 +622,7 @@ function TeamMemberDialog({
               onChange={(url) => set("profile_card_url", url)}
               displaySrc={displayImage(draft.profile_card_url)}
               altText={`${draft.name || "Team member"} profile card preview`}
+              cropAspect="free"
             />
             <HeadshotImageField
               label="Headshot (fallback)"
@@ -629,6 +630,7 @@ function TeamMemberDialog({
               onChange={(url) => set("photo_url", url)}
               displaySrc={displayImage(draft.photo_url)}
               altText={`${draft.name || "Team member"} headshot preview`}
+              cropAspect="square"
             />
           </div>
 
@@ -802,13 +804,14 @@ function TeamMemberDialog({
  * paper over.
  */
 function HeadshotImageField({
-  label, value, onChange, displaySrc, altText,
+  label, value, onChange, displaySrc, altText, cropAspect = "free",
 }: {
   label: string;
   value: string | null | undefined;
   onChange: (url: string) => void;
   displaySrc: string | null | undefined;
   altText: string;
+  cropAspect?: "free" | "square" | "portrait" | "landscape";
 }) {
   const [busy, setBusy] = useState(false);
   const [cropSource, setCropSource] = useState<File | string | null>(null);
@@ -895,6 +898,7 @@ function HeadshotImageField({
         open={cropSource !== null}
         onCancel={() => setCropSource(null)}
         onCropped={upload}
+        defaultAspect={cropAspect}
       />
     </Field>
   );
