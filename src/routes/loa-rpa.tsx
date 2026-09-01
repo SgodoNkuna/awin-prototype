@@ -225,9 +225,19 @@ function LoaRpaPage() {
       });
       if (insErr) throw insErr;
 
+      // Await this before showing success — the success screen tells the
+      // applicant no further action is needed, which invites them to close
+      // the tab immediately. A fire-and-forget call here was getting cut off
+      // by that navigation, silently dropping the admin notification even
+      // though the submission itself had already saved.
+      try {
+        await sendReceivedEmail({ data: { email: email.trim(), fullName: fullName.trim(), source, loaOnly: false } });
+      } catch {
+        // best-effort — the submission itself already succeeded
+      }
+
       setDone(true);
       toast.success("Submitted. A confirmation email is on its way.");
-      void sendReceivedEmail({ data: { email: email.trim(), fullName: fullName.trim(), source, loaOnly: false } }).catch(() => {});
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
