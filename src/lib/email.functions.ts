@@ -137,7 +137,11 @@ export const sendEventRegistrationNotification = createServerFn({ method: "POST"
       .parse(i),
   )
   .handler(async ({ data }) => {
-    const { sendEmail, adminNotifyEnabled } = await import("./email.server");
+    const { sendEmail, adminNotifyEnabled, rateLimitOk } = await import("./email.server");
+    // Abuse guard: at most 5 event-registration forwards per address per hour.
+    if (!(await rateLimitOk(`eventreg:${data.email.toLowerCase()}`, 5, 3600))) {
+      return { ok: false as const, error: "rate limited" };
+    }
     if (!(await adminNotifyEnabled("event_registration"))) return { ok: true as const };
     const { eventRegistrationEmail } = await import("./email-templates.server");
     const mail = eventRegistrationEmail(data.fullName, data.email, data.eventTitle);
