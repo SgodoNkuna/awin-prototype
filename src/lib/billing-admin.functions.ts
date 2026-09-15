@@ -1,14 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-async function ensureAdmin(ctx: { supabase: any; userId: string }) {
-  const { data: ok } = await ctx.supabase.rpc("has_role", {
-    _user_id: ctx.userId,
-    _role: "admin",
-  });
-  if (!ok) throw new Error("Forbidden: admin role required");
-}
+import { ensureAdmin } from "@/lib/admin-roles.functions";
 
 export const listPayments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

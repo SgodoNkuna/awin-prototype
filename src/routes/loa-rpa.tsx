@@ -19,15 +19,31 @@ import { emptyLoaData, emptyRpaData, type LoaData, type RpaData } from "@/lib/lo
 import { THUTHUKA_LOGO_PNG_BASE64 } from "@/lib/thuthuka-logo-base64";
 import { cn } from "@/lib/utils";
 
+// Every route inherits __root.tsx's generic "A-Win · African Women Investment
+// Network" og:title/og:description/og:image by default. That's fine for most
+// pages, but this link gets shared directly with ThuthukaSA clients (WhatsApp,
+// email) — the link-preview card is the first thing they see, and it showed
+// no mention of ThuthukaSA or what the form is for. Override every social/
+// title tag the root sets, not just <title>, so the preview matches the
+// ThuthukaSA branding already on the page itself.
+const LOA_RPA_TITLE = "Letter of Authority & Risk Profile | ThuthukaSA";
+const LOA_RPA_DESCRIPTION =
+  "Complete your Letter of Authority and Risk Profile Analysis with ThuthukaSA (FSP No. 47992), your appointed Financial Services Provider via A-Win. Takes about 5 minutes.";
+const LOA_RPA_IMAGE = "https://awin.co.za/email-assets/thuthuka-logo.png";
+
 export const Route = createFileRoute("/loa-rpa")({
   head: () => ({
     meta: [
-      { title: "LOA & Risk Profile | A-Win" },
-      {
-        name: "description",
-        content: "Complete your Letter of Authority and Risk Profile Analysis with ThuthukaSA (FSP No. 47992).",
-      },
+      { title: LOA_RPA_TITLE },
+      { name: "description", content: LOA_RPA_DESCRIPTION },
       { name: "robots", content: "noindex" },
+      { property: "og:title", content: LOA_RPA_TITLE },
+      { property: "og:description", content: LOA_RPA_DESCRIPTION },
+      { property: "og:site_name", content: "ThuthukaSA, via A-Win" },
+      { property: "og:image", content: LOA_RPA_IMAGE },
+      { name: "twitter:title", content: LOA_RPA_TITLE },
+      { name: "twitter:description", content: LOA_RPA_DESCRIPTION },
+      { name: "twitter:image", content: LOA_RPA_IMAGE },
     ],
   }),
   component: LoaRpaPage,

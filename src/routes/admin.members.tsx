@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { requestSetUserRole, requestDeleteMember, resetAccountPassword } from "@/lib/admin-roles.functions";
+import { requestSetUserRole, requestDeleteMember, requestUpdateMemberEmail, resetAccountPassword } from "@/lib/admin-roles.functions";
 import { getErrorMessage } from "@/lib/errors";
 import { AdvisorAccessSection } from "@/components/admin/AdvisorAccessSection";
 
@@ -80,6 +80,11 @@ function MembersPage() {
   const callResetPassword = useServerFn(resetAccountPassword);
   const [resetPwBusy, setResetPwBusy] = useState(false);
   const [resetPwResult, setResetPwResult] = useState<{ email: string | null; tempPassword: string } | null>(null);
+  const [changingEmail, setChangingEmail] = useState<Member | null>(null);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailChangeReason, setEmailChangeReason] = useState("");
+  const [emailChangeBusy, setEmailChangeBusy] = useState(false);
+  const callRequestEmailChange = useServerFn(requestUpdateMemberEmail);
 
   const load = async () => {
     const [{ data, error }, { data: roleRows }] = await Promise.all([
@@ -418,6 +423,69 @@ function MembersPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Change member email — changes their login identity (auth.users +
+          profiles), not just a settings field, so it goes through the same
+          two-admin approval as a role change or deletion rather than saving
+          immediately. */}
+      <Dialog open={!!changingEmail} onOpenChange={(o) => !o && setChangingEmail(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Member Email</DialogTitle>
+            <DialogDescription>
+              This changes {changingEmail?.full_name || changingEmail?.email}'s login email (they'll need to
+              use the new address to sign in). This request needs approval from a different admin before it
+              takes effect (see Admin → Approvals).
+            </DialogDescription>
+          </DialogHeader>
+          {changingEmail && (
+            <div className="space-y-3">
+              <div className="grid gap-1.5">
+                <Label className="text-xs">Current email</Label>
+                <p className="text-sm text-muted-foreground">{changingEmail.email}</p>
+              </div>
+              <div className="grid gap-1.5">
+                <Label className="text-xs">New email</Label>
+                <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} autoComplete="off" placeholder="name@example.com" />
+              </div>
+              <div className="grid gap-1.5">
+                <Label className="text-xs">Reason (audit log, min 5 chars)</Label>
+                <Textarea value={emailChangeReason} onChange={(e) => setEmailChangeReason(e.target.value)} rows={2} placeholder="e.g. Requested via WhatsApp 2026-09-15, old address inactive" />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setChangingEmail(null)}>Cancel</Button>
+            <Button
+              disabled={
+                emailChangeBusy ||
+                !changingEmail ||
+                !newEmail.trim() ||
+                newEmail.trim().toLowerCase() === (changingEmail?.email ?? "").trim().toLowerCase() ||
+                emailChangeReason.trim().length < 5
+              }
+              onClick={async () => {
+                if (!changingEmail) return;
+                setEmailChangeBusy(true);
+                try {
+                  await callRequestEmailChange({
+                    data: { user_id: changingEmail.id, new_email: newEmail.trim(), reason: emailChangeReason.trim() },
+                  });
+                  toast.success("Email change requested — needs approval from a different admin");
+                  setChangingEmail(null);
+                } catch (e: any) {
+                  toast.error(getErrorMessage(e, "Failed to request email change"));
+                } finally {
+                  setEmailChangeBusy(false);
+                }
+              }}
+            >
+              {emailChangeBusy ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
+              Request email change
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
@@ -426,7 +494,20 @@ function MembersPage() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-medium">{editing.full_name || "(no name)"}</p>
-                <p className="text-xs text-muted-foreground">{editing.email}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-muted-foreground">{editing.email}</p>
+                  <button
+                    type="button"
+                    className="text-xs text-accent underline-offset-2 hover:underline"
+                    onClick={() => {
+                      setChangingEmail(editing);
+                      setNewEmail("");
+                      setEmailChangeReason("");
+                    }}
+                  >
+                    Change
+                  </button>
+                </div>
               </div>
               <div className="grid gap-2">
                 <label className="text-xs font-medium">Payment Type</label>

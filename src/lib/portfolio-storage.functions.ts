@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { ensureAdmin } from "@/lib/admin-roles.functions";
 
 const BUCKET = "member-portfolios";
 const SIGNED_TTL_SECONDS = 60 * 60; // 1 hour
@@ -84,11 +85,7 @@ export const signPortfolioUrls = createServerFn({ method: "POST" })
 export const getPortfolioMirrorStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
+    await ensureAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("site_settings")
@@ -123,12 +120,7 @@ export const mirrorPortfolioAssets = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<MirrorSummary> => {
     const dryRun = !!data.dry_run;
-    const { data: isAdmin, error: roleErr } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (roleErr) throw new Error(roleErr.message);
-    if (!isAdmin) throw new Error("Forbidden");
+    await ensureAdmin(context);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -255,11 +247,7 @@ export const purgeOrphanPortfolioObjects = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<PurgeSummary> => {
     const dryRun = !!data.dry_run;
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
+    await ensureAdmin(context);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

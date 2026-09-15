@@ -300,6 +300,79 @@ export const requestDeleteMember = createServerFn({ method: "POST" })
     return { ok: true, approval_id: row.id };
   });
 
+export const updateMemberEmailSchema = z.object({
+  user_id: z.string().uuid(),
+  new_email: z.string().trim().email(),
+  reason: z.string().trim().min(5).max(500),
+});
+
+/**
+ * Changes a member's login email (auth.users + profiles, kept in sync).
+ * Goes through the same two-admin approval flow as a role change or member
+ * deletion rather than executing immediately like a password reset — unlike
+ * access recovery, this changes who the account *is* (where future password
+ * resets and login go), so a single admin acting alone is the wrong bar here.
+ */
+export async function executeUpdateMemberEmail(
+  supabaseAdmin: any,
+  data: z.infer<typeof updateMemberEmailSchema>,
+  actor: { userId: string; email: string | null },
+) {
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("id, email, full_name")
+    .eq("id", data.user_id)
+    .maybeSingle();
+  if (!profile) throw new Error("Member not found");
+
+  const newEmail = data.new_email.trim().toLowerCase();
+
+  const { error: authErr } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+    email: newEmail,
+    email_confirm: true,
+  });
+  if (authErr) throw new Error(authErr.message);
+
+  const { error: profileErr } = await supabaseAdmin
+    .from("profiles")
+    .update({ email: newEmail })
+    .eq("id", data.user_id);
+  if (profileErr) throw new Error(profileErr.message);
+
+  await supabaseAdmin.from("audit_logs").insert({
+    actor_id: actor.userId,
+    actor_email: actor.email,
+    action: "member_email_update",
+    target_type: "profile",
+    target_id: data.user_id,
+    reason: data.reason,
+    details: { old_email: profile.email, new_email: newEmail },
+  });
+
+  return { ok: true, old_email: profile.email as string | null, new_email: newEmail };
+}
+
+export const requestUpdateMemberEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => updateMemberEmailSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("pending_approvals")
+      .insert({
+        action_type: "member_email_update",
+        payload: data,
+        reason: data.reason,
+        requested_by: context.userId,
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    notifyNewApprovalRequest("Update member email", data.reason, context.claims?.email ?? "an admin");
+    return { ok: true, approval_id: row.id };
+  });
+
 export const requestDeleteApplication = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => deleteApplicationSchema.parse(i))

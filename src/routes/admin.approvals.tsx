@@ -27,7 +27,9 @@ type ApprovalRequest = {
   id: string;
   action_type:
     | "member_delete"
+    | "member_email_update"
     | "application_delete"
+    | "loa_rpa_submission_delete"
     | "role_grant"
     | "role_revoke"
     | "site_settings_update"
@@ -50,7 +52,9 @@ type ApprovalRequest = {
 
 const ACTION_LABELS: Record<ApprovalRequest["action_type"], string> = {
   member_delete: "Delete member",
+  member_email_update: "Change member email",
   application_delete: "Delete application",
+  loa_rpa_submission_delete: "Delete LOA/RPA submission",
   role_grant: "Grant advisor/admin role",
   role_revoke: "Revoke advisor/admin role",
   site_settings_update: "Publish settings change",
@@ -69,8 +73,12 @@ function payloadSummary(req: ApprovalRequest): string {
   switch (req.action_type) {
     case "member_delete":
       return `Member: ${p.confirm_email}`;
+    case "member_email_update":
+      return `Change email to: ${p.new_email}`;
     case "application_delete":
       return `Applicant: ${p.confirm_name}`;
+    case "loa_rpa_submission_delete":
+      return `Submission: ${p.confirm_name}`;
     case "role_grant":
     case "role_revoke":
       return `Target: ${p.email ?? p.user_id}`;

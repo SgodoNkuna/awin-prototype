@@ -23,15 +23,25 @@ import { cn } from "@/lib/utils";
  * confidentiality model with /loa-rpa (advisor-only visibility, standalone
  * PDF) — it's the RPA step that's skipped here, not the security.
  */
+// See loa-rpa.tsx for why every social/title tag is overridden here, not
+// just <title> — this link is shared directly with ThuthukaSA clients too.
+const LOA_TITLE = "Letter of Authority | ThuthukaSA";
+const LOA_DESCRIPTION = "Complete your Letter of Authority with ThuthukaSA (FSP No. 47992), your appointed Financial Services Provider via A-Win.";
+const LOA_IMAGE = "https://awin.co.za/email-assets/thuthuka-logo.png";
+
 export const Route = createFileRoute("/loa")({
   head: () => ({
     meta: [
-      { title: "Letter of Authority | A-Win" },
-      {
-        name: "description",
-        content: "Complete your Letter of Authority with ThuthukaSA (FSP No. 47992).",
-      },
+      { title: LOA_TITLE },
+      { name: "description", content: LOA_DESCRIPTION },
       { name: "robots", content: "noindex" },
+      { property: "og:title", content: LOA_TITLE },
+      { property: "og:description", content: LOA_DESCRIPTION },
+      { property: "og:site_name", content: "ThuthukaSA, via A-Win" },
+      { property: "og:image", content: LOA_IMAGE },
+      { name: "twitter:title", content: LOA_TITLE },
+      { name: "twitter:description", content: LOA_DESCRIPTION },
+      { name: "twitter:image", content: LOA_IMAGE },
     ],
   }),
   component: LoaOnlyPage,

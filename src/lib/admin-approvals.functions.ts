@@ -8,6 +8,7 @@ import {
   executeDeleteApplication,
   executeDeleteLoaRpaSubmission,
   executeAdvisorAccountBootstrap,
+  executeUpdateMemberEmail,
 } from "@/lib/admin-roles.functions";
 import {
   executeSiteSettingsUpdate,
@@ -131,6 +132,9 @@ export const decideApproval = createServerFn({ method: "POST" })
       switch (row.action_type) {
         case "member_delete":
           result = await executeDeleteMember(supabaseAdmin, payload, actor);
+          break;
+        case "member_email_update":
+          result = await executeUpdateMemberEmail(supabaseAdmin, payload, actor);
           break;
         case "application_delete":
           result = await executeDeleteApplication(supabaseAdmin, payload, actor);
