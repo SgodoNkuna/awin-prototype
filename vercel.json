@@ -1,6 +1,14 @@
 {
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "NITRO_PRESET=vercel npm run build",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "awinwebsite-african-women-investment-network.vercel.app" }],
+      "destination": "https://awin.co.za/:path*",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

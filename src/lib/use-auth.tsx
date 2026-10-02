@@ -51,7 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // stale role/force-password-change state before the second call caught
     // up — which is exactly what silently skipped the forced password
     // change redirect for a freshly created account.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      // Reset-password *link* (Supabase's default email) signs the user in
+      // with a recovery session — send them to set a new password.
+      if (event === "PASSWORD_RECOVERY" && !window.location.search.includes("recover=1")) {
+        window.location.replace("/auth?recover=1");
+        return;
+      }
       setSession(s);
       if (s?.user) {
         // Keep loading true until the role check resolves so admin gates don't flash-redirect.

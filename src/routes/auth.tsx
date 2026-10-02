@@ -138,8 +138,10 @@ function AuthPage() {
   const [tab, setTab] = useState<"signin" | "signup" | "reset">("signin");
   const [busy, setBusy] = useState(false);
 
+  const recovering = typeof window !== "undefined" && window.location.search.includes("recover=1");
+
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading || !user || recovering) return;
     // Admins land on the admin dashboard, ThuthukaSA advisors on their own
     // dashboard, everyone else continues to the member portal.
     navigate({ to: isAdmin ? "/admin" : isAdvisor ? "/tksa" : "/portal", replace: true });
@@ -185,6 +187,45 @@ function AuthPage() {
     toast.success("Account created. Check your email to confirm.");
     setTab("signin");
   };
+
+  if (recovering && user) {
+    return (
+      <div className="container mx-auto flex min-h-[80vh] items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-md border-border bg-card text-card-foreground">
+          <CardHeader>
+            <CardTitle className="font-serif text-2xl text-center text-foreground">Set a new password</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              className="space-y-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const fd = new FormData(e.currentTarget);
+                const pw = String(fd.get("pw") ?? "");
+                if (pw.length < 8) return toast.error("At least 8 characters");
+                if (pw !== String(fd.get("pw2") ?? "")) return toast.error("Passwords do not match");
+                setBusy(true);
+                const { error } = await supabase.auth.updateUser({ password: pw });
+                setBusy(false);
+                if (error) return toast.error(error.message);
+                await supabase.from("profiles").update({ force_password_change: false }).eq("id", user.id);
+                toast.success("Password set");
+                window.location.replace(isAdmin ? "/admin" : isAdvisor ? "/tksa" : "/portal");
+              }}
+            >
+              <p className="text-sm text-muted-foreground">Signed in as {user.email}. Choose your new password.</p>
+              <Input name="pw" type="password" required minLength={8} maxLength={72} placeholder="New password" />
+              <Input name="pw2" type="password" required minLength={8} maxLength={72} placeholder="Confirm new password" />
+              <Button type="submit" className="w-full" disabled={busy}>
+                {busy && <Loader2 className="size-4 animate-spin mr-2" />}
+                Save password
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto flex min-h-[80vh] items-center justify-center px-4 py-12">
