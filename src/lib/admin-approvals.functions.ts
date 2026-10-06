@@ -9,6 +9,8 @@ import {
   executeDeleteLoaRpaSubmission,
   executeAdvisorAccountBootstrap,
   executeUpdateMemberEmail,
+  isTksaApproval,
+  TKSA_ONLY_DECISION,
 } from "@/lib/admin-roles.functions";
 import {
   executeSiteSettingsUpdate,
@@ -73,6 +75,9 @@ export const decideApproval = createServerFn({ method: "POST" })
     if (loadError) throw new Error(loadError.message);
     if (!row) throw new Error("Approval request not found");
     if (row.status !== "pending") throw new Error(`Already ${row.status}`);
+    // ThuthukaSA team changes are decided only by ThuthukaSA's approver, on
+    // /tksa (decideTksaRequest) — never by a general A-Win admin here.
+    if (isTksaApproval(row)) throw new Error(TKSA_ONLY_DECISION);
     if (row.requested_by === context.userId) {
       throw new Error("A second, different admin must approve this request — you cannot approve your own request");
     }
