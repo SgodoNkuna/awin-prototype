@@ -41,7 +41,15 @@ const signUpSchema = signInSchema.extend({
  * unlike a normal password change, a recovery-flow session does not need
  * `current_password` (the whole point of "forgot" is not having it).
  */
-function ForgotPasswordFlow({ onDone, initialEmail = "" }: { onDone: () => void; initialEmail?: string }) {
+function ForgotPasswordFlow({
+  onDone,
+  onHoldRedirect,
+  initialEmail = "",
+}: {
+  onDone: () => void;
+  onHoldRedirect: (hold: boolean) => void;
+  initialEmail?: string;
+}) {
   const callReset = useServerFn(requestPasswordReset);
   const [step, setStep] = useState<"request" | "verify">("request");
   const [email, setEmail] = useState(initialEmail);
@@ -73,18 +81,28 @@ function ForgotPasswordFlow({ onDone, initialEmail = "" }: { onDone: () => void;
     if (password.length < 8) return toast.error("At least 8 characters");
     if (password !== confirm) return toast.error("Passwords do not match");
     setBusy(true);
+    // verifyOtp signs them in, which would otherwise trigger the page's
+    // role-based redirect before the new password is saved — and a user
+    // flagged force_password_change would land on /change-password asking
+    // for a temp password they never had.
+    onHoldRedirect(true);
     const { error: otpError } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.trim(), type: "recovery" });
     if (otpError) {
       setBusy(false);
+      onHoldRedirect(false);
       return toast.error(otpError.message || "Invalid or expired code");
     }
     const { error: updateError } = await supabase.auth.updateUser({ password });
-    setBusy(false);
-    if (updateError) return toast.error(updateError.message || "Could not set new password");
+    if (updateError) {
+      setBusy(false);
+      return toast.error(updateError.message || "Could not set new password");
+    }
     const { data: { user: me } } = await supabase.auth.getUser();
     if (me) await supabase.from("profiles").update({ force_password_change: false }).eq("id", me.id);
     toast.success("Password set — you're signed in");
     onDone();
+    // Full reload so roles and the password-change flag are re-read fresh.
+    window.location.replace("/auth");
   };
 
   return (
@@ -156,9 +174,14 @@ function AuthPage() {
   const [tab, setTab] = useState<"signin" | "signup" | "reset">("signin");
   const [busy, setBusy] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-  const [recovering, setRecovering] = useState(
-    () => typeof window !== "undefined" && window.location.search.includes("recover=1"),
-  );
+  const [recovering, setRecovering] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const q = new URLSearchParams(window.location.search);
+    // A recovery link must hold the redirect from the very first render —
+    // verifyOtp signs them in before we get to flip this on.
+    return q.get("recover") === "1" || (!!q.get("token_hash") && q.get("type") === "recovery");
+  });
+  const [holdRedirect, setHoldRedirect] = useState(false);
   const verifying = useRef(false);
 
   // Links in our own (ZeptoMail) emails land here as ?token_hash=…&type=…
@@ -173,6 +196,7 @@ function AuthPage() {
       const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
       if (error) {
         window.history.replaceState(null, "", "/auth");
+        setRecovering(false);
         toast.error("That link has expired or was already used. Use “Forgot password?” to get a fresh one.");
         setTab("reset");
         return;
@@ -188,12 +212,12 @@ function AuthPage() {
   }, []);
 
   useEffect(() => {
-    if (loading || !user || recovering) return;
+    if (loading || !user || recovering || holdRedirect) return;
     // ThuthukaSA advisors land on their own dashboard (even if someone also
     // gave them admin — the A-Win console can't show LOA/RPA data), A-Win
     // admins on the admin dashboard, everyone else on the member portal.
     navigate({ to: isAdvisor ? "/tksa" : isAdmin ? "/admin" : "/portal", replace: true });
-  }, [user, isAdmin, isAdvisor, loading, navigate, recovering]);
+  }, [user, isAdmin, isAdvisor, loading, navigate, recovering, holdRedirect]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -335,7 +359,7 @@ function AuthPage() {
           {tab === "reset" ? (
             <>
               {/* The role-aware redirect effect above fires once `user` is set — no need to duplicate its admin/advisor/member logic here. */}
-              <ForgotPasswordFlow onDone={() => {}} initialEmail={resetEmail} />
+              <ForgotPasswordFlow onDone={() => {}} onHoldRedirect={setHoldRedirect} initialEmail={resetEmail} />
               <p className="text-center text-sm text-muted-foreground mt-4">
                 <button type="button" className="hover:text-primary underline-offset-2 hover:underline" onClick={() => setTab("signin")}>
                   ← Back to sign in
