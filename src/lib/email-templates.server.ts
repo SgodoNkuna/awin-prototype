@@ -289,7 +289,7 @@ export type SetPasswordKind = "reset" | "advisor_welcome" | "advisor_access";
 /**
  * One email for every "you need to choose a password" moment: a forgotten
  * password, a brand-new ThuthukaSA account, or advisor access just granted
- * on an existing account. Carries both a one-click link and the 6-digit code
+ * on an existing account. Carries both a one-click link and the one-time code
  * (for anyone whose mail scanner pre-clicks links and burns them).
  */
 export function setPasswordEmail(kind: SetPasswordKind, fullName: string | null, email: string, link: string, code: string) {

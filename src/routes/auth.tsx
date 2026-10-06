@@ -33,7 +33,7 @@ const signUpSchema = signInSchema.extend({
 });
 
 /**
- * Forgot-password: a 6-digit code (plus a one-click link) emailed by our own
+ * Forgot-password: a one-time code (plus a one-click link) emailed by our own
  * requestPasswordReset server fn through ZeptoMail — not Supabase's built-in
  * mailer, which was rate-limiting and landing in spam (see auth-email.server.ts).
  *
@@ -71,13 +71,17 @@ function ForgotPasswordFlow({
     }
     setBusy(false);
     setEmail(parsed.data.toLowerCase());
-    toast.success("If that email has an account, a 6-digit code is on its way. Check spam/junk too.");
+    toast.success("If that email has an account, a code is on its way. Check spam/junk too.");
     setStep("verify");
   };
 
   const verifyAndSet = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (code.trim().length < 6) return toast.error("Enter the 6-digit code from your email");
+    // Supabase's OTP length is a project setting (currently 8 digits) — accept
+    // whatever length arrives rather than hard-coding one. A 6-character cap
+    // here used to make the 8-digit code impossible to type in.
+    const cleanCode = code.replace(/\D/g, "");
+    if (cleanCode.length < 6) return toast.error("Enter the code from your email");
     if (password.length < 8) return toast.error("At least 8 characters");
     if (password !== confirm) return toast.error("Passwords do not match");
     setBusy(true);
@@ -86,7 +90,7 @@ function ForgotPasswordFlow({
     // flagged force_password_change would land on /change-password asking
     // for a temp password they never had.
     onHoldRedirect(true);
-    const { error: otpError } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.trim(), type: "recovery" });
+    const { error: otpError } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: cleanCode, type: "recovery" });
     if (otpError) {
       setBusy(false);
       onHoldRedirect(false);
@@ -110,7 +114,7 @@ function ForgotPasswordFlow({
       {step === "request" ? (
         <form onSubmit={sendCode} className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Enter your account email — we'll send a 6-digit code to reset your password.
+            Enter your account email — we'll send a code to reset your password.
           </p>
           <div className="space-y-1.5">
             <Label htmlFor="fp-email" className="text-foreground">Email</Label>
@@ -130,9 +134,9 @@ function ForgotPasswordFlow({
             <button type="button" className="underline" onClick={() => setStep("request")}>send another</button>.
           </p>
           <div className="space-y-1.5">
-            <Label htmlFor="fp-code" className="text-foreground">6-digit code</Label>
-            <Input id="fp-code" required maxLength={6} value={code} onChange={(e) => setCode(e.target.value)}
-              placeholder="123456" className="bg-background text-foreground placeholder:text-muted-foreground" />
+            <Label htmlFor="fp-code" className="text-foreground">Code from your email</Label>
+            <Input id="fp-code" required maxLength={12} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)}
+              placeholder="12345678" className="bg-background text-foreground placeholder:text-muted-foreground" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="fp-password" className="text-foreground">New Password</Label>

@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       // Reset-password *link* in Supabase's own email format (tokens in the
       // URL hash) signs the user in with a recovery session — send them to
-      // set a new password. Our own emails (?token_hash=…) and the 6-digit
+      // set a new password. Our own emails (?token_hash=…) and the emailed
       // code flow handle this on /auth themselves; a full-page redirect here
       // would cut them off mid-way and make people type the password twice.
       if (event === "PASSWORD_RECOVERY" && window.location.hash.includes("type=recovery") && !window.location.search.includes("recover=1")) {

@@ -23,7 +23,7 @@ async function authLink(tokenHash: string, type: "recovery" | "signup") {
 }
 
 /**
- * Emails a "choose your password" link + 6-digit code. Also used to get
+ * Emails a "choose your password" link + one-time code. Also used to get
  * an unconfirmed account working: verifying a recovery token confirms the
  * email address too, so nobody is ever stuck on "Email not confirmed".
  */

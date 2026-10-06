@@ -7,7 +7,7 @@ function clientIp() {
 }
 
 /**
- * Public: "Forgot password?" — emails a reset link + 6-digit code via
+ * Public: "Forgot password?" — emails a reset link + one-time code via
  * ZeptoMail (see auth-email.server.ts for why not Supabase's mailer).
  * Always answers the same way whether or not the account exists, so this
  * can't be used to probe which emails are registered.
