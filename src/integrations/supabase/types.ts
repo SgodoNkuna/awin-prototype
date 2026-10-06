@@ -1000,7 +1000,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "member" | "advisor"
+      app_role: "admin" | "member" | "advisor" | "tksa_manager"
       application_status: "pending" | "under_review" | "approved" | "rejected"
       approval_action_type:
         | "member_delete"
@@ -1144,7 +1144,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "member", "advisor"],
+      app_role: ["admin", "member", "advisor", "tksa_manager"],
       application_status: ["pending", "under_review", "approved", "rejected"],
       approval_action_type: [
         "member_delete",

@@ -189,7 +189,11 @@ function ApprovalsPage() {
                 </div>
                 {req.status === "pending" && (
                   <div className="flex gap-2">
-                    {req.is_own_request ? (
+                    {isTksaRequest(req) ? (
+                      <p className="flex max-w-56 items-center gap-1.5 text-xs text-muted-foreground">
+                        <ShieldAlert className="size-3.5 shrink-0" /> Decided by ThuthukaSA's approver on the ThuthukaSA dashboard, not here
+                      </p>
+                    ) : req.is_own_request ? (
                       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <ShieldAlert className="size-3.5" /> Needs a different admin
                       </p>
@@ -277,6 +281,14 @@ function ApprovalsPage() {
       </Dialog>
 
     </div>
+  );
+}
+
+/** ThuthukaSA team changes — only ThuthukaSA's approver decides these (on /tksa), never an A-Win admin. */
+function isTksaRequest(req: ApprovalRequest) {
+  return (
+    req.action_type === "advisor_account_bootstrap" ||
+    ((req.action_type === "role_grant" || req.action_type === "role_revoke") && (req.payload as { role?: string })?.role === "advisor")
   );
 }
 

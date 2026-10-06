@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, UserPlus, History, AlertTriangle, Mail, UserMinus, Clock, Users2 } from "lucide-react";
+import { Loader2, UserPlus, History, AlertTriangle, Mail, UserMinus, Clock, Users2, CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   listAdvisorTeam,
   resendAdvisorLoginEmail,
   requestAdvisorRoleChange,
+  decideTksaRequest,
 } from "@/lib/admin-roles.functions";
 import { getErrorMessage } from "@/lib/errors";
 
@@ -24,18 +25,23 @@ const INPUT = "border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-wh
  * whether that's a brand-new account or advisor access on an existing one —
  * ThuthukaSA used to have to guess which of two forms to use.
  *
- * Once an A-Win admin approves, the new person is emailed a set-password
- * link directly. No temp password is ever relayed by hand.
+ * Requests are approved only by ThuthukaSA's named approver (Tebogo, role
+ * 'tksa_manager') — never a general A-Win admin. The approver sees
+ * Approve/Reject on each request here, and her own adds/removals take effect
+ * straight away. Once approved, the new person is emailed a set-password link
+ * directly. No temp password is ever relayed by hand.
  */
 function TeamCard() {
   const callList = useServerFn(listAdvisorTeam);
   const callAdd = useServerFn(requestAddAdvisorTeamMember);
   const callResend = useServerFn(resendAdvisorLoginEmail);
   const callRole = useServerFn(requestAdvisorRoleChange);
+  const callDecide = useServerFn(decideTksaRequest);
   const [team, setTeam] = useState<Team | null>(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const approver = team?.approverNames.length ? team.approverNames.map((n) => n.split(" ")[0]).join(" or ") : "ThuthukaSA's approver";
 
   const load = useCallback(async () => {
     try {
@@ -54,8 +60,12 @@ function TeamCard() {
     if (!email.trim() || !fullName.trim()) return;
     setBusy("add");
     try {
-      await callAdd({ data: { email: email.trim(), fullName: fullName.trim() } });
-      toast.success("Requested. Once an A-Win admin approves, they'll get an email to set their password.");
+      const res = await callAdd({ data: { email: email.trim(), fullName: fullName.trim() } });
+      toast.success(
+        res.immediate
+          ? "Added. They've been emailed a link to set their password."
+          : `Requested. Once ${approver} approves, they'll get an email to set their password.`,
+      );
       setEmail("");
       setFullName("");
       await load();
@@ -79,11 +89,34 @@ function TeamCard() {
   };
 
   const remove = async (to: string) => {
-    if (!confirm(`Remove ${to}'s access to the ThuthukaSA dashboard?\n\nAn A-Win admin has to approve it before it takes effect.`)) return;
+    const msg = team?.viewerIsApprover
+      ? `Remove ${to}'s access to the ThuthukaSA dashboard?\n\nThis takes effect straight away.`
+      : `Remove ${to}'s access to the ThuthukaSA dashboard?\n\n${approver} has to approve it before it takes effect.`;
+    if (!confirm(msg)) return;
     setBusy(`remove:${to}`);
     try {
-      await callRole({ data: { email: to, action: "revoke", reason: `Remove ${to} from the ThuthukaSA team` } });
-      toast.success("Removal requested. An A-Win admin needs to approve it.");
+      const res = await callRole({ data: { email: to, action: "revoke", reason: `Remove ${to} from the ThuthukaSA team` } });
+      toast.success(res.immediate ? `${to} no longer has access.` : `Removal requested. ${approver} needs to approve it.`);
+      await load();
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed"));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const decide = async (id: string, decision: "approve" | "reject", who: string) => {
+    let reason: string | undefined;
+    if (decision === "reject") {
+      const r = prompt(`Reject the request for ${who}? Optional: say why (the team will see this).`);
+      if (r === null) return;
+      reason = r.trim() || undefined;
+    } else if (!confirm(`Approve the request for ${who}?`)) return;
+    setBusy(`decide:${id}`);
+    try {
+      await callDecide({ data: { approval_id: id, decision, reason } });
+      toast.success(decision === "approve" ? `Approved. ${who} has been emailed.` : "Rejected.");
+      await load();
     } catch (err) {
       toast.error(getErrorMessage(err, "Failed"));
     } finally {
@@ -96,6 +129,14 @@ function TeamCard() {
       <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
         <Users2 className="size-4" style={{ color: "#c084fc" }} /> ThuthukaSA team
       </h3>
+      {team && (
+        <p className="-mt-2 flex items-center gap-1.5 text-xs text-white/50">
+          <ShieldCheck className="size-3.5 text-tksa-orange" />
+          {team.viewerIsApprover
+            ? "You are ThuthukaSA's approver: you approve requests below, and people you add or remove change straight away."
+            : `New team members are approved by ${approver} (ThuthukaSA's approver), not by A-Win admins.`}
+        </p>
+      )}
 
       {!team ? (
         <Loader2 className="size-4 animate-spin text-white/50" />
@@ -122,12 +163,25 @@ function TeamCard() {
             </div>
           ))}
           {team.pending.map((p) => (
-            <div key={p.email} className="flex items-center gap-2 rounded-md border border-dashed border-tksa-orange/30 p-2.5 text-xs text-white/60">
-              <Clock className="size-3.5 shrink-0 text-tksa-orange" />
-              <span>
-                <span className="text-white/80">{p.fullName || p.email}</span> ({p.email}) — waiting for an A-Win admin to approve
-                (requested {new Date(p.requestedAt).toLocaleDateString()})
+            <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed border-tksa-orange/30 p-2.5 text-xs text-white/60">
+              <span className="flex items-center gap-2">
+                <Clock className="size-3.5 shrink-0 text-tksa-orange" />
+                <span>
+                  {p.kind === "remove" ? "Remove " : "Add "}
+                  <span className="text-white/80">{p.fullName || p.email}</span> ({p.email}) — waiting for {approver} to approve
+                  {p.requestedBy ? ` · asked by ${p.requestedBy}` : ""} ({new Date(p.requestedAt).toLocaleDateString()})
+                </span>
               </span>
+              {p.canDecide && (
+                <span className="flex gap-1.5">
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-white/60 hover:bg-white/10 hover:text-white" disabled={busy !== null} onClick={() => decide(p.id, "reject", p.email)}>
+                    <XCircle className="mr-1 size-3.5" /> Reject
+                  </Button>
+                  <Button size="sm" className="h-7 bg-tksa-orange px-2 text-xs text-tksa-dark hover:bg-tksa-orange/90" disabled={busy !== null} onClick={() => decide(p.id, "approve", p.email)}>
+                    {busy === `decide:${p.id}` ? <Loader2 className="size-3.5 animate-spin" /> : <><CheckCircle2 className="mr-1 size-3.5" /> Approve</>}
+                  </Button>
+                </span>
+              )}
             </div>
           ))}
         </div>
@@ -142,11 +196,12 @@ function TeamCard() {
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@thuthuka-sa.co.za" className={INPUT} />
         </div>
         <p className="text-xs text-white/50">
-          Works whether or not they already have a website account. An A-Win admin approves it, then they're emailed a link to
-          set their own password.
+          {team?.viewerIsApprover
+            ? "Works whether or not they already have a website account. They're added straight away and emailed a link to set their own password."
+            : `Works whether or not they already have a website account. ${approver} approves it, then they're emailed a link to set their own password.`}
         </p>
         <Button type="submit" size="sm" disabled={busy !== null || !email.trim() || !fullName.trim()} className="bg-tksa-orange text-tksa-dark hover:bg-tksa-orange/90">
-          {busy === "add" ? <Loader2 className="size-4 animate-spin" /> : "Request access"}
+          {busy === "add" ? <Loader2 className="size-4 animate-spin" /> : team?.viewerIsApprover ? "Add now" : "Request access"}
         </Button>
       </form>
     </div>

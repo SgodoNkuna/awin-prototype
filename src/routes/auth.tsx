@@ -33,7 +33,7 @@ const signUpSchema = signInSchema.extend({
 });
 
 /**
- * Forgot-password: a 6-digit code (plus a one-click link) emailed by our own
+ * Forgot-password: a one-time code (plus a one-click link) emailed by our own
  * requestPasswordReset server fn through ZeptoMail — not Supabase's built-in
  * mailer, which was rate-limiting and landing in spam (see auth-email.server.ts).
  *
@@ -41,7 +41,15 @@ const signUpSchema = signInSchema.extend({
  * unlike a normal password change, a recovery-flow session does not need
  * `current_password` (the whole point of "forgot" is not having it).
  */
-function ForgotPasswordFlow({ onDone, initialEmail = "" }: { onDone: () => void; initialEmail?: string }) {
+function ForgotPasswordFlow({
+  onDone,
+  onHoldRedirect,
+  initialEmail = "",
+}: {
+  onDone: () => void;
+  onHoldRedirect: (hold: boolean) => void;
+  initialEmail?: string;
+}) {
   const callReset = useServerFn(requestPasswordReset);
   const [step, setStep] = useState<"request" | "verify">("request");
   const [email, setEmail] = useState(initialEmail);
@@ -63,28 +71,42 @@ function ForgotPasswordFlow({ onDone, initialEmail = "" }: { onDone: () => void;
     }
     setBusy(false);
     setEmail(parsed.data.toLowerCase());
-    toast.success("If that email has an account, a 6-digit code is on its way. Check spam/junk too.");
+    toast.success("If that email has an account, a code is on its way. Check spam/junk too.");
     setStep("verify");
   };
 
   const verifyAndSet = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (code.trim().length < 6) return toast.error("Enter the 6-digit code from your email");
+    // Supabase's OTP length is a project setting (currently 8 digits) — accept
+    // whatever length arrives rather than hard-coding one. A 6-character cap
+    // here used to make the 8-digit code impossible to type in.
+    const cleanCode = code.replace(/\D/g, "");
+    if (cleanCode.length < 6) return toast.error("Enter the code from your email");
     if (password.length < 8) return toast.error("At least 8 characters");
     if (password !== confirm) return toast.error("Passwords do not match");
     setBusy(true);
-    const { error: otpError } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.trim(), type: "recovery" });
+    // verifyOtp signs them in, which would otherwise trigger the page's
+    // role-based redirect before the new password is saved — and a user
+    // flagged force_password_change would land on /change-password asking
+    // for a temp password they never had.
+    onHoldRedirect(true);
+    const { error: otpError } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: cleanCode, type: "recovery" });
     if (otpError) {
       setBusy(false);
+      onHoldRedirect(false);
       return toast.error(otpError.message || "Invalid or expired code");
     }
     const { error: updateError } = await supabase.auth.updateUser({ password });
-    setBusy(false);
-    if (updateError) return toast.error(updateError.message || "Could not set new password");
+    if (updateError) {
+      setBusy(false);
+      return toast.error(updateError.message || "Could not set new password");
+    }
     const { data: { user: me } } = await supabase.auth.getUser();
     if (me) await supabase.from("profiles").update({ force_password_change: false }).eq("id", me.id);
     toast.success("Password set — you're signed in");
     onDone();
+    // Full reload so roles and the password-change flag are re-read fresh.
+    window.location.replace("/auth");
   };
 
   return (
@@ -92,7 +114,7 @@ function ForgotPasswordFlow({ onDone, initialEmail = "" }: { onDone: () => void;
       {step === "request" ? (
         <form onSubmit={sendCode} className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Enter your account email — we'll send a 6-digit code to reset your password.
+            Enter your account email — we'll send a code to reset your password.
           </p>
           <div className="space-y-1.5">
             <Label htmlFor="fp-email" className="text-foreground">Email</Label>
@@ -104,6 +126,20 @@ function ForgotPasswordFlow({ onDone, initialEmail = "" }: { onDone: () => void;
             {busy && <Loader2 className="size-4 animate-spin mr-2" />}
             Send code
           </Button>
+          {/* A welcome/reset email already carries a code — requesting another
+              one would cancel it, so let them go straight to entering it. */}
+          <button
+            type="button"
+            className="w-full text-center text-sm text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
+            onClick={() => {
+              const parsed = z.string().trim().email().safeParse(email);
+              if (!parsed.success) return toast.error("Enter your email first");
+              setEmail(parsed.data.toLowerCase());
+              setStep("verify");
+            }}
+          >
+            I already have a code
+          </button>
         </form>
       ) : (
         <form onSubmit={verifyAndSet} className="space-y-4">
@@ -112,9 +148,9 @@ function ForgotPasswordFlow({ onDone, initialEmail = "" }: { onDone: () => void;
             <button type="button" className="underline" onClick={() => setStep("request")}>send another</button>.
           </p>
           <div className="space-y-1.5">
-            <Label htmlFor="fp-code" className="text-foreground">6-digit code</Label>
-            <Input id="fp-code" required maxLength={6} value={code} onChange={(e) => setCode(e.target.value)}
-              placeholder="123456" className="bg-background text-foreground placeholder:text-muted-foreground" />
+            <Label htmlFor="fp-code" className="text-foreground">Code from your email</Label>
+            <Input id="fp-code" required maxLength={12} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)}
+              placeholder="12345678" className="bg-background text-foreground placeholder:text-muted-foreground" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="fp-password" className="text-foreground">New Password</Label>
@@ -156,9 +192,14 @@ function AuthPage() {
   const [tab, setTab] = useState<"signin" | "signup" | "reset">("signin");
   const [busy, setBusy] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-  const [recovering, setRecovering] = useState(
-    () => typeof window !== "undefined" && window.location.search.includes("recover=1"),
-  );
+  const [recovering, setRecovering] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const q = new URLSearchParams(window.location.search);
+    // A recovery link must hold the redirect from the very first render —
+    // verifyOtp signs them in before we get to flip this on.
+    return q.get("recover") === "1" || (!!q.get("token_hash") && q.get("type") === "recovery");
+  });
+  const [holdRedirect, setHoldRedirect] = useState(false);
   const verifying = useRef(false);
 
   // Links in our own (ZeptoMail) emails land here as ?token_hash=…&type=…
@@ -173,6 +214,7 @@ function AuthPage() {
       const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
       if (error) {
         window.history.replaceState(null, "", "/auth");
+        setRecovering(false);
         toast.error("That link has expired or was already used. Use “Forgot password?” to get a fresh one.");
         setTab("reset");
         return;
@@ -188,12 +230,12 @@ function AuthPage() {
   }, []);
 
   useEffect(() => {
-    if (loading || !user || recovering) return;
+    if (loading || !user || recovering || holdRedirect) return;
     // ThuthukaSA advisors land on their own dashboard (even if someone also
     // gave them admin — the A-Win console can't show LOA/RPA data), A-Win
     // admins on the admin dashboard, everyone else on the member portal.
     navigate({ to: isAdvisor ? "/tksa" : isAdmin ? "/admin" : "/portal", replace: true });
-  }, [user, isAdmin, isAdvisor, loading, navigate, recovering]);
+  }, [user, isAdmin, isAdvisor, loading, navigate, recovering, holdRedirect]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -335,7 +377,7 @@ function AuthPage() {
           {tab === "reset" ? (
             <>
               {/* The role-aware redirect effect above fires once `user` is set — no need to duplicate its admin/advisor/member logic here. */}
-              <ForgotPasswordFlow onDone={() => {}} initialEmail={resetEmail} />
+              <ForgotPasswordFlow onDone={() => {}} onHoldRedirect={setHoldRedirect} initialEmail={resetEmail} />
               <p className="text-center text-sm text-muted-foreground mt-4">
                 <button type="button" className="hover:text-primary underline-offset-2 hover:underline" onClick={() => setTab("signin")}>
                   ← Back to sign in

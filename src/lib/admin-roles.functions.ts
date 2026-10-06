@@ -40,6 +40,57 @@ export async function ensureAdminOrAdvisor(ctx: { supabase: any; userId: string 
   await ensureNotForcedPasswordChange(ctx);
 }
 
+// --- ThuthukaSA approver ('tksa_manager') -----------------------------------
+// Client rule (Phume Ndumo, ThuthukaSA, 2026-10-06): general A-Win admins are
+// not trusted on ThuthukaSA's side. Adding or removing a ThuthukaSA advisor is
+// decided ONLY by the named approver(s) holding 'tksa_manager' (Tebogo), who
+// is granted that role by support, never through the UI.
+
+export async function isTksaManager(ctx: { supabase: any; userId: string }) {
+  const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "tksa_manager" });
+  return !!data;
+}
+
+/** Is this pending_approvals row a ThuthukaSA team change (only the approver may decide it)? */
+export function isTksaApproval(row: { action_type: string; payload: any }) {
+  return (
+    row.action_type === "advisor_account_bootstrap" ||
+    ((row.action_type === "role_grant" || row.action_type === "role_revoke") && row.payload?.role === "advisor")
+  );
+}
+
+export const TKSA_ONLY_DECISION =
+  "Only ThuthukaSA's approver can decide this (on the ThuthukaSA dashboard → Team tab). A-Win admins can't approve ThuthukaSA team changes.";
+
+async function listTksaApprovers(supabaseAdmin: any): Promise<{ id: string; email: string; name: string }[]> {
+  const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "tksa_manager");
+  const ids = (roles ?? []).map((r: any) => r.user_id);
+  if (ids.length === 0) return [];
+  const { data: profiles } = await supabaseAdmin.from("profiles").select("id, email, full_name").in("id", ids);
+  return (profiles ?? [])
+    .filter((p: any) => p.email)
+    .map((p: any) => ({ id: p.id, email: p.email, name: p.full_name || p.email }));
+}
+
+/** "Approval needed" email to the ThuthukaSA approver(s). Never throws. */
+async function notifyTksaApprovers(supabaseAdmin: any, title: string, lines: string[]) {
+  try {
+    const approvers = await listTksaApprovers(supabaseAdmin);
+    const { emailAll } = await import("./email.server");
+    const { tksaTeamNoticeEmail } = await import("./email-templates.server");
+    await emailAll(
+      approvers.map((a) => a.email),
+      "ThuthukaSA approver",
+      tksaTeamNoticeEmail(title, [...lines, "Open the Team tab on the ThuthukaSA dashboard to approve or reject it."]),
+    );
+  } catch {
+    // best-effort
+  }
+}
+
+const approverLabel = (approvers: { name: string }[]) =>
+  approvers.length ? approvers.map((a) => a.name.split(" ")[0]).join(" or ") : "ThuthukaSA's approver";
+
 /**
  * Fire-and-forget alert to the admin inbox when a new pending_approvals row
  * is filed, so a deletion or role change doesn't sit unnoticed until someone
@@ -319,11 +370,18 @@ export const requestSetUserRole = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    await notifyNewApprovalRequest(
-      data.action === "grant" ? "Grant admin role" : "Revoke admin role",
-      data.reason,
-      context.claims?.email ?? "an admin",
-    );
+    if (data.role === "advisor") {
+      await notifyTksaApprovers(supabaseAdmin, `Approval needed: ${data.action === "grant" ? "add" : "remove"} ThuthukaSA advisor`, [
+        `${context.claims?.email ?? "Someone"} asked to ${data.action === "grant" ? "give" : "remove"} ThuthukaSA dashboard access for ${data.email ?? "a user"}.`,
+        `Reason given: ${data.reason}`,
+      ]);
+    } else {
+      await notifyNewApprovalRequest(
+        data.action === "grant" ? "Grant admin role" : "Revoke admin role",
+        data.reason,
+        context.claims?.email ?? "an admin",
+      );
+    }
     return { ok: true, approval_id: row.id };
   });
 
@@ -598,7 +656,9 @@ export const createAdvisorAccount = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    await notifyNewApprovalRequest("Create ThuthukaSA advisor account", `New account for ${data.email}`, context.claims?.email ?? "ThuthukaSA");
+    await notifyTksaApprovers(supabaseAdmin, "Approval needed: new ThuthukaSA advisor", [
+      `${context.claims?.email ?? "ThuthukaSA"} asked for a new dashboard account for ${data.fullName} (${data.email}).`,
+    ]);
     return { ok: true, approval_id: row.id };
   });
 
@@ -622,6 +682,12 @@ export const requestAdvisorRoleChange = createServerFn({ method: "POST" })
     await ensureAdminOrAdvisor(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const payload = { email: data.email, role: "advisor" as const, action: data.action, reason: data.reason };
+    // The approver's own changes take effect straight away (client decision,
+    // 2026-10-06) — there's nobody more trusted to approve them. Audit-logged.
+    if (await isTksaManager(context)) {
+      const result = await executeUserRoleChange(supabaseAdmin, payload, { userId: context.userId, email: context.claims?.email ?? null });
+      return { ok: true, immediate: true as const, result };
+    }
     const { data: row, error } = await supabaseAdmin
       .from("pending_approvals")
       .insert({
@@ -633,12 +699,11 @@ export const requestAdvisorRoleChange = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    await notifyNewApprovalRequest(
-      data.action === "grant" ? "Grant ThuthukaSA advisor access" : "Revoke ThuthukaSA advisor access",
-      data.reason,
-      context.claims?.email ?? "ThuthukaSA",
-    );
-    return { ok: true, approval_id: row.id };
+    await notifyTksaApprovers(supabaseAdmin, `Approval needed: ${data.action === "grant" ? "add" : "remove"} ThuthukaSA advisor`, [
+      `${context.claims?.email ?? "ThuthukaSA"} asked to ${data.action === "grant" ? "give" : "remove"} dashboard access for ${data.email}.`,
+      `Reason given: ${data.reason}`,
+    ]);
+    return { ok: true, immediate: false as const, approval_id: row.id };
   });
 
 // --- Password reset (existing account) --------------------------------------
@@ -700,6 +765,7 @@ export const requestAddAdvisorTeamMember = createServerFn({ method: "POST" })
     await ensureAdminOrAdvisor(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const requester = context.claims?.email ?? "ThuthukaSA";
+    const actor = { userId: context.userId, email: context.claims?.email ?? null };
 
     const { data: dup } = await supabaseAdmin
       .from("pending_approvals")
@@ -708,23 +774,35 @@ export const requestAddAdvisorTeamMember = createServerFn({ method: "POST" })
       .in("action_type", ["advisor_account_bootstrap", "role_grant"])
       .eq("payload->>email", data.email)
       .limit(1);
-    if (dup && dup.length > 0) throw new Error(`There's already a pending request for ${data.email} — waiting on an A-Win admin to approve it.`);
+    if (dup && dup.length > 0) throw new Error(`There's already a pending request for ${data.email} — waiting for ThuthukaSA's approver.`);
 
     const { data: profile } = await supabaseAdmin.from("profiles").select("id").eq("email", data.email).maybeSingle();
-    let mode: "new_account" | "existing_account";
     if (profile) {
       const { data: hasAdvisor } = await supabaseAdmin.rpc("has_role", { _user_id: profile.id, _role: "advisor" });
       if (hasAdvisor) throw new Error(`${data.email} already has access. If they can't sign in, use “Resend login email” next to their name.`);
+    }
+
+    // The approver adds people straight away (client decision, 2026-10-06);
+    // the execute fns email the new person and ThuthukaSA's alert list.
+    if (await isTksaManager(context)) {
+      if (profile) {
+        const reason = `Added ${data.fullName} to the ThuthukaSA team (by ThuthukaSA's approver)`;
+        await executeUserRoleChange(supabaseAdmin, { email: data.email, role: "advisor", action: "grant", reason }, actor);
+      } else {
+        await executeAdvisorAccountBootstrap(supabaseAdmin, { email: data.email, fullName: data.fullName }, actor);
+      }
+      return { ok: true, immediate: true as const, mode: profile ? "existing_account" : "new_account" };
+    }
+
+    if (profile) {
       const reason = `Add ${data.fullName} to the ThuthukaSA team (existing website account)`;
       const { error } = await supabaseAdmin.from("pending_approvals").insert({
         action_type: "role_grant",
-        payload: { email: data.email, role: "advisor", action: "grant", reason },
+        payload: { email: data.email, role: "advisor", action: "grant", reason, fullName: data.fullName },
         reason,
         requested_by: context.userId,
       });
       if (error) throw new Error(error.message);
-      await notifyNewApprovalRequest("Grant ThuthukaSA advisor access", `${data.fullName} (${data.email})`, requester);
-      mode = "existing_account";
     } else {
       const { error } = await supabaseAdmin.from("pending_approvals").insert({
         action_type: "advisor_account_bootstrap",
@@ -733,16 +811,18 @@ export const requestAddAdvisorTeamMember = createServerFn({ method: "POST" })
         requested_by: context.userId,
       });
       if (error) throw new Error(error.message);
-      await notifyNewApprovalRequest("Create ThuthukaSA advisor account", `New account for ${data.fullName} (${data.email})`, requester);
-      mode = "new_account";
     }
 
+    const approvers = await listTksaApprovers(supabaseAdmin);
+    await notifyTksaApprovers(supabaseAdmin, "Approval needed: new ThuthukaSA advisor", [
+      `${requester} asked for ${data.fullName} (${data.email}) to be given ThuthukaSA dashboard access.`,
+    ]);
     const { notifyThuthukaTeam } = await import("./email.server");
     await notifyThuthukaTeam("Team member requested", [
       `${requester} asked for ${data.fullName} (${data.email}) to be given dashboard access.`,
-      "An A-Win admin needs to approve it. As soon as they do, the new team member is emailed a link to set their password — nobody needs to pass on a password.",
+      `${approverLabel(approvers)} needs to approve it. As soon as that happens, the new team member is emailed a link to set their password — nobody needs to pass on a password.`,
     ]);
-    return { ok: true, mode };
+    return { ok: true, immediate: false as const, mode: profile ? "existing_account" : "new_account" };
   });
 
 /**
@@ -772,15 +852,31 @@ export const listAdvisorTeam = createServerFn({ method: "GET" })
     );
     const { data: pending } = await supabaseAdmin
       .from("pending_approvals")
-      .select("payload, requested_at, action_type")
+      .select("id, payload, requested_at, action_type, requested_by")
       .eq("status", "pending")
-      .in("action_type", ["advisor_account_bootstrap", "role_grant"])
+      .in("action_type", ["advisor_account_bootstrap", "role_grant", "role_revoke"])
       .order("requested_at", { ascending: false });
+    const tksaPending = (pending ?? []).filter((r: any) => isTksaApproval(r));
+    const requesterIds = [...new Set(tksaPending.map((r: any) => r.requested_by).filter(Boolean))];
+    const { data: requesters } = requesterIds.length
+      ? await supabaseAdmin.from("profiles").select("id, email, full_name").in("id", requesterIds)
+      : { data: [] };
+    const requesterById = new Map((requesters ?? []).map((p: any) => [p.id, p.full_name || p.email]));
+    const viewerIsApprover = await isTksaManager(context);
+    const approvers = await listTksaApprovers(supabaseAdmin);
     return {
       members: members.filter((m) => m.email).sort((a, b) => a.email.localeCompare(b.email)),
-      pending: (pending ?? [])
-        .filter((r: any) => r.action_type === "advisor_account_bootstrap" || r.payload?.role === "advisor")
-        .map((r: any) => ({ email: r.payload?.email as string, fullName: (r.payload?.fullName ?? null) as string | null, requestedAt: r.requested_at as string })),
+      pending: tksaPending.map((r: any) => ({
+        id: r.id as string,
+        kind: (r.action_type === "role_revoke" ? "remove" : "add") as "add" | "remove",
+        email: r.payload?.email as string,
+        fullName: (r.payload?.fullName ?? null) as string | null,
+        requestedAt: r.requested_at as string,
+        requestedBy: (requesterById.get(r.requested_by) ?? null) as string | null,
+        canDecide: viewerIsApprover && r.requested_by !== context.userId,
+      })),
+      viewerIsApprover,
+      approverNames: approvers.map((a) => a.name),
     };
   });
 
@@ -826,4 +922,72 @@ export const sendTestThuthukaNotification = createServerFn({ method: "POST" })
     ]);
     const results = await Promise.all(emails.map(async (to) => ({ to, ok: (await sendEmail({ to, toName: "ThuthukaSA", ...mail })).ok })));
     return { sent: results.filter((r) => r.ok).map((r) => r.to), failed: results.filter((r) => !r.ok).map((r) => r.to) };
+  });
+
+/**
+ * ThuthukaSA's approver approves or rejects a team change, from the /tksa
+ * Team tab. The only path that can decide these rows — Admin → Approvals
+ * refuses them (see decideApproval), per the client's rule that A-Win admins
+ * aren't trusted on ThuthukaSA's side.
+ */
+export const decideTksaRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({ approval_id: z.string().uuid(), decision: z.enum(["approve", "reject"]), reason: z.string().trim().max(500).optional() }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    await ensureAdminOrAdvisor(context);
+    if (!(await isTksaManager(context))) throw new Error("Only ThuthukaSA's approver can approve or reject team changes.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin.from("pending_approvals").select("*").eq("id", data.approval_id).maybeSingle();
+    if (!row || !isTksaApproval(row)) throw new Error("Request not found");
+    if (row.status !== "pending") throw new Error(`Already ${row.status}`);
+    if (row.requested_by === context.userId) throw new Error("You can't decide your own request");
+
+    const actor = { userId: context.userId, email: context.claims?.email ?? null };
+    const decisionReason = data.reason?.trim() || (data.decision === "approve" ? "Approved by ThuthukaSA's approver" : "Rejected by ThuthukaSA's approver");
+    const { data: claimed } = await supabaseAdmin
+      .from("pending_approvals")
+      .update({
+        status: data.decision === "approve" ? "approved" : "rejected",
+        decided_by: context.userId,
+        decided_at: new Date().toISOString(),
+        decision_reason: decisionReason,
+      })
+      .eq("id", data.approval_id)
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
+    if (!claimed) throw new Error("Already decided by someone else");
+
+    const payload = row.payload as any;
+    if (data.decision === "reject") {
+      await supabaseAdmin.from("audit_logs").insert({
+        actor_id: actor.userId,
+        actor_email: actor.email,
+        action: `${row.action_type}_rejected`,
+        target_type: "pending_approval",
+        target_id: data.approval_id,
+        reason: decisionReason,
+        details: { original_request: payload, requested_by: row.requested_by },
+      });
+      const { notifyThuthukaTeam } = await import("./email.server");
+      await notifyThuthukaTeam("Team request not approved", [
+        `The request to ${row.action_type === "role_revoke" ? "remove" : "add"} ${payload?.email ?? "a team member"} was not approved.`,
+        `Reason: ${decisionReason}`,
+      ]);
+      return { ok: true, status: "rejected" as const };
+    }
+
+    try {
+      const result =
+        row.action_type === "advisor_account_bootstrap"
+          ? await executeAdvisorAccountBootstrap(supabaseAdmin, payload, actor)
+          : await executeUserRoleChange(supabaseAdmin, payload, actor);
+      await supabaseAdmin.from("pending_approvals").update({ status: "executed", result: result as any }).eq("id", data.approval_id);
+      return { ok: true, status: "executed" as const, result };
+    } catch (e: any) {
+      await supabaseAdmin.from("pending_approvals").update({ status: "failed", result: { error: e.message } }).eq("id", data.approval_id);
+      throw e;
+    }
   });
