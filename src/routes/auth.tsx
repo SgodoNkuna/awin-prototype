@@ -126,6 +126,20 @@ function ForgotPasswordFlow({
             {busy && <Loader2 className="size-4 animate-spin mr-2" />}
             Send code
           </Button>
+          {/* A welcome/reset email already carries a code — requesting another
+              one would cancel it, so let them go straight to entering it. */}
+          <button
+            type="button"
+            className="w-full text-center text-sm text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
+            onClick={() => {
+              const parsed = z.string().trim().email().safeParse(email);
+              if (!parsed.success) return toast.error("Enter your email first");
+              setEmail(parsed.data.toLowerCase());
+              setStep("verify");
+            }}
+          >
+            I already have a code
+          </button>
         </form>
       ) : (
         <form onSubmit={verifyAndSet} className="space-y-4">

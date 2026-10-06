@@ -54,7 +54,11 @@ function layout(title: string, bodyHtml: string): string {
  * own branded layout (their logo, their brand orange) rather than the
  * generic A-Win one, so it's visually clear who this email is actually from.
  */
-function thuthukaLayout(title: string, bodyHtml: string): string {
+function thuthukaLayout(
+  title: string,
+  bodyHtml: string,
+  footer = "This is a confidential, transactional message about a signed document.",
+): string {
   return `<!doctype html>
 <html><body style="margin:0;padding:0;background:#f5f5f4;font-family:Segoe UI,Arial,sans-serif;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:24px 0;">
@@ -70,7 +74,7 @@ function thuthukaLayout(title: string, bodyHtml: string): string {
   <tr><td style="padding:20px 32px;border-top:1px solid #e7e5e4;">
     <p style="margin:0;font-size:12px;color:#78716c;">
       ThuthukaSA &middot; Financial Services Provider No. 47992 &middot; on behalf of A-Win<br/>
-      This is a confidential, transactional message about a signed document.
+      ${footer}
     </p>
   </td></tr>
 </table>
@@ -296,7 +300,7 @@ export function setPasswordEmail(kind: SetPasswordKind, fullName: string | null,
   const hi = p(`Hi ${strong(fullName || email)},`);
   const how =
     btn(link, "Set my password") +
-    p(`Or go to ${strong(`${BRAND.site.replace(/^https?:\/\//, "")}/auth`)}, choose ${strong("Forgot password?")}, and enter this code:`) +
+    p(`Or go to ${strong(`${BRAND.site.replace(/^https?:\/\//, "")}/auth`)}, choose ${strong("Forgot password?")}, type your email, click ${strong("I already have a code")}, and enter this code:`) +
     codeBlock(code) +
     p(`The link and code expire in 1 hour and work once. If they expire, use ${strong("Forgot password?")} on the sign-in page to get a new one — no need to contact anyone.`);
   const signIn = p(`From then on, sign in at ${strong(`${BRAND.site.replace(/^https?:\/\//, "")}/auth`)} with ${strong(email)} and the password you chose.`);
@@ -307,6 +311,7 @@ export function setPasswordEmail(kind: SetPasswordKind, fullName: string | null,
         "Welcome to the ThuthukaSA dashboard",
         hi + p("An account has been created for you on the ThuthukaSA dashboard, where you can view and download signed Letters of Authority and Risk Profiles.") +
           p("First, choose your own password:") + how + signIn,
+        "This is a message about your ThuthukaSA dashboard access.",
       ),
     };
   }
@@ -317,6 +322,7 @@ export function setPasswordEmail(kind: SetPasswordKind, fullName: string | null,
         "ThuthukaSA dashboard access granted",
         hi + p(`Your account (${strong(email)}) now has access to the ThuthukaSA dashboard. If you already know your password, just sign in. If not, set one now:`) +
           how + signIn,
+        "This is a message about your ThuthukaSA dashboard access.",
       ),
     };
   }
@@ -350,6 +356,7 @@ export function tksaTeamNoticeEmail(title: string, lines: string[]) {
     html: thuthukaLayout(
       title,
       lines.map((l) => p(esc(l))).join("") + btn(`${BRAND.site}/tksa`, "Open the ThuthukaSA dashboard"),
+      "This is a message about your ThuthukaSA dashboard access.",
     ),
   };
 }
