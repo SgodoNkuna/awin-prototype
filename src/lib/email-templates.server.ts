@@ -16,6 +16,9 @@ const BRAND = {
 // actually showed up. Email images need a real, stable, publicly reachable
 // URL instead, so this is served from /public (unhashed, same path every
 // deploy) rather than the Vite-bundled, content-hashed src/assets copy.
+/** Public site origin, for links built outside this file (auth emails). */
+export const SITE_URL = BRAND.site;
+
 const LOGO_URL = `${BRAND.site}/email-assets/awin-logo-white.png`;
 // Same reasoning as LOGO_URL above — a real static file, not an inline
 // data: URI, so it actually renders in Gmail/Outlook.
@@ -268,6 +271,85 @@ export function paymentReceiptEmail(
           <tr><td style="padding:4px 16px 4px 0;">Date</td><td>${strong(paidAt)}</td></tr>
         </table>` +
         p("Keep this email as proof of payment. Your membership benefits are active immediately."),
+    ),
+  };
+}
+
+// --- Account access (sent via ZeptoMail, not Supabase's built-in mailer) ----
+// Supabase's default mailer (noreply@mail.app.supabase.io) is rate-limited to
+// a handful of emails an hour and often lands in spam — confirmation and
+// reset emails were silently never arriving. Every login-related email now
+// goes out through the same ZeptoMail sender as the rest of the site.
+
+const codeBlock = (code: string) =>
+  `<p style="margin:16px 0;font-size:28px;font-weight:700;letter-spacing:6px;color:#1c1917;font-family:Consolas,monospace;">${esc(code)}</p>`;
+
+export type SetPasswordKind = "reset" | "advisor_welcome" | "advisor_access";
+
+/**
+ * One email for every "you need to choose a password" moment: a forgotten
+ * password, a brand-new ThuthukaSA account, or advisor access just granted
+ * on an existing account. Carries both a one-click link and the 6-digit code
+ * (for anyone whose mail scanner pre-clicks links and burns them).
+ */
+export function setPasswordEmail(kind: SetPasswordKind, fullName: string | null, email: string, link: string, code: string) {
+  const hi = p(`Hi ${strong(fullName || email)},`);
+  const how =
+    btn(link, "Set my password") +
+    p(`Or go to ${strong(`${BRAND.site.replace(/^https?:\/\//, "")}/auth`)}, choose ${strong("Forgot password?")}, and enter this code:`) +
+    codeBlock(code) +
+    p(`The link and code expire in 1 hour and work once. If they expire, use ${strong("Forgot password?")} on the sign-in page to get a new one — no need to contact anyone.`);
+  const signIn = p(`From then on, sign in at ${strong(`${BRAND.site.replace(/^https?:\/\//, "")}/auth`)} with ${strong(email)} and the password you chose.`);
+  if (kind === "advisor_welcome") {
+    return {
+      subject: "Your ThuthukaSA dashboard account is ready",
+      html: thuthukaLayout(
+        "Welcome to the ThuthukaSA dashboard",
+        hi + p("An account has been created for you on the ThuthukaSA dashboard, where you can view and download signed Letters of Authority and Risk Profiles.") +
+          p("First, choose your own password:") + how + signIn,
+      ),
+    };
+  }
+  if (kind === "advisor_access") {
+    return {
+      subject: "You now have ThuthukaSA dashboard access",
+      html: thuthukaLayout(
+        "ThuthukaSA dashboard access granted",
+        hi + p(`Your account (${strong(email)}) now has access to the ThuthukaSA dashboard. If you already know your password, just sign in. If not, set one now:`) +
+          how + signIn,
+      ),
+    };
+  }
+  return {
+    subject: "Reset your A-Win password",
+    html: layout(
+      "Reset your password",
+      hi + p("We received a request to reset the password for your account.") + how +
+        p("If you didn't ask for this, you can ignore this email — your password won't change."),
+    ),
+  };
+}
+
+export function confirmSignupEmail(fullName: string, link: string) {
+  return {
+    subject: "Confirm your A-Win account",
+    html: layout(
+      "Confirm your email",
+      p(`Hi ${strong(fullName)},`) +
+        p("Thanks for creating an A-Win account. Please confirm your email address to finish setting it up:") +
+        btn(link, "Confirm my email") +
+        p("The link expires in 1 hour. If it expires, just sign up again with the same email and we'll send a fresh one."),
+    ),
+  };
+}
+
+/** Team-change notice to ThuthukaSA's own notification recipients. */
+export function tksaTeamNoticeEmail(title: string, lines: string[]) {
+  return {
+    subject: `ThuthukaSA team: ${title}`,
+    html: thuthukaLayout(
+      title,
+      lines.map((l) => p(esc(l))).join("") + btn(`${BRAND.site}/tksa`, "Open the ThuthukaSA dashboard"),
     ),
   };
 }

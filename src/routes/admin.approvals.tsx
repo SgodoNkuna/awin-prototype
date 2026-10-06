@@ -45,7 +45,7 @@ type ApprovalRequest = {
   decided_by: string | null;
   decided_at: string | null;
   decision_reason: string | null;
-  result: { tempPassword?: string; email?: string } | null;
+  result: { email?: string; emailSent?: boolean } | null;
   requester: Requester;
   is_own_request: boolean;
 };
@@ -106,7 +106,6 @@ function ApprovalsPage() {
   // Only ever populated from this call's own live response, never from a
   // stored/reloaded row — the DB copy is redacted specifically so this is
   // the one and only place the real password is ever visible.
-  const [revealedPassword, setRevealedPassword] = useState<{ email: string; tempPassword: string } | null>(null);
 
   const callList = useServerFn(listPendingApprovals);
   const callDecide = useServerFn(decideApproval);
@@ -174,10 +173,11 @@ function ApprovalsPage() {
                   {req.decision_reason && (
                     <p className="text-xs text-muted-foreground">Decision note: "{req.decision_reason}"</p>
                   )}
-                  {req.action_type === "advisor_account_bootstrap" && req.status === "executed" && req.result?.email && (
+                  {req.status === "executed" && req.result?.email && req.result.emailSent !== undefined && (
                     <div className="rounded-lg border border-border bg-muted/30 p-2.5 text-xs text-muted-foreground">
-                      Account created for {req.result.email}. The temp password was shown once, to whoever approved
-                      this, and isn't stored anywhere — if it's needed again, reset the password from Admin → Members.
+                      {req.result.emailSent
+                        ? `${req.result.email} was emailed a link to set their password and sign in.`
+                        : `The set-password email to ${req.result.email} couldn't be sent — ask them to use “Forgot password?” on the sign-in page.`}
                     </div>
                   )}
                   <details className="text-xs">
@@ -256,8 +256,9 @@ function ApprovalsPage() {
                     },
                   });
                   toast.success(deciding.decision === "approve" ? "Approved and executed" : "Rejected");
-                  if (deciding.req.action_type === "advisor_account_bootstrap" && res.result?.tempPassword && res.result?.email) {
-                    setRevealedPassword({ email: res.result.email, tempPassword: res.result.tempPassword });
+                  if (deciding.decision === "approve" && res.result?.email && typeof res.result.emailSent === "boolean") {
+                    if (res.result.emailSent) toast.success(`${res.result.email} has been emailed a link to set their password — nothing to pass on.`);
+                    else toast.warning(`Couldn't email ${res.result.email} — ask them to use “Forgot password?” on the sign-in page.`, { duration: 15000 });
                   }
                   setDeciding(null);
                   load();
@@ -275,29 +276,6 @@ function ApprovalsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* The only place the real temp password is ever shown — populated
-          directly from decideApproval's live response, never from a
-          reloaded/stored row (the DB copy is redacted). Closing this loses
-          it for good, same as the old pre-approval-flow behavior. */}
-      <Dialog open={!!revealedPassword} onOpenChange={(o) => !o && setRevealedPassword(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Account created</DialogTitle>
-            <DialogDescription>
-              Relay this to {revealedPassword?.email} now — it's shown once, right here, and isn't stored anywhere.
-              They'll be forced to set their own password on first login.
-            </DialogDescription>
-          </DialogHeader>
-          {revealedPassword && (
-            <div className="rounded-lg border border-accent/50 bg-accent/10 p-3 text-sm">
-              Temp password: <code className="rounded bg-background px-1.5 py-0.5 font-mono">{revealedPassword.tempPassword}</code>
-            </div>
-          )}
-          <DialogFooter>
-            <Button onClick={() => setRevealedPassword(null)}>Done</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
