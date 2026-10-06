@@ -86,7 +86,7 @@ function ChangePasswordPage({ forced = false }: { forced?: boolean }) {
 
     setBusy(false);
     toast.success("Password changed");
-    navigate({ to: search.next || (isAdmin ? "/admin" : isAdvisor ? "/tksa" : "/portal"), replace: true });
+    navigate({ to: search.next || (isAdvisor ? "/tksa" : isAdmin ? "/admin" : "/portal"), replace: true });
   };
 
   const mustChange = forced || forcePasswordChange;

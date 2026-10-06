@@ -22,7 +22,7 @@ export const sendApplicationReceivedEmail = createServerFn({ method: "POST" })
     // The applicant confirmation (below) always sends; it's a transactional reply.
     if (await adminNotifyEnabled("new_application")) {
       const adminMail = adminNewApplicationEmail(data.fullName, data.email);
-      void sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...adminMail });
+      await sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...adminMail });
     }
     return sendEmail({ to: data.email, toName: data.fullName, ...mail });
   });
@@ -45,40 +45,39 @@ export const sendLoaRpaReceivedEmail = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { sendEmail, adminNotifyEnabled, rateLimitOk } = await import("./email.server");
-    // Abuse guard: at most 3 LOA/RPA emails per address per hour.
-    if (!(await rateLimitOk(`loarpa:${data.email.toLowerCase()}`, 3, 3600))) {
-      return { ok: false as const, error: "rate limited" };
-    }
     const { loaRpaReceivedEmail, adminNewLoaRpaEmail } = await import("./email-templates.server");
     const mail = loaRpaReceivedEmail(data.fullName, data.loaOnly);
     // Confidentiality: LOA/RPA submissions contain FAIS-regulated financial
     // advice data, so the notification goes to ThuthukaSA (the FSP) only —
     // never to admin@awin.co.za. A-Win committee members are not bound by
     // FAIS confidentiality and must not receive this. The actual recipient
-    // list is admin-configurable (Admin → LOA & Risk Profile → Advisory
-    // notification recipients, two-person-approved like any other site
-    // setting) — info@thuthuka-sa.co.za and the ThuthukaSA WhatsApp number
-    // are only the fallback defaults if nothing's been configured.
-    if (await adminNotifyEnabled("new_loa_rpa")) {
-      const { getNotifyRecipients } = await import("./email.server");
-      const { THUTHUKA_WHATSAPP_NUMBER } = await import("./whatsapp.server");
-      const recipients = await getNotifyRecipients("loa_rpa", {
-        emails: ["info@thuthuka-sa.co.za"],
-        whatsapp: [THUTHUKA_WHATSAPP_NUMBER],
-      });
+    // list is ThuthukaSA's own (/tksa → Settings → Notification recipients)
+    // — info@thuthuka-sa.co.za and the ThuthukaSA WhatsApp number are only
+    // the fallback defaults if nothing's been configured.
+    //
+    // The submission row already exists by now, so ThuthukaSA is alerted
+    // with a looser limit than the applicant confirmation below — someone
+    // re-submitting a corrected form must still reach them.
+    const alertAllowed = await rateLimitOk(`loarpa-alert:${data.email.toLowerCase()}`, 10, 3600);
+    if (alertAllowed && (await adminNotifyEnabled("new_loa_rpa"))) {
+      const { getThuthukaRecipients, emailAll } = await import("./email.server");
+      const recipients = await getThuthukaRecipients();
       const adminMail = adminNewLoaRpaEmail(data.fullName, data.email, data.source, data.loaOnly);
-      for (const to of recipients.emails) {
-        void sendEmail({ to, toName: "ThuthukaSA", ...adminMail });
-      }
-      // Second, independent channel — same confidentiality reasoning as the
-      // email above. Best-effort: no-ops until WHATSAPP_ACCESS_TOKEN /
-      // WHATSAPP_PHONE_NUMBER_ID are configured (see whatsapp.server.ts).
-      void (async () => {
-        const { sendWhatsAppMessage } = await import("./whatsapp.server");
-        const what = data.loaOnly ? "Letter of Authority" : "LOA & Risk Profile";
-        const text = `New ${what} submission: ${data.fullName} (${data.email}) via ${data.source}. Review: https://awin.co.za/tksa`;
-        await Promise.all(recipients.whatsapp.map((to) => sendWhatsAppMessage(to, text)));
-      })().catch(() => {});
+      // Awaited, not fire-and-forget: on serverless the function can be frozen
+      // as soon as this handler returns, silently dropping un-awaited sends.
+      const { sendWhatsAppMessage } = await import("./whatsapp.server");
+      const what = data.loaOnly ? "Letter of Authority" : "LOA & Risk Profile";
+      const text = `New ${what} submission: ${data.fullName} (${data.email}) via ${data.source}. Review: https://awin.co.za/tksa`;
+      await Promise.allSettled([
+        emailAll(recipients.emails, "ThuthukaSA", adminMail),
+        // Second, independent channel. Best-effort: no-ops until
+        // WHATSAPP_ACCESS_TOKEN / WHATSAPP_PHONE_NUMBER_ID are configured.
+        ...recipients.whatsapp.map((to) => sendWhatsAppMessage(to, text)),
+      ]);
+    }
+    // Abuse guard: at most 3 applicant confirmations per address per hour.
+    if (!(await rateLimitOk(`loarpa:${data.email.toLowerCase()}`, 3, 3600))) {
+      return { ok: false as const, error: "rate limited" };
     }
     return sendEmail({ to: data.email, toName: data.fullName, ...mail });
   });
@@ -121,7 +120,7 @@ export const sendPasswordChangedEmail = createServerFn({ method: "POST" })
     const { passwordChangedEmail, adminPasswordChangedEmail } = await import("./email-templates.server");
     const mail = passwordChangedEmail(data.fullName);
     const adminMail = adminPasswordChangedEmail(data.fullName, data.email);
-    void sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...adminMail });
+    await sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...adminMail });
     return sendEmail({ to: data.email, toName: data.fullName, ...mail });
   });
 

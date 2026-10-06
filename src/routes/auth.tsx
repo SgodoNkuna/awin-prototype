@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { requestPasswordReset, signUpMember } from "@/lib/auth-email.functions";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -31,24 +33,18 @@ const signUpSchema = signInSchema.extend({
 });
 
 /**
- * Forgot-password: a 6-digit code emailed via Supabase's recovery flow, per
- * request (2026-08-09) — not a "current password" prompt, since by
- * definition someone using this has forgotten it.
- *
- * `resetPasswordForEmail` triggers Supabase's recovery email. By default
- * that email contains a magic link, not a code — for the code to actually
- * appear, the Recovery template in Supabase Dashboard → Authentication →
- * Email Templates must include `{{ .Token }}` (see supabase.com/docs/guides
- * /auth/auth-email-templates). That's a one-time Dashboard edit outside what
- * this app's code can configure.
+ * Forgot-password: a 6-digit code (plus a one-click link) emailed by our own
+ * requestPasswordReset server fn through ZeptoMail — not Supabase's built-in
+ * mailer, which was rate-limiting and landing in spam (see auth-email.server.ts).
  *
  * `verifyOtp({type:'recovery'})` exchanges that code for a real session —
  * unlike a normal password change, a recovery-flow session does not need
  * `current_password` (the whole point of "forgot" is not having it).
  */
-function ForgotPasswordFlow({ onDone }: { onDone: () => void }) {
+function ForgotPasswordFlow({ onDone, initialEmail = "" }: { onDone: () => void; initialEmail?: string }) {
+  const callReset = useServerFn(requestPasswordReset);
   const [step, setStep] = useState<"request" | "verify">("request");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -59,10 +55,15 @@ function ForgotPasswordFlow({ onDone }: { onDone: () => void }) {
     const parsed = z.string().trim().email("Invalid email").max(255).safeParse(email);
     if (!parsed.success) return toast.error(parsed.error.issues[0]?.message ?? "Enter a valid email");
     setBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(parsed.data);
+    try {
+      await callReset({ data: { email: parsed.data } });
+    } catch (err) {
+      setBusy(false);
+      return toast.error(err instanceof Error ? err.message : "Couldn't send the code — try again");
+    }
     setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Check your email for a 6-digit code");
+    setEmail(parsed.data.toLowerCase());
+    toast.success("If that email has an account, a 6-digit code is on its way. Check spam/junk too.");
     setStep("verify");
   };
 
@@ -72,7 +73,7 @@ function ForgotPasswordFlow({ onDone }: { onDone: () => void }) {
     if (password.length < 8) return toast.error("At least 8 characters");
     if (password !== confirm) return toast.error("Passwords do not match");
     setBusy(true);
-    const { error: otpError } = await supabase.auth.verifyOtp({ email, token: code.trim(), type: "recovery" });
+    const { error: otpError } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.trim(), type: "recovery" });
     if (otpError) {
       setBusy(false);
       return toast.error(otpError.message || "Invalid or expired code");
@@ -80,6 +81,8 @@ function ForgotPasswordFlow({ onDone }: { onDone: () => void }) {
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setBusy(false);
     if (updateError) return toast.error(updateError.message || "Could not set new password");
+    const { data: { user: me } } = await supabase.auth.getUser();
+    if (me) await supabase.from("profiles").update({ force_password_change: false }).eq("id", me.id);
     toast.success("Password set — you're signed in");
     onDone();
   };
@@ -104,7 +107,10 @@ function ForgotPasswordFlow({ onDone }: { onDone: () => void }) {
         </form>
       ) : (
         <form onSubmit={verifyAndSet} className="space-y-4">
-          <p className="text-sm text-muted-foreground">Enter the code sent to {email}, and your new password.</p>
+          <p className="text-sm text-muted-foreground">
+            Enter the code sent to {email}, and your new password. Not there after a few minutes? Check spam/junk, or{" "}
+            <button type="button" className="underline" onClick={() => setStep("request")}>send another</button>.
+          </p>
           <div className="space-y-1.5">
             <Label htmlFor="fp-code" className="text-foreground">6-digit code</Label>
             <Input id="fp-code" required maxLength={6} value={code} onChange={(e) => setCode(e.target.value)}
@@ -132,20 +138,62 @@ function ForgotPasswordFlow({ onDone }: { onDone: () => void }) {
   );
 }
 
+/** Turn Supabase's terse auth errors into something a person can act on. */
+function friendlySignInError(message: string): string {
+  if (/invalid login credentials/i.test(message)) {
+    return "Wrong email or password. If you've forgotten it (or never set one), use “Forgot password?” to choose a new one.";
+  }
+  if (/email not confirmed/i.test(message)) {
+    return "This email hasn't been confirmed yet. Use “Forgot password?” — that confirms your email and lets you set a password in one step.";
+  }
+  return message;
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const { user, isAdmin, isAdvisor, loading } = useAuth();
+  const callSignUp = useServerFn(signUpMember);
   const [tab, setTab] = useState<"signin" | "signup" | "reset">("signin");
   const [busy, setBusy] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [recovering, setRecovering] = useState(
+    () => typeof window !== "undefined" && window.location.search.includes("recover=1"),
+  );
+  const verifying = useRef(false);
 
-  const recovering = typeof window !== "undefined" && window.location.search.includes("recover=1");
+  // Links in our own (ZeptoMail) emails land here as ?token_hash=…&type=…
+  // — exchange them for a session directly, no Supabase redirect involved.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get("token_hash");
+    const type = params.get("type");
+    if (!tokenHash || (type !== "recovery" && type !== "signup") || verifying.current) return;
+    verifying.current = true;
+    (async () => {
+      const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
+      if (error) {
+        window.history.replaceState(null, "", "/auth");
+        toast.error("That link has expired or was already used. Use “Forgot password?” to get a fresh one.");
+        setTab("reset");
+        return;
+      }
+      if (type === "recovery") {
+        window.history.replaceState(null, "", "/auth?recover=1");
+        setRecovering(true);
+      } else {
+        window.history.replaceState(null, "", "/auth");
+        toast.success("Email confirmed — welcome!");
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (loading || !user || recovering) return;
-    // Admins land on the admin dashboard, ThuthukaSA advisors on their own
-    // dashboard, everyone else continues to the member portal.
-    navigate({ to: isAdmin ? "/admin" : isAdvisor ? "/tksa" : "/portal", replace: true });
-  }, [user, isAdmin, isAdvisor, loading, navigate]);
+    // ThuthukaSA advisors land on their own dashboard (even if someone also
+    // gave them admin — the A-Win console can't show LOA/RPA data), A-Win
+    // admins on the admin dashboard, everyone else on the member portal.
+    navigate({ to: isAdvisor ? "/tksa" : isAdmin ? "/admin" : "/portal", replace: true });
+  }, [user, isAdmin, isAdvisor, loading, navigate, recovering]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -157,9 +205,12 @@ function AuthPage() {
     if (!parsed.success) return toast.error(parsed.error.issues[0]?.message ?? "Check the form");
 
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword(parsed.data);
+    const { error } = await supabase.auth.signInWithPassword({ ...parsed.data, email: parsed.data.email.toLowerCase() });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      setResetEmail(parsed.data.email);
+      return toast.error(friendlySignInError(error.message), { duration: 10000 });
+    }
     toast.success("Signed in");
   };
 
@@ -174,18 +225,19 @@ function AuthPage() {
     if (!parsed.success) return toast.error(parsed.error.issues[0]?.message ?? "Check the form");
 
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email: parsed.data.email,
-      password: parsed.data.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/portal`,
-        data: { full_name: parsed.data.full_name },
-      },
-    });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Account created. Check your email to confirm.");
-    setTab("signin");
+    try {
+      const res = await callSignUp({ data: parsed.data });
+      if (res.status === "already_registered") {
+        toast.info("That email already has an account — sign in, or use “Forgot password?” if you don't know the password.", { duration: 10000 });
+      } else {
+        toast.success("Check your email (and spam/junk) for a link to confirm your account.", { duration: 10000 });
+      }
+      setTab("signin");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't create the account — try again");
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (recovering && user) {
@@ -210,7 +262,7 @@ function AuthPage() {
                 if (error) return toast.error(error.message);
                 await supabase.from("profiles").update({ force_password_change: false }).eq("id", user.id);
                 toast.success("Password set");
-                window.location.replace(isAdmin ? "/admin" : isAdvisor ? "/tksa" : "/portal");
+                window.location.replace(isAdvisor ? "/tksa" : isAdmin ? "/admin" : "/portal");
               }}
             >
               <p className="text-sm text-muted-foreground">Signed in as {user.email}. Choose your new password.</p>
@@ -283,7 +335,7 @@ function AuthPage() {
           {tab === "reset" ? (
             <>
               {/* The role-aware redirect effect above fires once `user` is set — no need to duplicate its admin/advisor/member logic here. */}
-              <ForgotPasswordFlow onDone={() => {}} />
+              <ForgotPasswordFlow onDone={() => {}} initialEmail={resetEmail} />
               <p className="text-center text-sm text-muted-foreground mt-4">
                 <button type="button" className="hover:text-primary underline-offset-2 hover:underline" onClick={() => setTab("signin")}>
                   ← Back to sign in

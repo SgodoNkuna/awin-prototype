@@ -46,18 +46,18 @@ export async function ensureAdminOrAdvisor(ctx: { supabase: any; userId: string 
  * happens to open Admin > Approvals. Gated by the same
  * Admin > Settings > Notifications toggle pattern as other admin alerts.
  */
-export function notifyNewApprovalRequest(actionLabel: string, reason: string, requestedByName: string) {
-  void (async () => {
-    try {
-      const { adminNotifyEnabled, sendEmail } = await import("./email.server");
-      if (!(await adminNotifyEnabled("new_approval_request"))) return;
-      const { adminNewApprovalRequestEmail } = await import("./email-templates.server");
-      const mail = adminNewApprovalRequestEmail(actionLabel, reason, requestedByName);
-      await sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...mail });
-    } catch {
-      // best-effort — never block the request itself
-    }
-  })();
+export async function notifyNewApprovalRequest(actionLabel: string, reason: string, requestedByName: string) {
+  // Awaited by every caller: on serverless an un-awaited send can be frozen
+  // mid-flight once the handler returns, and the alert silently never goes.
+  try {
+    const { adminNotifyEnabled, sendEmail } = await import("./email.server");
+    if (!(await adminNotifyEnabled("new_approval_request"))) return;
+    const { adminNewApprovalRequestEmail } = await import("./email-templates.server");
+    const mail = adminNewApprovalRequestEmail(actionLabel, reason, requestedByName);
+    await sendEmail({ to: "admin@awin.co.za", toName: "A-Win Admin", ...mail });
+  } catch {
+    // best-effort — never block the request itself
+  }
 }
 
 // --- Execution logic -------------------------------------------------------
@@ -66,8 +66,19 @@ export function notifyNewApprovalRequest(actionLabel: string, reason: string, re
 // themselves — reachable only through the approval dispatcher, which is the
 // only place that may call `executeUserRoleChange` outside of this module.
 
+// Supabase stores login emails lowercased — every lookup by email must be
+// lowercased too, or "Advisor3@…" silently matches nothing.
+const emailField = () => z.string().trim().toLowerCase().pipe(z.string().email());
+
+/** ThuthukaSA staff are external FSP staff: they get 'advisor', never A-Win 'admin'. */
+export const isThuthukaEmail = (email: string | null | undefined) =>
+  !!email && /@thuthuka-?sa\.co\.za$/i.test(email.trim());
+
+const THUTHUKA_ADMIN_BLOCKED =
+  "ThuthukaSA staff need the advisor role, not admin — admin opens the A-Win console, which cannot show LOA/RPA submissions. Use “Add team member” / “Grant advisor” instead.";
+
 export const promoteSchema = z.object({
-  email: z.string().email().optional(),
+  email: emailField().optional(),
   user_id: z.string().uuid().optional(),
   role: z.enum(["admin", "member", "advisor"]).default("admin"),
   action: z.enum(["grant", "revoke"]).default("grant"),
@@ -92,6 +103,13 @@ export async function executeUserRoleChange(
     targetEmail = p.email;
   }
   if (!targetId) throw new Error("Target user not resolved");
+  if (!targetEmail) {
+    const { data: p } = await supabaseAdmin.from("profiles").select("email").eq("id", targetId).maybeSingle();
+    targetEmail = p?.email ?? null;
+  }
+  if (data.role === "admin" && data.action === "grant" && isThuthukaEmail(targetEmail)) {
+    throw new Error(THUTHUKA_ADMIN_BLOCKED);
+  }
 
   if (data.action === "grant") {
     const { error } = await supabaseAdmin
@@ -117,7 +135,29 @@ export async function executeUserRoleChange(
     details: { role: data.role, target_email: targetEmail },
   });
 
-  return { ok: true, user_id: targetId, role: data.role, action: data.action };
+  let emailSent: boolean | undefined;
+  if (data.role === "advisor" && targetEmail) {
+    const { notifyThuthukaTeam } = await import("./email.server");
+    if (data.action === "grant") {
+      // A self-signed-up account may never have confirmed its email (the
+      // confirmation got lost) — confirm it now so login can't fail with
+      // "Email not confirmed", then email them a set-password link in case
+      // they don't know/remember their password.
+      await supabaseAdmin.auth.admin.updateUserById(targetId, { email_confirm: true });
+      const { sendSetPasswordEmail } = await import("./auth-email.server");
+      emailSent = (await sendSetPasswordEmail(supabaseAdmin, targetEmail, "advisor_access")).ok;
+      await notifyThuthukaTeam("Team member added", [
+        `${targetEmail} now has access to the ThuthukaSA dashboard.`,
+        emailSent
+          ? "They've been emailed a link to set their password and sign in."
+          : "We couldn't email them automatically — ask them to use “Forgot password?” on the sign-in page.",
+      ]);
+    } else {
+      await notifyThuthukaTeam("Team member removed", [`${targetEmail} no longer has access to the ThuthukaSA dashboard.`]);
+    }
+  }
+
+  return { ok: true, user_id: targetId, role: data.role, action: data.action, email: targetEmail, emailSent };
 }
 
 export const deleteMemberSchema = z.object({
@@ -260,6 +300,14 @@ export const requestSetUserRole = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await ensureAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (data.role === "admin" && data.action === "grant") {
+      let email = data.email ?? null;
+      if (!email && data.user_id) {
+        const { data: p } = await supabaseAdmin.from("profiles").select("email").eq("id", data.user_id).maybeSingle();
+        email = p?.email ?? null;
+      }
+      if (isThuthukaEmail(email)) throw new Error(THUTHUKA_ADMIN_BLOCKED);
+    }
     const { data: row, error } = await supabaseAdmin
       .from("pending_approvals")
       .insert({
@@ -271,7 +319,7 @@ export const requestSetUserRole = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest(
+    await notifyNewApprovalRequest(
       data.action === "grant" ? "Grant admin role" : "Revoke admin role",
       data.reason,
       context.claims?.email ?? "an admin",
@@ -296,7 +344,7 @@ export const requestDeleteMember = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest("Delete member", data.reason, context.claims?.email ?? "an admin");
+    await notifyNewApprovalRequest("Delete member", data.reason, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });
 
@@ -369,7 +417,7 @@ export const requestUpdateMemberEmail = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest("Update member email", data.reason, context.claims?.email ?? "an admin");
+    await notifyNewApprovalRequest("Update member email", data.reason, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });
 
@@ -390,7 +438,7 @@ export const requestDeleteApplication = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest("Delete application", data.reason, context.claims?.email ?? "an admin");
+    await notifyNewApprovalRequest("Delete application", data.reason, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });
 
@@ -411,7 +459,7 @@ export const requestDeleteLoaRpaSubmission = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest("Delete LOA/RPA submission", data.reason, context.claims?.email ?? "an admin");
+    await notifyNewApprovalRequest("Delete LOA/RPA submission", data.reason, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });
 
@@ -424,7 +472,7 @@ export const requestDeleteLoaRpaSubmission = createServerFn({ method: "POST" })
 // requestSetUserRole above, which does require that second approval.
 
 export const createAdvisorAccountSchema = z.object({
-  email: z.string().email(),
+  email: emailField(),
   fullName: z.string().trim().min(1).max(200),
 });
 
@@ -467,21 +515,22 @@ async function finishPasswordIssuance(
 
 /**
  * Runs at approval time (see admin-approvals.functions.ts) — creates the
- * account, grants 'advisor', and generates the one-time temp password. Kept
- * separate from the request fn below so the password is only ever minted
- * once someone with real authority has signed off on it existing.
+ * account, grants 'advisor', and emails the new advisor a link to choose
+ * their own password. Nobody ever sees or relays a temp password: that
+ * hand-off (approver → requester → new advisor, over WhatsApp) is where
+ * logins kept getting lost. The random password set here is never shown.
  */
 export async function executeAdvisorAccountBootstrap(
   supabaseAdmin: any,
   data: z.infer<typeof createAdvisorAccountSchema>,
   actor: { userId: string; email: string | null },
 ) {
-  await assertNoExistingAccount(supabaseAdmin, data.email);
+  const email = data.email.trim().toLowerCase();
+  await assertNoExistingAccount(supabaseAdmin, email);
 
-  const tempPassword = generateTempPassword();
   const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-    email: data.email,
-    password: tempPassword,
+    email,
+    password: generateTempPassword(),
     email_confirm: true,
     user_metadata: { full_name: data.fullName },
   });
@@ -497,12 +546,27 @@ export async function executeAdvisorAccountBootstrap(
     .upsert({ user_id: userId, role: "advisor" }, { onConflict: "user_id,role" });
   if (roleErr) throw new Error(roleErr.message);
 
-  await finishPasswordIssuance(supabaseAdmin, userId, actor, "advisor_account_bootstrap", "ThuthukaSA advisor account creation, approved", {
-    role: "advisor",
-    target_email: data.email,
+  await supabaseAdmin.from("audit_logs").insert({
+    actor_id: actor.userId,
+    actor_email: actor.email,
+    action: "advisor_account_bootstrap",
+    target_type: "user_role",
+    target_id: userId,
+    reason: "ThuthukaSA advisor account creation, approved",
+    details: { role: "advisor", target_email: email },
   });
 
-  return { ok: true, user_id: userId, email: data.email, tempPassword };
+  const { sendSetPasswordEmail } = await import("./auth-email.server");
+  const emailSent = (await sendSetPasswordEmail(supabaseAdmin, email, "advisor_welcome", data.fullName)).ok;
+  const { notifyThuthukaTeam } = await import("./email.server");
+  await notifyThuthukaTeam("New team member account created", [
+    `${data.fullName} (${email}) now has a ThuthukaSA dashboard account.`,
+    emailSent
+      ? "They've been emailed a link to set their password and sign in."
+      : "We couldn't email them automatically — ask them to use “Forgot password?” on the sign-in page.",
+  ]);
+
+  return { ok: true, user_id: userId, email, emailSent };
 }
 
 /**
@@ -534,12 +598,12 @@ export const createAdvisorAccount = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest("Create ThuthukaSA advisor account", `New account for ${data.email}`, context.claims?.email ?? "ThuthukaSA");
+    await notifyNewApprovalRequest("Create ThuthukaSA advisor account", `New account for ${data.email}`, context.claims?.email ?? "ThuthukaSA");
     return { ok: true, approval_id: row.id };
   });
 
 export const advisorRoleChangeSchema = z.object({
-  email: z.string().email(),
+  email: emailField(),
   action: z.enum(["grant", "revoke"]),
   reason: z.string().trim().min(5).max(500),
 });
@@ -569,7 +633,7 @@ export const requestAdvisorRoleChange = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest(
+    await notifyNewApprovalRequest(
       data.action === "grant" ? "Grant ThuthukaSA advisor access" : "Revoke ThuthukaSA advisor access",
       data.reason,
       context.claims?.email ?? "ThuthukaSA",
@@ -617,4 +681,149 @@ export const resetAccountPassword = createServerFn({ method: "POST" })
     );
 
     return { ok: true, email: profile.email as string | null, tempPassword };
+  });
+
+// --- ThuthukaSA team self-service (one form, no guessing) --------------------
+// ThuthukaSA used to have to pick between "Create account" and "Grant advisor"
+// depending on whether the colleague already had a website login — which they
+// had no way of knowing. This single entry point decides for them.
+
+export const addAdvisorTeamMemberSchema = z.object({
+  email: emailField(),
+  fullName: z.string().trim().min(1).max(200),
+});
+
+export const requestAddAdvisorTeamMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => addAdvisorTeamMemberSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await ensureAdminOrAdvisor(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const requester = context.claims?.email ?? "ThuthukaSA";
+
+    const { data: dup } = await supabaseAdmin
+      .from("pending_approvals")
+      .select("id")
+      .eq("status", "pending")
+      .in("action_type", ["advisor_account_bootstrap", "role_grant"])
+      .eq("payload->>email", data.email)
+      .limit(1);
+    if (dup && dup.length > 0) throw new Error(`There's already a pending request for ${data.email} — waiting on an A-Win admin to approve it.`);
+
+    const { data: profile } = await supabaseAdmin.from("profiles").select("id").eq("email", data.email).maybeSingle();
+    let mode: "new_account" | "existing_account";
+    if (profile) {
+      const { data: hasAdvisor } = await supabaseAdmin.rpc("has_role", { _user_id: profile.id, _role: "advisor" });
+      if (hasAdvisor) throw new Error(`${data.email} already has access. If they can't sign in, use “Resend login email” next to their name.`);
+      const reason = `Add ${data.fullName} to the ThuthukaSA team (existing website account)`;
+      const { error } = await supabaseAdmin.from("pending_approvals").insert({
+        action_type: "role_grant",
+        payload: { email: data.email, role: "advisor", action: "grant", reason },
+        reason,
+        requested_by: context.userId,
+      });
+      if (error) throw new Error(error.message);
+      await notifyNewApprovalRequest("Grant ThuthukaSA advisor access", `${data.fullName} (${data.email})`, requester);
+      mode = "existing_account";
+    } else {
+      const { error } = await supabaseAdmin.from("pending_approvals").insert({
+        action_type: "advisor_account_bootstrap",
+        payload: { email: data.email, fullName: data.fullName },
+        reason: `New ThuthukaSA advisor account for ${data.email}`,
+        requested_by: context.userId,
+      });
+      if (error) throw new Error(error.message);
+      await notifyNewApprovalRequest("Create ThuthukaSA advisor account", `New account for ${data.fullName} (${data.email})`, requester);
+      mode = "new_account";
+    }
+
+    const { notifyThuthukaTeam } = await import("./email.server");
+    await notifyThuthukaTeam("Team member requested", [
+      `${requester} asked for ${data.fullName} (${data.email}) to be given dashboard access.`,
+      "An A-Win admin needs to approve it. As soon as they do, the new team member is emailed a link to set their password — nobody needs to pass on a password.",
+    ]);
+    return { ok: true, mode };
+  });
+
+/**
+ * Who's on the ThuthukaSA team, whether they've ever signed in, and which
+ * requests are still waiting on A-Win — so "is she set up yet?" never needs
+ * a WhatsApp thread to answer.
+ */
+export const listAdvisorTeam = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await ensureAdminOrAdvisor(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "advisor");
+    const ids = (roles ?? []).map((r: any) => r.user_id);
+    const members = await Promise.all(
+      ids.map(async (id: string) => {
+        const [{ data: p }, { data: u }] = await Promise.all([
+          supabaseAdmin.from("profiles").select("email, full_name").eq("id", id).maybeSingle(),
+          supabaseAdmin.auth.admin.getUserById(id),
+        ]);
+        return {
+          email: (p?.email ?? u?.user?.email ?? "") as string,
+          fullName: (p?.full_name ?? null) as string | null,
+          lastSignInAt: (u?.user?.last_sign_in_at ?? null) as string | null,
+        };
+      }),
+    );
+    const { data: pending } = await supabaseAdmin
+      .from("pending_approvals")
+      .select("payload, requested_at, action_type")
+      .eq("status", "pending")
+      .in("action_type", ["advisor_account_bootstrap", "role_grant"])
+      .order("requested_at", { ascending: false });
+    return {
+      members: members.filter((m) => m.email).sort((a, b) => a.email.localeCompare(b.email)),
+      pending: (pending ?? [])
+        .filter((r: any) => r.action_type === "advisor_account_bootstrap" || r.payload?.role === "advisor")
+        .map((r: any) => ({ email: r.payload?.email as string, fullName: (r.payload?.fullName ?? null) as string | null, requestedAt: r.requested_at as string })),
+    };
+  });
+
+/**
+ * Re-send the "set your password" email to an existing team member. Safe to
+ * let any advisor trigger: the link only ever goes to that person's own
+ * inbox, and it's limited to accounts that already have advisor access.
+ */
+export const resendAdvisorLoginEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ email: emailField() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await ensureAdminOrAdvisor(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { rateLimitOk } = await import("./email.server");
+    if (!(await rateLimitOk(`advisor-resend:${data.email}`, 5, 3600))) throw new Error("Already sent several times this hour — check spam/junk, or try again later");
+    const { data: profile } = await supabaseAdmin.from("profiles").select("id").eq("email", data.email).maybeSingle();
+    if (!profile) throw new Error("No account with that email");
+    const { data: hasAdvisor } = await supabaseAdmin.rpc("has_role", { _user_id: profile.id, _role: "advisor" });
+    if (!hasAdvisor) throw new Error("That account isn't on the ThuthukaSA team");
+    await supabaseAdmin.auth.admin.updateUserById(profile.id, { email_confirm: true });
+    const { sendSetPasswordEmail } = await import("./auth-email.server");
+    const sent = await sendSetPasswordEmail(supabaseAdmin, data.email, "advisor_access");
+    if (!sent.ok) throw new Error("Couldn't send the email right now — ask them to use “Forgot password?” on the sign-in page");
+    return { ok: true };
+  });
+
+/**
+ * "Did it work?" button for ThuthukaSA's notification list — emails every
+ * current recipient right now, so a typo'd or spam-filtered address shows up
+ * immediately instead of when the next LOA quietly doesn't arrive.
+ */
+export const sendTestThuthukaNotification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await ensureAdminOrAdvisor(context);
+    const { rateLimitOk, getThuthukaRecipients, sendEmail } = await import("./email.server");
+    if (!(await rateLimitOk(`tksa-test:${context.userId}`, 5, 3600))) throw new Error("Test already sent several times this hour — try again later");
+    const { tksaTeamNoticeEmail } = await import("./email-templates.server");
+    const { emails } = await getThuthukaRecipients();
+    const mail = tksaTeamNoticeEmail("Test notification", [
+      "This is a test from the ThuthukaSA dashboard. If you're reading this, this address will receive alerts for new LOA / Risk Profile submissions and team changes.",
+    ]);
+    const results = await Promise.all(emails.map(async (to) => ({ to, ok: (await sendEmail({ to, toName: "ThuthukaSA", ...mail })).ok })));
+    return { sent: results.filter((r) => r.ok).map((r) => r.to), failed: results.filter((r) => !r.ok).map((r) => r.to) };
   });

@@ -138,3 +138,30 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
     return { ok: false, error: msg };
   }
 }
+
+/** ThuthukaSA's own alert list (set on /tksa → Settings), with the shared-inbox fallback. */
+export async function getThuthukaRecipients() {
+  const { THUTHUKA_WHATSAPP_NUMBER } = await import("./whatsapp.server");
+  return getNotifyRecipients("loa_rpa", { emails: ["info@thuthuka-sa.co.za"], whatsapp: [THUTHUKA_WHATSAPP_NUMBER] });
+}
+
+/**
+ * Email every ThuthukaSA recipient and WAIT for the sends — on serverless the
+ * function can be frozen the moment the handler returns, so an un-awaited
+ * send is a send that may never happen. Never throws.
+ */
+export async function emailAll(to: string[], toName: string, mail: { subject: string; html: string; text?: string }) {
+  const unique = [...new Set(to.map((e) => e.trim().toLowerCase()).filter(Boolean))];
+  await Promise.allSettled(unique.map((addr) => sendEmail({ to: addr, toName, ...mail })));
+}
+
+/** Team-change notice (new colleague requested/added/removed) to ThuthukaSA's recipients. Never throws. */
+export async function notifyThuthukaTeam(title: string, lines: string[]) {
+  try {
+    const { tksaTeamNoticeEmail } = await import("./email-templates.server");
+    const recipients = await getThuthukaRecipients();
+    await emailAll(recipients.emails, "ThuthukaSA", tksaTeamNoticeEmail(title, lines));
+  } catch {
+    // best-effort
+  }
+}

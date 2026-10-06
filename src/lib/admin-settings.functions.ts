@@ -140,7 +140,7 @@ export const requestSiteSettingsUpdate = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest(
+    await notifyNewApprovalRequest(
       "Publish settings change",
       `Publish "${data.key}" settings`,
       context.claims?.email ?? "an admin",
@@ -166,7 +166,7 @@ export const requestTeamMemberUpsert = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest(
+    await notifyNewApprovalRequest(
       "Add/edit team profile",
       `${data.id ? "Edit" : "Add"} team profile: ${name}`,
       context.claims?.email ?? "an admin",
@@ -191,7 +191,7 @@ export const requestTeamMemberDelete = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest("Delete team profile", `Delete team profile: ${data.name}`, context.claims?.email ?? "an admin");
+    await notifyNewApprovalRequest("Delete team profile", `Delete team profile: ${data.name}`, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });
 
@@ -212,6 +212,6 @@ export const requestSettingsDangerAction = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    notifyNewApprovalRequest("Danger zone action", `Danger zone: ${data.op}`, context.claims?.email ?? "an admin");
+    await notifyNewApprovalRequest("Danger zone action", `Danger zone: ${data.op}`, context.claims?.email ?? "an admin");
     return { ok: true, approval_id: row.id };
   });

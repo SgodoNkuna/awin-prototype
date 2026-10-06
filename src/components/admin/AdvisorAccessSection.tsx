@@ -1,154 +1,154 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, UserPlus, History, AlertTriangle } from "lucide-react";
+import { Loader2, UserPlus, History, AlertTriangle, Mail, UserMinus, Clock, Users2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { requestAdvisorRoleChange, createAdvisorAccount } from "@/lib/admin-roles.functions";
+import {
+  requestAddAdvisorTeamMember,
+  listAdvisorTeam,
+  resendAdvisorLoginEmail,
+  requestAdvisorRoleChange,
+} from "@/lib/admin-roles.functions";
 import { getErrorMessage } from "@/lib/errors";
 
-/**
- * Request a brand-new website account for a ThuthukaSA staff member who
- * doesn't have one yet (e.g. info@thuthuka-sa.co.za), with 'advisor' to be
- * granted once approved. This is the account-creation step "Grant advisor"
- * below can't do on its own — that one only elevates an existing account.
- *
- * ThuthukaSA can file this request themselves, but creating a live login is
- * sensitive enough that it still needs an A-Win admin's approval (Admin >
- * Approvals) before the account — and its one-time temp password — actually
- * gets created.
- */
-function CreateAdvisorAccountCard() {
-  const callCreate = useServerFn(createAdvisorAccount);
-  const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [requested, setRequested] = useState<string | null>(null);
+type Team = Awaited<ReturnType<typeof listAdvisorTeam>>;
 
-  const submit = async () => {
-    if (!email.trim() || !fullName.trim()) return;
-    setBusy(true);
+const INPUT = "border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40";
+
+/**
+ * One card for everything about who can sign in to /tksa: the current team
+ * (and whether each person has ever signed in), requests still waiting on an
+ * A-Win admin, and a single "Add team member" form. The server works out
+ * whether that's a brand-new account or advisor access on an existing one —
+ * ThuthukaSA used to have to guess which of two forms to use.
+ *
+ * Once an A-Win admin approves, the new person is emailed a set-password
+ * link directly. No temp password is ever relayed by hand.
+ */
+function TeamCard() {
+  const callList = useServerFn(listAdvisorTeam);
+  const callAdd = useServerFn(requestAddAdvisorTeamMember);
+  const callResend = useServerFn(resendAdvisorLoginEmail);
+  const callRole = useServerFn(requestAdvisorRoleChange);
+  const [team, setTeam] = useState<Team | null>(null);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
     try {
-      await callCreate({ data: { email: email.trim(), fullName: fullName.trim() } });
-      setRequested(email.trim());
+      setTeam(await callList());
+    } catch (e) {
+      toast.error(getErrorMessage(e, "Couldn't load the team"));
+    }
+  }, [callList]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const add = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !fullName.trim()) return;
+    setBusy("add");
+    try {
+      await callAdd({ data: { email: email.trim(), fullName: fullName.trim() } });
+      toast.success("Requested. Once an A-Win admin approves, they'll get an email to set their password.");
       setEmail("");
       setFullName("");
-      toast.success("Requested — needs approval from an A-Win admin");
-    } catch (e) {
-      toast.error(getErrorMessage(e, "Failed"));
+      await load();
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed"));
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   };
 
-  return (
-    <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark p-5 space-y-3">
-      <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
-        <UserPlus className="size-4" style={{ color: "#c084fc" }} /> Create ThuthukaSA advisor account
-      </h3>
-      <p className="-mt-2 text-xs text-white/50">
-        For a ThuthukaSA staff member who doesn't have a website account yet — e.g. info@thuthuka-sa.co.za. Already
-        have an account? Use "Grant advisor" below instead.
-      </p>
-      {requested ? (
-        <div className="space-y-1 rounded-lg border border-tksa-orange/40 bg-tksa-orange/10 p-3 text-sm">
-          <p className="font-medium text-white">Requested account for {requested}</p>
-          <p className="text-xs text-white/60">
-            An A-Win admin needs to approve this before it's created — once they do, they'll have the temp
-            password to send you.
-          </p>
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-white/70 hover:bg-white/10 hover:text-white" onClick={() => setRequested(null)}>
-            Request another
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <div>
-              <label className="text-xs font-medium text-white/70">Full name</label>
-              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="ThuthukaSA Advisor" className="border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40" />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-white/70">Email</label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="info@thuthuka-sa.co.za" className="border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40" />
-            </div>
-          </div>
-          <Button size="sm" disabled={busy || !email.trim() || !fullName.trim()} className="bg-tksa-orange text-tksa-dark hover:bg-tksa-orange/90" onClick={submit}>
-            {busy ? <Loader2 className="size-4 animate-spin" /> : "Request account"}
-          </Button>
-        </>
-      )}
-    </div>
-  );
-}
-
-/**
- * Grant/revoke the 'advisor' role (ThuthukaSA) that RLS requires to read
- * LOA/RPA submissions and their storage bucket. Uses the narrow
- * requestAdvisorRoleChange (role hardcoded server-side to 'advisor'), so
- * ThuthukaSA can file this themselves — an A-Win admin still has to approve
- * it before it takes effect.
- */
-function AdvisorAccessCard() {
-  const callSetRole = useServerFn(requestAdvisorRoleChange);
-  const [email, setEmail] = useState("");
-  const [reason, setReason] = useState("");
-  const [busy, setBusy] = useState<"grant" | "revoke" | null>(null);
-
-  const submit = async (action: "grant" | "revoke") => {
-    if (!email.trim() || reason.trim().length < 5) return;
-    setBusy(action);
+  const resend = async (to: string) => {
+    setBusy(`resend:${to}`);
     try {
-      await callSetRole({ data: { email: email.trim(), action, reason: reason.trim() } });
-      toast.success(`${action === "grant" ? "Grant" : "Revoke"} request submitted — needs approval from an A-Win admin`);
-      setEmail("");
-      setReason("");
-    } catch (e) {
-      toast.error(getErrorMessage(e, "Failed"));
+      await callResend({ data: { email: to } });
+      toast.success(`Login email sent to ${to}. Ask them to check spam/junk too.`);
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed"));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const remove = async (to: string) => {
+    if (!confirm(`Remove ${to}'s access to the ThuthukaSA dashboard?\n\nAn A-Win admin has to approve it before it takes effect.`)) return;
+    setBusy(`remove:${to}`);
+    try {
+      await callRole({ data: { email: to, action: "revoke", reason: `Remove ${to} from the ThuthukaSA team` } });
+      toast.success("Removal requested. An A-Win admin needs to approve it.");
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed"));
     } finally {
       setBusy(null);
     }
   };
 
   return (
-    <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark p-5 space-y-3">
+    <div className="rounded-xl border border-tksa-orange/20 bg-tksa-dark p-5 space-y-4">
       <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
-        <UserPlus className="size-4" style={{ color: "#c084fc" }} /> ThuthukaSA advisor access
+        <Users2 className="size-4" style={{ color: "#c084fc" }} /> ThuthukaSA team
       </h3>
-      <p className="-mt-2 text-xs text-white/50">
-        Only accounts with the <strong className="text-white/70">advisor</strong> role can see LOA/RPA submissions —
-        regular A-Win admins can no longer read this data (confidentiality). Grant it to a ThuthukaSA staff member's
-        existing website account by email. Requires approval from an A-Win admin.
-      </p>
-      <div className="grid gap-2">
-        <label className="text-xs font-medium text-white/70">ThuthukaSA staff email (must already have an account)</label>
-        <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="advisor@thuthuka-sa.co.za" className="border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40" />
-      </div>
-      <div className="grid gap-2">
-        <label className="text-xs font-medium text-white/70">Reason (audit log, min 5 chars)</label>
-        <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="e.g. ThuthukaSA advisor onboarded 2026-08-09" className="border-tksa-orange/20 bg-[#12110f] text-white placeholder:text-white/40" />
-      </div>
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="border-tksa-orange/40 bg-transparent text-white hover:bg-tksa-orange/15 hover:text-white"
-          disabled={busy !== null || !email.trim() || reason.trim().length < 5}
-          onClick={() => submit("revoke")}
-        >
-          {busy === "revoke" ? <Loader2 className="size-4 animate-spin" /> : "Revoke advisor"}
+
+      {!team ? (
+        <Loader2 className="size-4 animate-spin text-white/50" />
+      ) : (
+        <div className="space-y-2">
+          {team.members.length === 0 && <p className="text-xs text-white/50">No one has access yet.</p>}
+          {team.members.map((m) => (
+            <div key={m.email} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-white/10 bg-white/5 p-2.5">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-white">{m.fullName || m.email}</p>
+                <p className="truncate text-xs text-white/50">
+                  {m.email} ·{" "}
+                  {m.lastSignInAt ? `last signed in ${new Date(m.lastSignInAt).toLocaleDateString()}` : <span className="text-tksa-orange">hasn't signed in yet</span>}
+                </p>
+              </div>
+              <div className="flex gap-1.5">
+                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-white/70 hover:bg-white/10 hover:text-white" disabled={busy !== null} onClick={() => resend(m.email)}>
+                  {busy === `resend:${m.email}` ? <Loader2 className="size-3.5 animate-spin" /> : <><Mail className="mr-1 size-3.5" /> Resend login email</>}
+                </Button>
+                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-white/50 hover:bg-white/10 hover:text-white" disabled={busy !== null} onClick={() => remove(m.email)}>
+                  {busy === `remove:${m.email}` ? <Loader2 className="size-3.5 animate-spin" /> : <><UserMinus className="mr-1 size-3.5" /> Remove</>}
+                </Button>
+              </div>
+            </div>
+          ))}
+          {team.pending.map((p) => (
+            <div key={p.email} className="flex items-center gap-2 rounded-md border border-dashed border-tksa-orange/30 p-2.5 text-xs text-white/60">
+              <Clock className="size-3.5 shrink-0 text-tksa-orange" />
+              <span>
+                <span className="text-white/80">{p.fullName || p.email}</span> ({p.email}) — waiting for an A-Win admin to approve
+                (requested {new Date(p.requestedAt).toLocaleDateString()})
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <form onSubmit={add} className="space-y-2 border-t border-white/10 pt-4">
+        <p className="flex items-center gap-2 text-sm font-medium text-white">
+          <UserPlus className="size-4" style={{ color: "#c084fc" }} /> Add team member
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" className={INPUT} />
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@thuthuka-sa.co.za" className={INPUT} />
+        </div>
+        <p className="text-xs text-white/50">
+          Works whether or not they already have a website account. An A-Win admin approves it, then they're emailed a link to
+          set their own password.
+        </p>
+        <Button type="submit" size="sm" disabled={busy !== null || !email.trim() || !fullName.trim()} className="bg-tksa-orange text-tksa-dark hover:bg-tksa-orange/90">
+          {busy === "add" ? <Loader2 className="size-4 animate-spin" /> : "Request access"}
         </Button>
-        <Button
-          size="sm"
-          className="bg-tksa-orange text-tksa-dark hover:bg-tksa-orange/90"
-          disabled={busy !== null || !email.trim() || reason.trim().length < 5}
-          onClick={() => submit("grant")}
-        >
-          {busy === "grant" ? <Loader2 className="size-4 animate-spin" /> : "Grant advisor"}
-        </Button>
-      </div>
+      </form>
     </div>
   );
 }
@@ -179,6 +179,8 @@ function describeAuditRow(row: AuditLogRow): string {
       return `${row.actor_email ?? "someone"} revoked "${d.role}" from ${d.target_email ?? "a user"}`;
     case "advisor_account_bootstrap":
       return `${row.actor_email ?? "someone"} created a new advisor account for ${d.target_email ?? "a user"}`;
+    case "account_password_reset":
+      return `${row.actor_email ?? "someone"} reset the password for ${d.target_email ?? "a user"}`;
     case "site_settings_update":
       return `${row.actor_email ?? "someone"} updated site settings`;
     case "whatsapp_send_failed":
@@ -242,8 +244,7 @@ function RecentChangesCard() {
 export function AdvisorAccessSection() {
   return (
     <div className="space-y-4">
-      <CreateAdvisorAccountCard />
-      <AdvisorAccessCard />
+      <TeamCard />
       <RecentChangesCard />
     </div>
   );
